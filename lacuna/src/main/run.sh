@@ -1,2 +1,2 @@
 #!/bin/bash
-java -cp bin main.Lacuna
+java -cp "bin:resources" main.Lacuna

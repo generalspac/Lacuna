@@ -1,4 +1,4 @@
 #!/bin/bash
 rm -rf bin
 mkdir bin
-javac -d bin src/global/*.java src/model/*.java src/view/*.java src/controller/*.java src/main/*.java
+javac -d bin java/global/*.java java/model/*.java java/view/*.java java/controller/*.java java/main/*.java
