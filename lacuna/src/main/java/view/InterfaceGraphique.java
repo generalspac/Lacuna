@@ -7,6 +7,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 
+import controller.ControleurBoutons;
+import controller.EcouteurDeClavier;
+
 public class InterfaceGraphique implements Runnable {
 
     JFrame frame;
@@ -23,6 +26,8 @@ public class InterfaceGraphique implements Runnable {
         frame.setGlassPane(dragLayer);
         frame.getGlassPane().setVisible(true);
         dragLayer.setVisible(true);
+
+       
 
         // ================= ROOT FLEX (VERTICAL) =================
         FlexPanel root = new FlexPanel();
@@ -118,17 +123,27 @@ public class InterfaceGraphique implements Runnable {
         buttonPanel.setPreferredSize(new Dimension(0, 40));
         buttonPanel.setBackground(Color.BLACK);
 
+
+        ControleurBoutons controleurBoutons = new ControleurBoutons(aire);
+
+
+        ////////// Pour le clavier//////////////
+        aire.addKeyListener(new EcouteurDeClavier(controleurBoutons));
+        aire.setFocusable(true);
+        ///////////////////////////////////////////////////
+
+       
         JButton undoButton = new JButton("Undo");
         undoButton.setPreferredSize(new Dimension(80, 40));
-        undoButton.addActionListener(e -> aire.undo());
+        undoButton.addActionListener(e -> controleurBoutons.undo());
 
         JButton redoButton = new JButton("Redo");
         redoButton.setPreferredSize(new Dimension(80, 40));
-        redoButton.addActionListener(e -> aire.redo());
+        redoButton.addActionListener(e -> controleurBoutons.redo());
 
         JButton resetButton = new JButton("Reset");
         resetButton.setPreferredSize(new Dimension(80, 40));
-        resetButton.addActionListener(e -> aire.reset());
+        resetButton.addActionListener(e -> controleurBoutons.reset());
 
         buttonPanel.add(undoButton);
         buttonPanel.add(redoButton);
@@ -195,6 +210,7 @@ public class InterfaceGraphique implements Runnable {
         frame.setSize(1400, 1000);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+        aire.requestFocusInWindow();
     }
 
     public void toggleFullscreen() {

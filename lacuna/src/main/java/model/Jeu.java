@@ -333,9 +333,9 @@ public class Jeu {
     // c'est la premiere phase du jeu
     public void jouerCoup(Joueur joueur, Pion pion, Coordonnees pos, Fleur f1, Fleur f2) {
 
-          // si tous les pions sont placés
-          //pas besoin de  cette fonction ici car jouer coup est pour la premiere 
-          //phase du jeu
+        // si tous les pions sont placés
+        //pas besoin de  cette fonction ici car jouer coup est pour la premiere
+        //phase du jeu
         /*if (tousLesPionsPlaces()) {
             attribuerFleursRestantes();// on attribue les fleurs restantes
             return; // fin du jeu
@@ -346,17 +346,51 @@ public class Jeu {
             return;
 
         if (!mangerFleurs(joueur, f1, f2)) {
-            pion.setPosition(null); // on remet la position à null (car si on a passé la premiere condition, la
+            pion.setPosition(null); // On remet la position à null (car si on a passé la premiere condition, la
                                     // position n'est pas null)
             return;
         }
 
-        //ActionJeu action = new ActionJeu(pion, f1, f2, joueur);
-        //undoStack.push(action);
+        // Gestion de la stack
+        ActionJeu action = new ActionJeu(pion, f1, f2, joueur);
+        undoStack.push(action);
+        redoStack.clear();
 
 
-        joueurSuivant();// passons au joueur suivant
 
+
+        joueurSuivant();// Passons au joueur suivant
+
+    }
+
+
+    public boolean jouerCoupAvecFleursSelectionnees() {
+        
+        if (!fleursConnectées(fleurSelectionnee1, fleurSelectionnee2)) {
+            return false;
+        }
+
+        Coordonnees pos = milieu( fleurSelectionnee1.getPosition(), fleurSelectionnee2.getPosition());
+
+        // Sélection du pion du joeur actuel
+        Joueur joueurActuel = getJoueurActuel();
+        Types.TypePion pionType = joueurActuel.getTypePion();;
+        Pion pionLibre = getPionLibre(pionType);
+
+        if (pionLibre == null) {
+            System.out.println("Aucun pion libre disponible pour ce joueur.");
+            return false;
+        }
+
+        jouerCoup(joueurActuel, pionLibre, pos, fleurSelectionnee1, fleurSelectionnee2);
+
+        if (pionLibre.getPosition() != null) {
+            resetFleursSelectionnee1();
+            resetFleursSelectionnee2();
+            return true;
+         }
+
+        return false;
     }
 
     //fonction pour la seconde phase du jeu (controller appelle ça aussi )
@@ -708,6 +742,9 @@ public class Jeu {
         } else {
             setFeedbackMessage("Rien à annuler.");
         }
+
+        resetFleursSelectionnee1();
+        resetFleursSelectionnee2();
     }
 
     public void redo() {
@@ -748,6 +785,9 @@ public class Jeu {
         } else {
             setFeedbackMessage("Rien à refaire.");
         }
+
+        resetFleursSelectionnee1();
+        resetFleursSelectionnee2();
     }
 
     public void reset() {
@@ -787,18 +827,13 @@ public class Jeu {
             return;
         }
 
-        Pion pion = new Pion(type, null);
-
-        jouerCoup(
-                joueurActuel,
-                pion,
-                pos,
-                flowers[0],
-                flowers[1]);
-
-        if (pion.getPosition() != null) {
-            pions.add(pion);
+        Pion pion = getPionLibre(type);
+        if (pion == null) {
+            System.out.println("Aucun pion libre disponible pour ce joueur.");
+            return;
         }
+
+        jouerCoup(joueurActuel, pion, pos, flowers[0], flowers[1]);
 
         System.out.println("Pion placé via drag !");
     }

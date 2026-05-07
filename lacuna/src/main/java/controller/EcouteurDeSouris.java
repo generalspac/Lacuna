@@ -19,7 +19,7 @@ public class EcouteurDeSouris extends MouseAdapter {
         this.game = jeuGraphique.jeu;
         this.jeuGraphique = jeuGraphique;
     }
-
+    
     @Override
     public void mousePressed(MouseEvent e) {
 
@@ -28,8 +28,19 @@ public class EcouteurDeSouris extends MouseAdapter {
 
         Coordonnees modelPos = jeuGraphique.screenToModel(x, y);
 
-        System.out.println(
-                "Clic écran: (" + x + ", " + y + ") -> Modèle: (" + modelPos.getX() + ", " + modelPos.getY() + ")");
+        // appeler la deuxieme phase du jeu(elle ne s'execute que si tous les pions sont placés)
+        // et celà est assurer dans la fonction dans le modèle déjà
+
+        if( game.secondePhase() ){
+            System.out.println("seconde phase"); // Affichage à remplacer par la méthode d'affichage dans config
+            jeuGraphique.refreshScores();
+
+            jeuGraphique.repaint();
+
+            System.out.println("Fin de la seconde phase");
+            return ; // Fin du jeu
+        }
+
 
         // Vérifie si clic dans le cercle
         if (!game.getCercleDeJeu().contientPoint(modelPos)) {
@@ -37,69 +48,30 @@ public class EcouteurDeSouris extends MouseAdapter {
             return;
         }
 
-        // Sélection de fleur
-        if (game.toucherFleur(modelPos)) {
-            System.out.println("Clic sur une fleur !");
-            jeuGraphique.repaint();
-            return;
-        }
-
-        // Si deux fleurs sélectionnées et connectées
-        if (game.fleursConnectées(
-                game.getFleurSelectionnee1(),
-                game.getFleurSelectionnee2())) {
-
-            Coordonnees pos = game.milieu(
-                    game.getFleurSelectionnee1().getPosition(),
-                    game.getFleurSelectionnee2().getPosition());
-
-            Joueur joueurActuel = game.getJoueurActuel();
-            Pion newPion;
-
-            if (game.currentPlayerIndex == 0) {
-                newPion = new Pion(Types.TypePion.OR, pos);
-            } else {
-                newPion = new Pion(Types.TypePion.ARGENT, pos);
-            }
-
-            // Placement du pion
-            if (game.placePion(newPion, pos)) {
-
-                game.getPions().add(newPion);
-
-                // ✅ UN SEUL appel ici
-                game.mangerFleurs(
-                        joueurActuel,
-                        game.getFleurSelectionnee1(),
-                        game.getFleurSelectionnee2());
-
-                game.undoStack.push(new ActionJeu(
-                        newPion,
-                        game.getFleurSelectionnee1(),
-                        game.getFleurSelectionnee2(),
-                        joueurActuel));
-
-                game.redoStack.clear();
-
-                game.joueurSuivant();
-
-                // reset sélection
-                game.resetFleursSelectionnee1();
-                game.resetFleursSelectionnee2();
-
-                // ✅ MAJ SCORE AU BON MOMENT
+       // Si deux fleurs sélectionnées et connectées
+        if (game.fleursConnectées( game.getFleurSelectionnee1(), game.getFleurSelectionnee2())) {
+            
+            if (game.jouerCoupAvecFleursSelectionnees()) {
                 jeuGraphique.refreshScores();
-
                 jeuGraphique.repaint();
-
             } else {
                 System.out.println("Placement impossible : limite de pions ou position invalide.");
             }
+            return;
+        }
+
+        // Sélection de fleur
+        if (game.toucherFleur(modelPos)) {
+            System.out.println("Clic sur une fleur !");
+            jeuGraphique.refreshScores();
+            jeuGraphique.repaint();
+            return;
         }
     }
 
+    
     @Override
     public void mouseReleased(MouseEvent e) {
-        System.out.println("Souris relâchée: (" + e.getX() + ", " + e.getY() + ")");
+      
     }
 }

@@ -18,7 +18,9 @@ public class JeuGraphique extends JComponent {
     private JFrame frame;
     public Jeu jeu;
 
-    private int width = 660, height = 360;
+    // === DIMENSIONS MODELE =======
+    private int width = 660;
+    private int height = 440;
 
     private Score scoreArgent, scoreOr;
     private JLabel scoreLabel;
@@ -44,6 +46,7 @@ public class JeuGraphique extends JComponent {
         this.instructionLabel = instructionLabel;
         this.statusLabel = statusLabel;
 
+        // === CERCLE MODELE ====
         this.jeu = new Jeu(width, height,
                 new Cercle(new Coordonnees(width / 2, height / 2),
                         Math.min(width, height) / 2));
@@ -61,7 +64,7 @@ public class JeuGraphique extends JComponent {
         this.rightPile = right;
     }
 
-    // ================= INIT =================
+    /////////////// INIT ///////////////////////
 
     private void initImages() {
         try {
@@ -94,7 +97,6 @@ public class JeuGraphique extends JComponent {
         addMouseListener(mouse);
         addMouseMotionListener(mouse);
 
-        // DRAG & DROP PROPRE
         addMouseListener(new MouseAdapter() {
 
             @Override
@@ -105,8 +107,6 @@ public class JeuGraphique extends JComponent {
                 Types.TypePion payload = (Types.TypePion) layer.getPayload();
 
                 if (payload != null) {
-
-                    System.out.println("DROP détecté");
 
                     Coordonnees model = screenToModel(e.getX(), e.getY());
 
@@ -120,7 +120,8 @@ public class JeuGraphique extends JComponent {
             }
         });
     }
-    // ================= SCORE =================
+
+    // ====SCORE =======
 
     public void refreshScores() {
         scoreOr.updateFromGame(jeu.getJoueurs()[0]);
@@ -169,7 +170,7 @@ public class JeuGraphique extends JComponent {
         }
     }
 
-    // ================= COORDONNÉES =================
+    // ===== COORDONNÉES ======
 
     public Coordonnees screenToModel(int x, int y) {
 
@@ -180,14 +181,18 @@ public class JeuGraphique extends JComponent {
         int centerX = offsetX + size / 2;
         int centerY = offsetY + size / 2;
 
-        double rayon = size * 0.35;
+        double rayonScreen = size * 0.4;
 
-        double relX = (x - centerX) / rayon;
-        double relY = (y - centerY) / rayon;
+        double relX = (x - centerX) / rayonScreen;
+        double relY = (y - centerY) / rayonScreen;
+
+        double rayonModel = jeu.getCercleDeJeu().getRayon();
+        Coordonnees centre = jeu.getCercleDeJeu().getCentre();
 
         return new Coordonnees(
-                (int) (330 + relX * 180),
-                (int) (180 + relY * 180));
+                (int) (centre.getX() + relX * rayonModel),
+                (int) (centre.getY() + relY * rayonModel)
+        );
     }
 
     public Coordonnees modelToScreen(int x, int y) {
@@ -199,17 +204,20 @@ public class JeuGraphique extends JComponent {
         int centerX = offsetX + size / 2;
         int centerY = offsetY + size / 2;
 
-        double rayon = size * 0.35;
+        double rayonScreen = size * 0.4;
 
-        double relX = (x - 330) / 180.0;
-        double relY = (y - 180) / 180.0;
+        double rayonModel = jeu.getCercleDeJeu().getRayon();
+        Coordonnees centre = jeu.getCercleDeJeu().getCentre();
+
+        double relX = (x - centre.getX()) / rayonModel;
+        double relY = (y - centre.getY()) / rayonModel;
 
         return new Coordonnees(
-                (int) (centerX + relX * rayon),
-                (int) (centerY + relY * rayon));
+                (int) (centerX + relX * rayonScreen),
+                (int) (centerY + relY * rayonScreen)
+                );
     }
-
-    // ================= RENDER =================
+    // =====:///////= RENDu /////////////=================
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -331,23 +339,5 @@ public class JeuGraphique extends JComponent {
         }
     }
 
-    // ================= ACTIONS =================
-
-    public void undo() {
-        jeu.undo();
-        refreshScores();
-        repaint();
-    }
-
-    public void redo() {
-        jeu.redo();
-        refreshScores();
-        repaint();
-    }
-
-    public void reset() {
-        jeu.reset();
-        refreshScores();
-        repaint();
-    }
+   
 }
