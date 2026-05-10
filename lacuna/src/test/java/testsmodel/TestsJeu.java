@@ -1,4 +1,4 @@
-package test.java.model;
+package testsmodel;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -7,7 +7,6 @@ package test.java.model;
 
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
-import model.*;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.AfterAll;
@@ -16,6 +15,15 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Timeout;
+
+import model.Cercle;
+import model.Coordonnees;
+import model.Fleur;
+import model.Jeu;
+import model.Joueur;
+import model.Pion;
+import model.Types;
+import testsmodel.*;
 
 /**
  *

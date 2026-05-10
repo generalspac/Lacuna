@@ -36,6 +36,10 @@ public class JeuGraphique extends JComponent {
     private PionArgent leftPile;
     private PionOr rightPile;
 
+    public JeuGraphique(JFrame frame) {
+        this(frame, null, null, null, null, null);
+    }
+    
     public JeuGraphique(JFrame frame, Score scoreArgent, Score scoreOr,
             JLabel scoreLabel, JLabel instructionLabel, JLabel statusLabel) {
 

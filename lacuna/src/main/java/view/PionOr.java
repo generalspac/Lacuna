@@ -1,10 +1,13 @@
 package view;
 
 import global.Configuration;
+import model.Jeu;
+import model.Pion;
+import model.Types;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import model.*;
 import java.awt.event.*;
 
 public class PionOr extends JComponent {

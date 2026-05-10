@@ -1,3 +1,4 @@
+package testcontroller;
 // import controller.EcouteurDeClavier;
 import controller.EcouteurDeSouris;
 import global.Configuration;

@@ -8,8 +8,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import view.JeuGraphique;
-import model.*;
-import model.Jeu.ActionJeu;
+import model.Coordonnees;
+import model.Jeu;
 
 public class EcouteurDeSouris extends MouseAdapter {
     private Jeu game;

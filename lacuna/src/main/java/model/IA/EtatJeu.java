@@ -1,5 +1,9 @@
 package model.IA;
 
+import java.util.List;
+import model.Fleur;
+import model.Pion;
+
 // Copie l'état du plateau pour l'algo minimax
 
 
