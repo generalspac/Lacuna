@@ -387,20 +387,35 @@ public class Jeu {
 
 
     public boolean jouerCoupAvecFleursSelectionnees() {
+        Coordonnees posReference = null;
+        if (fleurSelectionnee1 != null && fleurSelectionnee2 != null) {
+            posReference = Coordonnees.milieu(fleurSelectionnee1.getPosition(), fleurSelectionnee2.getPosition());
+        }
+        return jouerCoupAvecFleursSelectionnees(posReference);
+    }
+
+    public boolean jouerCoupAvecFleursSelectionnees(Coordonnees clic) {
 
         if (!fleursConnectées(fleurSelectionnee1, fleurSelectionnee2)) {
             return false;
         }
 
-        Coordonnees pos = Coordonnees.milieu( fleurSelectionnee1.getPosition(), fleurSelectionnee2.getPosition());
+        Coordonnees pos = positionSegmentLaPlusProcheDuClic(
+                fleurSelectionnee1.getPosition(),
+                fleurSelectionnee2.getPosition(),
+                clic);
 
-        // Sélection du pion du joeur actuel
+        if (pos == null) {
+            setFeedbackMessage("Aucune zone libre sur ce segment : choisissez une autre paire de fleurs.");
+            return false;
+        }
+
         Joueur joueurActuel = getJoueurActuel();
-        Types.TypePion pionType = joueurActuel.getTypePion();;
+        Types.TypePion pionType = joueurActuel.getTypePion();
         Pion pionLibre = getPionLibre(pionType);
 
         if (pionLibre == null) {
-            System.out.println("Aucun pion libre disponible pour ce joueur.");
+            setFeedbackMessage("Aucun pion libre disponible pour " + nomJoueurActuelPourAffichage() + ".");
             return false;
         }
 
@@ -413,6 +428,27 @@ public class Jeu {
          }
 
         return false;
+    }
+
+    public Coordonnees positionSegmentLaPlusProcheDuClic(Coordonnees A, Coordonnees B, Coordonnees clic) {
+        List<Coordonnees> points = pointsDuSegment(A, B);
+        if (points.isEmpty()) {
+            return null;
+        }
+
+        Coordonnees reference = (clic != null) ? clic : Coordonnees.milieu(A, B);
+        Coordonnees meilleure = null;
+        double meilleureDistance = Double.MAX_VALUE;
+
+        for (Coordonnees point : points) {
+            double d = Coordonnees.distance(reference, point);
+            if (d < meilleureDistance) {
+                meilleureDistance = d;
+                meilleure = point;
+            }
+        }
+
+        return meilleure;
     }
 
     //fonction pour la seconde phase du jeu (controller appelle ça aussi )
@@ -481,10 +517,20 @@ public class Jeu {
     public static class AttributionFleur {
         public final Fleur fleur;
         public final Joueur joueur;
+        public final Pion pionLePlusProche;
+        public final Pion pionCompare;
+        public final boolean comparaisonNecessaire;
 
-        public AttributionFleur(Fleur fleur, Joueur joueur) {
+        public AttributionFleur(Fleur fleur, Joueur joueur, Pion pionLePlusProche) {
+            this(fleur, joueur, pionLePlusProche, null, false);
+        }
+
+        public AttributionFleur(Fleur fleur, Joueur joueur, Pion pionLePlusProche, Pion pionCompare, boolean comparaisonNecessaire) {
             this.fleur = fleur;
             this.joueur = joueur;
+            this.pionLePlusProche = pionLePlusProche;
+            this.pionCompare = pionCompare;
+            this.comparaisonNecessaire = comparaisonNecessaire;
         }
     }
 
@@ -493,12 +539,49 @@ public class Jeu {
         ArrayList<Fleur> copie = new ArrayList<>(fleurs);
 
         for (Fleur f : copie) {
-            Joueur j = joueurLePlusProche(f);
-            if (j != null) {
-                attributions.add(new AttributionFleur(f, j));
+            AttributionFleur attribution = calculerAttributionFleur(f);
+            if (attribution != null) {
+                attributions.add(attribution);
             }
         }
         return attributions;
+    }
+
+    private AttributionFleur calculerAttributionFleur(Fleur fleur) {
+        Pion meilleur = null;
+        Pion secondAdverse = null;
+        double meilleureDistance = Double.MAX_VALUE;
+        double distanceSecondAdverse = Double.MAX_VALUE;
+
+        for (Pion p : pions) {
+            if (p.getPosition() == null) {
+                continue;
+            }
+
+            double d = Coordonnees.distance(fleur.getPosition(), p.getPosition());
+            if (d < meilleureDistance) {
+                if (meilleur != null && meilleur.getType() != p.getType()) {
+                    secondAdverse = meilleur;
+                    distanceSecondAdverse = meilleureDistance;
+                }
+                meilleureDistance = d;
+                meilleur = p;
+            } else if (meilleur != null && p.getType() != meilleur.getType() && d < distanceSecondAdverse) {
+                secondAdverse = p;
+                distanceSecondAdverse = d;
+            }
+        }
+
+        Joueur joueur = joueurPourPion(meilleur);
+        if (joueur == null) {
+            return null;
+        }
+
+        boolean comparaison = secondAdverse != null
+                && (Math.abs(distanceSecondAdverse - meilleureDistance) <= 35
+                    || distanceSecondAdverse <= meilleureDistance * 1.18);
+
+        return new AttributionFleur(fleur, joueur, meilleur, secondAdverse, comparaison);
     }
 
     public void appliquerAttributionFleur(AttributionFleur attribution) {
@@ -516,6 +599,13 @@ public class Jeu {
 
     // le joueur le plus proche
     private Joueur joueurLePlusProche(Fleur fleur) {
+        return joueurPourPion(pionLePlusProche(fleur));
+    }
+
+    public Pion pionLePlusProche(Fleur fleur) {
+        if (fleur == null || fleur.getPosition() == null) {
+            return null;
+        }
 
         Pion meilleur = null;
         double min = Double.MAX_VALUE;
@@ -528,16 +618,31 @@ public class Jeu {
                 }
             }
         }
+        return meilleur;
+    }
 
-        if (meilleur == null)
-            return null; // pas de joueur plus proche alors
-
+    public Joueur joueurPourPion(Pion pion) {
+        if (pion == null) {
+            return null;
+        }
         for (Joueur j : joueurs) {
-            if (j.getTypePion() == meilleur.getType()) {
+            if (j.getTypePion() == pion.getType()) {
                 return j;
             }
         }
+        return null;
+    }
 
+    public Joueur getGagnant() {
+        int couleursJ0 = joueurs[0].nbCouleursGagnees();
+        int couleursJ1 = joueurs[1].nbCouleursGagnees();
+        if (couleursJ0 > couleursJ1) return joueurs[0];
+        if (couleursJ1 > couleursJ0) return joueurs[1];
+
+        int fleursJ0 = joueurs[0].getScoreTotal();
+        int fleursJ1 = joueurs[1].getScoreTotal();
+        if (fleursJ0 > fleursJ1) return joueurs[0];
+        if (fleursJ1 > fleursJ0) return joueurs[1];
         return null;
     }
 
@@ -716,6 +821,76 @@ public class Jeu {
         return coups;
     }
 
+    public boolean existeCoupConnecte() {
+        return !coupsPossibles().isEmpty();
+    }
+
+    public boolean placerPionLibreSiAucunCoup(Coordonnees pos) {
+        if (existeCoupConnecte()) {
+            setFeedbackMessage("Il reste au moins une paire de fleurs connectée : il faut jouer une paire avant de placer librement.");
+            return false;
+        }
+
+        Joueur joueurActuel = getJoueurActuel();
+        Pion pionLibre = getPionLibre(joueurActuel.getTypePion());
+        if (pionLibre == null) {
+            setFeedbackMessage("Aucun pion libre disponible pour " + nomJoueurActuelPourAffichage() + ".");
+            return false;
+        }
+
+        if (!placePion(pionLibre, pos)) {
+            return false;
+        }
+
+        historique.enregistrerAction(pionLibre, null, null, joueurActuel);
+        joueurSuivant();
+        resetFleursSelectionnee1();
+        resetFleursSelectionnee2();
+        setFeedbackMessage(nomJoueurPourAffichage(joueurActuel) + " place un pion sans collecter : aucune paire connectée n'était disponible.");
+        return true;
+    }
+
+    private Coordonnees positionLibreDeSecours(Types.TypePion type) {
+        Coordonnees centre = cercleDeJeu.getCentre();
+        double rayonMax = cercleDeJeu.getRayon() - Math.max(10, marge);
+
+        for (int r = 0; r <= 12; r++) {
+            double rayon = rayonMax * r / 12.0;
+            int nbAngles = (r == 0) ? 1 : 24;
+            for (int a = 0; a < nbAngles; a++) {
+                double angle = (2 * Math.PI * a) / nbAngles;
+                Coordonnees pos = new Coordonnees(
+                        (int) Math.round(centre.getX() + rayon * Math.cos(angle)),
+                        (int) Math.round(centre.getY() + rayon * Math.sin(angle)));
+                if (cercleDeJeu.contientPoint(pos) && positionLibrePourPion(pos)) {
+                    return pos;
+                }
+            }
+        }
+        return null;
+    }
+
+    private boolean placerPionIADeSecours() {
+        if (!estTourIA()) {
+            return false;
+        }
+        Joueur joueur = getJoueurActuel();
+        Pion pionLibre = getPionLibre(joueur.getTypePion());
+        if (pionLibre == null) {
+            setFeedbackMessage("L'IA n'a plus de pion disponible.");
+            return false;
+        }
+        Coordonnees pos = positionLibreDeSecours(joueur.getTypePion());
+        if (pos == null || !placePion(pionLibre, pos)) {
+            setFeedbackMessage("L'IA ne trouve aucune position libre pour avancer.");
+            return false;
+        }
+        historique.enregistrerAction(pionLibre, null, null, joueur);
+        joueurSuivant();
+        setFeedbackMessage("IA (" + joueur.getTypePion() + ") place un pion sans collecter : aucune paire connectée n'était disponible.");
+        return true;
+    }
+
     // =========================================================
     // ==================== DRAG AND DROP =======================
     // =========================================================
@@ -750,7 +925,14 @@ public class Jeu {
             return;
         }
 
-        jouerCoup(joueurActuel, pion, pos, flowers[0], flowers[1]);
+        Coordonnees positionSurSegment = positionSegmentLaPlusProcheDuClic(
+                flowers[0].getPosition(), flowers[1].getPosition(), pos);
+        if (positionSurSegment == null) {
+            setFeedbackMessage("Placement invalide : aucune zone libre sur ce segment.");
+            return;
+        }
+
+        jouerCoup(joueurActuel, pion, positionSurSegment, flowers[0], flowers[1]);
 
         System.out.println("Pion placé via drag !");
     }
@@ -769,8 +951,9 @@ public class Jeu {
                     Fleur f1 = deMemeType.get(i);
                     Fleur f2 = deMemeType.get(j);
 
-                    if (Coordonnees.estExactementAuMilieu(f1.getPosition(), f2.getPosition(), pos)) {
-                        if (fleursConnectées(f1, f2)) {
+                    if (fleursConnectées(f1, f2)) {
+                        Coordonnees candidate = positionSegmentLaPlusProcheDuClic(f1.getPosition(), f2.getPosition(), pos);
+                        if (candidate != null && Coordonnees.distance(candidate, pos) <= 22) {
                             return new Fleur[] { f1, f2 };
                         }
                     }
@@ -938,7 +1121,9 @@ public class Jeu {
     public void jouerCoupIA(CoupIA coup) {
 
         if (coup == null) {
-            setFeedbackMessage("L'IA n'a trouvé aucun coup jouable.");
+            if (!placerPionIADeSecours()) {
+                setFeedbackMessage("L'IA n'a trouvé aucun coup jouable.");
+            }
             return;
         }
 

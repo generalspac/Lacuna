@@ -50,9 +50,12 @@ public class EcouteurDeSouris extends MouseAdapter {
 
         if (game.fleursConnectées(game.getFleurSelectionnee1(), game.getFleurSelectionnee2())) {
 
-            if (game.jouerCoupAvecFleursSelectionnees()) {
+            if (game.jouerCoupAvecFleursSelectionnees(modelPos)) {
 
                 jeuGraphique.refreshScoresEtTourIA();
+            } else {
+                jeuGraphique.refreshScores();
+                jeuGraphique.repaint();
             }
 
             return;
@@ -62,6 +65,11 @@ public class EcouteurDeSouris extends MouseAdapter {
 
             jeuGraphique.refreshScores();
             jeuGraphique.repaint();
+            return;
+        }
+
+        if (!game.existeCoupConnecte() && game.placerPionLibreSiAucunCoup(modelPos)) {
+            jeuGraphique.refreshScoresEtTourIA();
         }
 
     }

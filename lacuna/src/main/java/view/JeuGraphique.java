@@ -42,6 +42,12 @@ public class JeuGraphique extends JComponent {
     private boolean animationEnCours = false;
     private boolean phase2Animee = false;
     private int generationAnimation = 0;
+    private Fleur fleurPhase2Illustree = null;
+    private Pion pionPhase2Illustre = null;
+    private Pion pionPhase2Compare = null;
+    private int phase2ComparePulse = 0;
+    private Joueur gagnantAnime = null;
+    private int winnerPulse = 0;
 
     public JeuGraphique(JFrame frame) {
         this(frame, null, null, null, null, null);
@@ -85,6 +91,12 @@ public class JeuGraphique extends JComponent {
         phase2Animee = false;
         jeu.resetFleursSelectionnee1();
         jeu.resetFleursSelectionnee2();
+        fleurPhase2Illustree = null;
+        pionPhase2Illustre = null;
+        pionPhase2Compare = null;
+        phase2ComparePulse = 0;
+        gagnantAnime = null;
+        winnerPulse = 0;
         repaint();
     }
 
@@ -245,15 +257,22 @@ public class JeuGraphique extends JComponent {
 
         animationEnCours = true;
         final int generation = ++generationAnimation;
-        jeu.selectionnerFleursPourAnimation(f1, f2);
-        jeu.setFeedbackMessage("IA (" + joueurIA.getTypePion() + ") a choisi ses deux fleurs...");
+        jeu.setFeedbackMessage("IA (" + joueurIA.getTypePion() + ") prépare son coup...");
         refreshScores();
         repaint();
 
-        new Timer(700, e -> {
-            ((Timer) e.getSource()).stop();
+        new Timer(1100, attente -> {
+            ((Timer) attente.getSource()).stop();
             if (generation != generationAnimation) return;
-            animerFleursVersScore(new Fleur[] { f1, f2 }, joueurIA, () -> {
+            jeu.selectionnerFleursPourAnimation(f1, f2);
+            jeu.setFeedbackMessage("IA (" + joueurIA.getTypePion() + ") sélectionne ses deux fleurs...");
+            refreshScores();
+            repaint();
+
+            new Timer(1400, e -> {
+                ((Timer) e.getSource()).stop();
+                if (generation != generationAnimation) return;
+                animerFleursVersScore(new Fleur[] { f1, f2 }, joueurIA, () -> {
                 if (generation != generationAnimation) return;
                 jeu.jouerCoupIA(coup);
                 jeu.resetFleursSelectionnee1();
@@ -262,7 +281,8 @@ public class JeuGraphique extends JComponent {
                 refreshScores();
                 repaint();
                 lancerAnimationSecondePhaseSiBesoin();
-            });
+                });
+            }).start();
         }).start();
     }
 
@@ -300,10 +320,11 @@ public class JeuGraphique extends JComponent {
     private void animerAttributionPhase2(ArrayList<Jeu.AttributionFleur> attributions, int index, int generation) {
         if (generation != generationAnimation) return;
         if (index >= attributions.size()) {
-            animationEnCours = false;
-            jeu.setFeedbackMessage("Phase 2 terminée : toutes les fleurs restantes ont été attribuées.");
-            refreshScores();
-            repaint();
+            fleurPhase2Illustree = null;
+            pionPhase2Illustre = null;
+            pionPhase2Compare = null;
+            phase2ComparePulse = 0;
+            animerGagnant(generation);
             return;
         }
 
@@ -315,22 +336,39 @@ public class JeuGraphique extends JComponent {
         }
 
         jeu.selectionnerFleursPourAnimation(attribution.fleur, null);
-        jeu.setFeedbackMessage("Phase 2 : une fleur " + attribution.fleur.getType()
-                + " va à " + jeu.nomJoueurPourAffichage(attribution.joueur) + ".");
+        fleurPhase2Illustree = attribution.fleur;
+        pionPhase2Illustre = attribution.pionLePlusProche;
+        pionPhase2Compare = attribution.comparaisonNecessaire ? attribution.pionCompare : null;
+        phase2ComparePulse = 0;
+        if (attribution.comparaisonNecessaire && attribution.pionCompare != null) {
+            jeu.setFeedbackMessage("Phase 2 : comparaison des distances avant attribution de la fleur " + attribution.fleur.getType() + ".");
+            lancerPulseComparaisonPhase2(generation);
+        } else {
+            jeu.setFeedbackMessage("Phase 2 : mesure de la distance avant attribution de la fleur " + attribution.fleur.getType() + ".");
+        }
         refreshScores();
         repaint();
 
-        new Timer(250, e -> {
+        int delaiMesure = (attribution.comparaisonNecessaire && attribution.pionCompare != null) ? 1900 : 1150;
+        new Timer(delaiMesure, e -> {
             ((Timer) e.getSource()).stop();
             if (generation != generationAnimation) return;
+            jeu.setFeedbackMessage("Phase 2 : la fleur " + attribution.fleur.getType()
+                    + " est attribuée à " + jeu.nomJoueurPourAffichage(attribution.joueur) + ".");
+            refreshScores();
+            repaint();
             animerFleursVersScore(new Fleur[] { attribution.fleur }, attribution.joueur, () -> {
                 if (generation != generationAnimation) return;
                 jeu.appliquerAttributionFleur(attribution);
+                fleurPhase2Illustree = null;
+                pionPhase2Illustre = null;
+                pionPhase2Compare = null;
+                phase2ComparePulse = 0;
                 jeu.resetFleursSelectionnee1();
                 jeu.resetFleursSelectionnee2();
                 refreshScores();
                 repaint();
-                new Timer(120, e2 -> {
+                new Timer(280, e2 -> {
                     ((Timer) e2.getSource()).stop();
                     animerAttributionPhase2(attributions, index + 1, generation);
                 }).start();
@@ -474,7 +512,9 @@ public class JeuGraphique extends JComponent {
         }
 
         drawSelection(g2);
+        drawPhase2Illustration(g2);
         drawPions(g2, fleurSize);
+        drawWinnerOverlay(g2);
     }
 
     private Image getFlowerImage(Types.TypeFleur type) {
@@ -528,6 +568,140 @@ public class JeuGraphique extends JComponent {
                 p.getY() - 20,
                 40, 40,
                 15, 15);
+    }
+
+
+    private void lancerPulseComparaisonPhase2(int generation) {
+        Timer timer = new Timer(110, null);
+        timer.addActionListener(e -> {
+            if (generation != generationAnimation || pionPhase2Compare == null) {
+                ((Timer) e.getSource()).stop();
+                return;
+            }
+            phase2ComparePulse++;
+            repaint();
+            if (phase2ComparePulse >= 18) {
+                ((Timer) e.getSource()).stop();
+            }
+        });
+        timer.start();
+    }
+
+    private void drawPhase2Illustration(Graphics2D g2) {
+        if (fleurPhase2Illustree == null || pionPhase2Illustre == null
+                || fleurPhase2Illustree.getPosition() == null || pionPhase2Illustre.getPosition() == null) {
+            return;
+        }
+
+        Coordonnees fp = modelToScreen(fleurPhase2Illustree.getPosition().x, fleurPhase2Illustree.getPosition().y);
+        Coordonnees pp = modelToScreen(pionPhase2Illustre.getPosition().x, pionPhase2Illustre.getPosition().y);
+
+        Stroke oldStroke = g2.getStroke();
+        Color oldColor = g2.getColor();
+
+        boolean compare = pionPhase2Compare != null && pionPhase2Compare.getPosition() != null;
+
+        g2.setStroke(new BasicStroke(4, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 1f, new float[] { 12f, 8f }, 0f));
+
+        if (compare) {
+            Coordonnees pc = modelToScreen(pionPhase2Compare.getPosition().x, pionPhase2Compare.getPosition().y);
+            float pulse = (float) (Math.sin(phase2ComparePulse * 0.8) * 0.5 + 0.5);
+            int alphaGagnant = 190 + (int) (50 * pulse);
+            int alphaCompare = 115 + (int) (65 * (1.0 - pulse));
+
+            g2.setColor(new Color(255, 255, 255, alphaCompare));
+            g2.drawLine(fp.getX(), fp.getY(), pc.getX(), pc.getY());
+            g2.setColor(new Color(255, 215, 0, alphaGagnant));
+            g2.drawLine(fp.getX(), fp.getY(), pp.getX(), pp.getY());
+
+            g2.setStroke(new BasicStroke(5));
+            g2.setColor(new Color(255, 255, 255, alphaCompare));
+            g2.drawOval(pc.getX() - 24, pc.getY() - 24, 48, 48);
+            g2.setColor(new Color(255, 215, 0, alphaGagnant));
+            g2.drawOval(pp.getX() - 28, pp.getY() - 28, 56, 56);
+        } else {
+            g2.setColor(new Color(255, 215, 0, 230));
+            g2.drawLine(fp.getX(), fp.getY(), pp.getX(), pp.getY());
+            g2.setStroke(new BasicStroke(5));
+            g2.drawOval(pp.getX() - 26, pp.getY() - 26, 52, 52);
+        }
+
+        g2.setColor(new Color(255, 215, 0, 230));
+        g2.setStroke(new BasicStroke(5));
+        g2.drawOval(fp.getX() - 24, fp.getY() - 24, 48, 48);
+
+        g2.setStroke(oldStroke);
+        g2.setColor(oldColor);
+    }
+
+    private void animerGagnant(int generation) {
+        if (generation != generationAnimation) return;
+        gagnantAnime = jeu.getGagnant();
+        winnerPulse = 0;
+        String nom = (gagnantAnime == null) ? "égalité" : jeu.nomJoueurPourAffichage(gagnantAnime);
+        jeu.setFeedbackMessage("Partie terminée : " + nom + " gagne !");
+        refreshScores();
+        repaint();
+
+        Timer timer = new Timer(120, null);
+        timer.addActionListener(e -> {
+            if (generation != generationAnimation) {
+                ((Timer) e.getSource()).stop();
+                return;
+            }
+            winnerPulse++;
+            repaint();
+            if (winnerPulse >= 26) {
+                ((Timer) e.getSource()).stop();
+                animationEnCours = false;
+                refreshScores();
+                repaint();
+            }
+        });
+        timer.start();
+    }
+
+    private void drawWinnerOverlay(Graphics2D g2) {
+        if (gagnantAnime == null && winnerPulse <= 0) {
+            return;
+        }
+
+        String texte = (gagnantAnime == null)
+                ? "ÉGALITÉ !"
+                : jeu.nomJoueurPourAffichage(gagnantAnime) + " GAGNE !";
+        int alpha = Math.min(210, 70 + winnerPulse * 8);
+        int w = Math.min(getWidth() - 60, 420);
+        int h = 100;
+        int x = (getWidth() - w) / 2;
+        int y = 28;
+
+        Color oldColor = g2.getColor();
+        Font oldFont = g2.getFont();
+        Stroke oldStroke = g2.getStroke();
+
+        g2.setColor(new Color(0, 0, 0, alpha));
+        g2.fillRoundRect(x, y, w, h, 28, 28);
+        g2.setColor(new Color(255, 215, 0, 230));
+        g2.setStroke(new BasicStroke(4));
+        g2.drawRoundRect(x, y, w, h, 28, 28);
+
+        float taille = 30f + (float) (Math.sin(winnerPulse * 0.7) * 4.0);
+        g2.setFont(oldFont.deriveFont(Font.BOLD, taille));
+        FontMetrics fm = g2.getFontMetrics();
+        int tx = x + (w - fm.stringWidth(texte)) / 2;
+        int ty = y + (h + fm.getAscent()) / 2 - 10;
+        g2.setColor(Color.WHITE);
+        g2.drawString(texte, tx, ty);
+
+        g2.setFont(oldFont.deriveFont(Font.BOLD, 14f));
+        String detail = "Couleurs gagnées : " + jeu.getJoueurs()[0].nbCouleursGagnees()
+                + " - " + jeu.getJoueurs()[1].nbCouleursGagnees();
+        FontMetrics fm2 = g2.getFontMetrics();
+        g2.drawString(detail, x + (w - fm2.stringWidth(detail)) / 2, y + h - 18);
+
+        g2.setColor(oldColor);
+        g2.setFont(oldFont);
+        g2.setStroke(oldStroke);
     }
 
     private void drawPions(Graphics2D g2, int size) {
