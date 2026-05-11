@@ -1042,7 +1042,7 @@ public class Jeu {
 
     public void reset() {
         annulerIAEnCours();
-        // Réinitialiser le jeu à son état initial
+        // init le jeu à son état initial
         avantageInitialApplique = false;
         enPhaseSelectionAvantage = false;
         initPlayers();

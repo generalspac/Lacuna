@@ -152,7 +152,6 @@ public class EtatJeu {
     }
 
     private static boolean memeFleur(Fleur a, Fleur b) {
-        return a.getType() == b.getType()
-                && a.getPosition().equals(b.getPosition());
+        return a.getType() == b.getType() && a.getPosition().equals(b.getPosition());
     }
 }

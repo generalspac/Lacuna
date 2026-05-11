@@ -107,7 +107,7 @@ public class DragLayer extends JComponent {
         long now = System.currentTimeMillis();
         for (SpriteAnimation a : animations) {
             double t = Math.min(1.0, (now - a.startTime) / (double) a.durationMs);
-            // ralentissement doux en fin d'animation
+            // ralentissement pour l'animation
             double eased = 1.0 - Math.pow(1.0 - t, 3);
             int x = (int) (a.start.x + (a.end.x - a.start.x) * eased);
             int y = (int) (a.start.y + (a.end.y - a.start.y) * eased);
