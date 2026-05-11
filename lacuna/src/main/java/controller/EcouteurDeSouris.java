@@ -23,6 +23,10 @@ public class EcouteurDeSouris extends MouseAdapter {
     @Override
     public void mousePressed(MouseEvent e) {
 
+        if (jeuGraphique.isAnimationEnCours()) {
+            return;
+        }
+
         if (game.isIAEnCours()) {
             return;
         }
@@ -36,10 +40,7 @@ public class EcouteurDeSouris extends MouseAdapter {
 
         Coordonnees modelPos = jeuGraphique.screenToModel(x, y);
 
-        if (game.secondePhase()) {
-
-            jeuGraphique.refreshScoresEtTourIA();
-
+        if (jeuGraphique.lancerAnimationSecondePhaseSiBesoin()) {
             return;
         }
 

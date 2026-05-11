@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.function.Consumer;
 
 import global.Configuration;
 
@@ -472,15 +473,45 @@ public class Jeu {
     // peut dire comme ça )
     public void attribuerFleursRestantes() {
 
+        for (AttributionFleur attribution : calculerAttributionsFleursRestantes()) {
+            appliquerAttributionFleur(attribution);
+        }
+    }
+
+    public static class AttributionFleur {
+        public final Fleur fleur;
+        public final Joueur joueur;
+
+        public AttributionFleur(Fleur fleur, Joueur joueur) {
+            this.fleur = fleur;
+            this.joueur = joueur;
+        }
+    }
+
+    public ArrayList<AttributionFleur> calculerAttributionsFleursRestantes() {
+        ArrayList<AttributionFleur> attributions = new ArrayList<>();
         ArrayList<Fleur> copie = new ArrayList<>(fleurs);
 
         for (Fleur f : copie) {
             Joueur j = joueurLePlusProche(f);
             if (j != null) {
-                j.ajouterFleur(f);
-                fleurs.remove(f);
+                attributions.add(new AttributionFleur(f, j));
             }
         }
+        return attributions;
+    }
+
+    public void appliquerAttributionFleur(AttributionFleur attribution) {
+        if (attribution == null || attribution.fleur == null || attribution.joueur == null) {
+            return;
+        }
+        if (fleurs.remove(attribution.fleur)) {
+            attribution.joueur.ajouterFleur(attribution.fleur);
+        }
+    }
+
+    public boolean estSecondePhaseDisponible() {
+        return tousLesPionsPlaces() && !fleurs.isEmpty();
     }
 
     // le joueur le plus proche
@@ -634,6 +665,11 @@ public class Jeu {
     public void resetFleursSelectionnee2() {
         fleurSelectionnee2 = null;
 
+    }
+
+    public void selectionnerFleursPourAnimation(Fleur f1, Fleur f2) {
+        fleurSelectionnee1 = f1;
+        fleurSelectionnee2 = f2;
     }
 
     // =========================================================
@@ -962,6 +998,10 @@ public class Jeu {
 
     // Lancement du thread pour l'ia
     public void lancerIA(Runnable callbackFin) {
+        lancerIA(coup -> jouerCoupIA(coup), callbackFin);
+    }
+
+    public void lancerIA(Consumer<CoupIA> actionQuandCoupPret, Runnable callbackFin) {
 
         if (!againstIA || ia == null || iaEnCours)
             return;
@@ -981,7 +1021,11 @@ public class Jeu {
                 }
 
                 try {
-                    jouerCoupIA(coup);
+                    if (actionQuandCoupPret != null) {
+                        actionQuandCoupPret.accept(coup);
+                    } else {
+                        jouerCoupIA(coup);
+                    }
                 } finally {
                     iaEnCours = false;
                     if (callbackFin != null) {

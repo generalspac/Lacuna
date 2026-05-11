@@ -8,9 +8,13 @@ import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 
 import global.Configuration;
 import model.*;
+import model.IA.CoupIA;
+import java.util.ArrayList;
 import controller.EcouteurDeSouris;
 
 public class JeuGraphique extends JComponent {
@@ -35,6 +39,9 @@ public class JeuGraphique extends JComponent {
     private EcouteurDeSouris mouse;
     private PionArgent leftPile;
     private PionOr rightPile;
+    private boolean animationEnCours = false;
+    private boolean phase2Animee = false;
+    private int generationAnimation = 0;
 
     public JeuGraphique(JFrame frame) {
         this(frame, null, null, null, null, null);
@@ -66,6 +73,19 @@ public class JeuGraphique extends JComponent {
     public void setSidePiles(PionArgent left, PionOr right) {
         this.leftPile = left;
         this.rightPile = right;
+    }
+
+    public boolean isAnimationEnCours() {
+        return animationEnCours;
+    }
+
+    public void annulerAnimationsVisuelles() {
+        generationAnimation++;
+        animationEnCours = false;
+        phase2Animee = false;
+        jeu.resetFleursSelectionnee1();
+        jeu.resetFleursSelectionnee2();
+        repaint();
     }
 
     /////////////// INIT ///////////////////////
@@ -114,7 +134,7 @@ public class JeuGraphique extends JComponent {
 
                     Coordonnees model = screenToModel(e.getX(), e.getY());
 
-                    if (!jeu.isIAEnCours() && !jeu.estTourIA()) {
+                    if (!animationEnCours && !jeu.isIAEnCours() && !jeu.estTourIA()) {
                         jeu.placerPionDepuisDrag(model, payload);
                     }
 
@@ -149,13 +169,23 @@ public class JeuGraphique extends JComponent {
         refreshScores();
         repaint();
 
-        jeu.lancerIA(() -> {
+        if (lancerAnimationSecondePhaseSiBesoin()) {
+            return;
+        }
+
+        jeu.lancerIA(coup -> animerPuisJouerCoupIA(coup), () -> {
             refreshScores();
             repaint();
+            lancerAnimationSecondePhaseSiBesoin();
         });
     }
 
     private void updateInstructionMessage() {
+        if (animationEnCours) {
+            instructionLabel.setText("Animation en cours... Vous pouvez utiliser Undo, Redo, Reset ou Load.");
+            return;
+        }
+
         if (jeu.isIAEnCours()) {
             instructionLabel.setText("IA (" + jeu.getJoueurActuel().getTypePion() + ") réfléchit... Vous pouvez utiliser Undo, Redo, Reset ou Load.");
             return;
@@ -193,6 +223,159 @@ public class JeuGraphique extends JComponent {
                 statusLabel.setText(message);
             }
         }
+    }
+
+
+    // ===== ANIMATIONS IA + PHASE 2 ======
+
+    private void animerPuisJouerCoupIA(CoupIA coup) {
+        if (coup == null) {
+            jeu.jouerCoupIA(null);
+            return;
+        }
+
+        Fleur f1 = retrouverFleurGraphique(coup.fleur1);
+        Fleur f2 = retrouverFleurGraphique(coup.fleur2);
+        Joueur joueurIA = jeu.getJoueurActuel();
+
+        if (f1 == null || f2 == null) {
+            jeu.jouerCoupIA(coup);
+            return;
+        }
+
+        animationEnCours = true;
+        final int generation = ++generationAnimation;
+        jeu.selectionnerFleursPourAnimation(f1, f2);
+        jeu.setFeedbackMessage("IA (" + joueurIA.getTypePion() + ") a choisi ses deux fleurs...");
+        refreshScores();
+        repaint();
+
+        new Timer(700, e -> {
+            ((Timer) e.getSource()).stop();
+            if (generation != generationAnimation) return;
+            animerFleursVersScore(new Fleur[] { f1, f2 }, joueurIA, () -> {
+                if (generation != generationAnimation) return;
+                jeu.jouerCoupIA(coup);
+                jeu.resetFleursSelectionnee1();
+                jeu.resetFleursSelectionnee2();
+                animationEnCours = false;
+                refreshScores();
+                repaint();
+                lancerAnimationSecondePhaseSiBesoin();
+            });
+        }).start();
+    }
+
+    private Fleur retrouverFleurGraphique(Fleur recherchee) {
+        if (recherchee == null) return null;
+        for (Fleur f : jeu.getFleurs()) {
+            if (f.getType() == recherchee.getType()
+                    && f.getPosition().equals(recherchee.getPosition())) {
+                return f;
+            }
+        }
+        return null;
+    }
+
+    public boolean lancerAnimationSecondePhaseSiBesoin() {
+        if (phase2Animee || animationEnCours || !jeu.estSecondePhaseDisponible()) {
+            return false;
+        }
+
+        ArrayList<Jeu.AttributionFleur> attributions = jeu.calculerAttributionsFleursRestantes();
+        if (attributions.isEmpty()) {
+            return false;
+        }
+
+        phase2Animee = true;
+        animationEnCours = true;
+        final int generation = ++generationAnimation;
+        jeu.setFeedbackMessage("Phase 2 : attribution animée des fleurs restantes.");
+        refreshScores();
+        repaint();
+        animerAttributionPhase2(attributions, 0, generation);
+        return true;
+    }
+
+    private void animerAttributionPhase2(ArrayList<Jeu.AttributionFleur> attributions, int index, int generation) {
+        if (generation != generationAnimation) return;
+        if (index >= attributions.size()) {
+            animationEnCours = false;
+            jeu.setFeedbackMessage("Phase 2 terminée : toutes les fleurs restantes ont été attribuées.");
+            refreshScores();
+            repaint();
+            return;
+        }
+
+        Jeu.AttributionFleur attribution = attributions.get(index);
+        if (attribution == null || attribution.fleur == null || attribution.joueur == null
+                || !jeu.getFleurs().contains(attribution.fleur)) {
+            animerAttributionPhase2(attributions, index + 1, generation);
+            return;
+        }
+
+        jeu.selectionnerFleursPourAnimation(attribution.fleur, null);
+        jeu.setFeedbackMessage("Phase 2 : une fleur " + attribution.fleur.getType()
+                + " va à " + jeu.nomJoueurPourAffichage(attribution.joueur) + ".");
+        refreshScores();
+        repaint();
+
+        new Timer(250, e -> {
+            ((Timer) e.getSource()).stop();
+            if (generation != generationAnimation) return;
+            animerFleursVersScore(new Fleur[] { attribution.fleur }, attribution.joueur, () -> {
+                if (generation != generationAnimation) return;
+                jeu.appliquerAttributionFleur(attribution);
+                jeu.resetFleursSelectionnee1();
+                jeu.resetFleursSelectionnee2();
+                refreshScores();
+                repaint();
+                new Timer(120, e2 -> {
+                    ((Timer) e2.getSource()).stop();
+                    animerAttributionPhase2(attributions, index + 1, generation);
+                }).start();
+            });
+        }).start();
+    }
+
+    private void animerFleursVersScore(Fleur[] fleursAnimees, Joueur joueur, Runnable fin) {
+        if (fleursAnimees == null || fleursAnimees.length == 0) {
+            if (fin != null) fin.run();
+            return;
+        }
+
+        DragLayer layer = (DragLayer) frame.getGlassPane();
+        final int[] restantes = { 0 };
+
+        for (int i = 0; i < fleursAnimees.length; i++) {
+            Fleur f = fleursAnimees[i];
+            if (f == null || f.getPosition() == null) continue;
+
+            Image img = getFlowerImage(f.getType());
+            Coordonnees screen = modelToScreen(f.getPosition().x, f.getPosition().y);
+            Point start = SwingUtilities.convertPoint(this,
+                    new Point(screen.getX(), screen.getY()), layer);
+            Point end = pointScorePourJoueur(joueur, i, layer);
+
+            restantes[0]++;
+            layer.animateImage(img, start, end, 750, 34, () -> {
+                restantes[0]--;
+                if (restantes[0] <= 0 && fin != null) {
+                    fin.run();
+                }
+            });
+        }
+
+        if (restantes[0] == 0 && fin != null) {
+            fin.run();
+        }
+    }
+
+    private Point pointScorePourJoueur(Joueur joueur, int decalage, DragLayer layer) {
+        JComponent cible = (joueur.getTypePion() == Types.TypePion.ARGENT) ? scoreArgent : scoreOr;
+        int x = cible.getWidth() / 2 + (decalage * 22) - 11;
+        int y = Math.max(55, cible.getHeight() / 2);
+        return SwingUtilities.convertPoint(cible, new Point(x, y), layer);
     }
 
     // ===== COORDONNÉES ======
