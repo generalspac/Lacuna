@@ -30,7 +30,7 @@ public class EtatJeu {
     // Index du joueur courant ( 0 ou 1 )
     public int joueurCourant;
 
-    @SuppressWarnings("unchecked") //ajouter pour le warning du compilateur @les gars
+    //@SuppressWarnings("unchecked") //ajouter pour le warning du compilateur @les gars
     public EtatJeu() {
         fleursRestantes = new ArrayList<>();
         pions = new ArrayList<>();

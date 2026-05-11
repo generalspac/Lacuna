@@ -1077,9 +1077,6 @@ public class Jeu {
         againstIA = true;
         ia = niveau.creerIA(1);
 
-        // Le Jeu est construit avant que le menu ne choisisse le mode.
-        // Il faut donc remplacer les joueurs humains par Humain + IA ici,
-        // sinon estTourIA() reste toujours faux et l'IA ne joue jamais.
         joueurs = new Joueur[] {
                 new JoueurHumain("Humain", Types.TypePion.OR),
                 new JoueurIa("IA", Types.TypePion.ARGENT)
@@ -1157,11 +1154,7 @@ public class Jeu {
     }
 
 
-    /**
-     * Annule logiquement le calcul IA en cours.
-     * Le thread déjà lancé peut finir plus tard, mais son résultat sera ignoré
-     * grâce au numéro de génération.
-     */
+    // Annule  
     public void annulerIAEnCours() {
         generationIA++;
         iaEnCours = false;
