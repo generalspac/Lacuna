@@ -9,6 +9,10 @@ import java.util.Stack;
 import global.Configuration;
 
 public class Jeu {
+
+    // =========================================================
+    // ===================== ATTRIBUTS ==========================
+    // =========================================================
     private Cercle cercleDeJeu; // le cercle du jeu
     private ArrayList<Pion> pions; // contient tous les pions actuel dans le cercle
     private ArrayList<Fleur> fleurs;
@@ -24,6 +28,8 @@ public class Jeu {
     private static final int MAX_PIONS_PAR_JOUEUR = 6;
     private static final int NB_COULEURS = 6;
 
+
+    private static final int NB_POINTS_SEGMENT = 3; // le nombre de points
 
     //// Attributs pour les joueurs
     private Joueur[] joueurs; // la liste des joueurs
@@ -63,6 +69,10 @@ public class Jeu {
         this.feedbackMessage = feedbackMessage;
     }
 
+    // =========================================================
+    // ==================== CLASSE INTERNE =====================
+    // =========================================================
+
     ////////// la classe ActionJeu //////////////////
     public static class ActionJeu {// pour l'undo redo
         Pion pion;
@@ -96,6 +106,10 @@ public class Jeu {
         currentPlayerIndex = (currentPlayerIndex - 1 + NB_JOUEURS) % NB_JOUEURS;
     }
 
+    // =========================================================
+    // ===================== CONSTRUCTEUR ======================
+    // =========================================================
+
     public Jeu(int WIDTH, int HEIGHT, Cercle cercleDeJeu) {
 
         if (isAgainstIA()) {
@@ -120,6 +134,10 @@ public class Jeu {
 
         System.out.println("Game created");
     }
+
+    // =========================================================
+    // ================= GETTERS ET SETTERS =====================
+    // =========================================================
 
     //////////////////////////////////// GETTERS ET SETTERS METHODES
     //////////////////////////////////// /////////////////////////////////////////
@@ -159,6 +177,10 @@ public class Jeu {
         return joueurs[currentPlayerIndex];
     }
 
+    // =========================================================
+    // ================= GESTION DES JOUEURS ====================
+    // =========================================================
+
     public void joueurSuivant() {
         currentPlayerIndex = (currentPlayerIndex + 1) % NB_JOUEURS;
     }
@@ -174,6 +196,10 @@ public class Jeu {
     public boolean isEnPhaseSelectionAvantage() {
         return enPhaseSelectionAvantage;
     }
+
+    // =========================================================
+    // ================= INITIALISATION =========================
+    // =========================================================
 
     private void initPlayers() {
         if (isAgainstIA()) {
@@ -499,6 +525,10 @@ public class Jeu {
         return true;
     }
 
+    // =========================================================
+    // ======================= AFFICHAGE ========================
+    // =========================================================
+
     ////////////////////////////// pour l'affichage
     ////////////////////////////// ////////////////////////////////////////
     public void afficher() {
@@ -542,6 +572,10 @@ public class Jeu {
         Configuration.debugeur("#\n");
     }
 //////////////////////////////////////////////////////////////////////
+
+    // =========================================================
+    // =============== SELECTION DES FLEURS / SEGMENTS ==========
+    // =========================================================
 
     public boolean toucherFleur(Coordonnees pos) {
         for (Fleur f : fleurs) {
@@ -660,6 +694,40 @@ public class Jeu {
         return true;
     }
 
+
+    //Genère plusieurs positions possibles sur me segment [A,B] pour placer les pions
+    public List<Coordonnees> pointsDuSegment(Coordonnees A, Coordonnees B) {
+
+            List<Coordonnees> points = new ArrayList<>();
+
+            double ax = A.getX();
+            double ay = A.getY();
+
+            double bx = B.getX();
+            double by = B.getY();
+
+            //On découpe le segment en plusieurs morceaux
+            for (int i = 1; i < NB_POINTS_SEGMENT; i++) {
+
+                double t = (double) i / NB_POINTS_SEGMENT;
+
+                int x = (int) (ax + t * (bx - ax));
+                int y = (int) (ay + t * (by - ay));
+
+                Coordonnees pos = new Coordonnees(x, y);
+
+                // Vérification:le pion peut être placé ici?
+                if (positionLibrePourPion(pos) && cercleDeJeu.contientPoint(pos)) {
+                            points.add(pos);
+                }
+            }
+
+            return points;
+    }
+
+
+   
+
     public boolean fleursConnectées(Fleur f1, Fleur f2) {
 
         if (f1 == null || f2 == null)
@@ -714,6 +782,10 @@ public class Jeu {
 
         return map;
     }
+
+    // =========================================================
+    // ====================== UNDO / REDO =======================
+    // =========================================================
 
     public void undo() {
         if (!this.undoStack.isEmpty()) {
@@ -802,6 +874,10 @@ public class Jeu {
         redoStack.clear();
         setFeedbackMessage("Partie réinitialisée. Choisissez une fleur pour l'avantage initial.");
     }
+
+    // =========================================================
+    // ==================== DRAG AND DROP =======================
+    // =========================================================
 
     public void placerPionDepuisDrag(Coordonnees pos, Object payload) {
 
@@ -933,6 +1009,10 @@ public class Jeu {
      * return null;
      * }
      */
+
+    // =========================================================
+    // ======================= SAUVEGARDE =======================
+    // =========================================================
 
     // Sauvegarde l'état complet de la partie dans un fichier texte
     public void sauvegarderPartie(String cheminFichier) {
@@ -1162,4 +1242,35 @@ public class Jeu {
             Configuration.debugeurErreur("Erreur lors du chargement : %s\n", e.getMessage());
         }
     }
+
+    // =========================================================
+    // ========================= (Aide IA et Guide) =============================
+    // =========================================================
+
+    
+    
+    // Retourne toutes les positions possibles pour jouer
+        public List<Coordonnees> coupsPossibles() {
+
+            List<Coordonnees> coups = new ArrayList<>();
+
+            for (int i = 0; i < fleurs.size(); i++) {
+
+                for (int j = i + 1; j < fleurs.size(); j++) {
+
+                    Fleur f1 = fleurs.get(i);
+                    Fleur f2 = fleurs.get(j);
+
+                    //Même couleur + segment libre
+                    if (fleursConnectées(f1, f2)) {
+
+                        List<Coordonnees> points = pointsDuSegment(f1.getPosition(),f2.getPosition());
+
+                        coups.addAll(points);
+                    }
+                }
+            }
+
+        return coups;
+     }
 }
