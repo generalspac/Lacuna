@@ -41,7 +41,7 @@ run_game() {
 
     echo "[INFO] Lancement de Lacuna"
 
-    java -cp "src/main/bin:src/main/resources" main.Lacuna
+    java -cp "target/classes:src/main/resources" main.Lacuna
 }
 
 run_game_maven() {
