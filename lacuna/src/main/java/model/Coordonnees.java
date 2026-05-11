@@ -34,6 +34,14 @@ public class Coordonnees implements Comparable<Coordonnees> {
     }
     /////////////////////
 
+    public static Coordonnees copieCoordonnees(Coordonnees pos) {
+        if (pos == null) {
+            return null;
+        }
+
+        return new Coordonnees(pos.getX(), pos.getY());
+    }
+
     // dist entre deux points de coordonnes
     public static double distance(Coordonnees a, Coordonnees b) {
         double dx = a.getX() - b.getX();

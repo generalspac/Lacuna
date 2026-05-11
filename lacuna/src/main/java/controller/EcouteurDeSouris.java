@@ -23,50 +23,56 @@ public class EcouteurDeSouris extends MouseAdapter {
     @Override
     public void mousePressed(MouseEvent e) {
 
+        if (game.isIAEnCours()) {
+            return;
+        }
+
+        if (game.estTourIA()) {
+            return;
+        }
+
         int x = e.getX();
         int y = e.getY();
 
         Coordonnees modelPos = jeuGraphique.screenToModel(x, y);
 
-        // appeler la deuxieme phase du jeu(elle ne s'execute que si tous les pions sont placés)
-        // et celà est assurer dans la fonction dans le modèle déjà
+        if (game.secondePhase()) {
 
-        if( game.secondePhase() ){
-            System.out.println("seconde phase"); // Affichage à remplacer par la méthode d'affichage dans config
             jeuGraphique.refreshScores();
-
             jeuGraphique.repaint();
 
-            System.out.println("Fin de la seconde phase");
-            return ; // Fin du jeu
-        }
-
-
-        // Vérifie si clic dans le cercle
-        if (!game.getCercleDeJeu().contientPoint(modelPos)) {
-            System.out.println("Clic en dehors du cercle modèle");
             return;
         }
 
-       // Si deux fleurs sélectionnées et connectées
-        if (game.fleursConnectées( game.getFleurSelectionnee1(), game.getFleurSelectionnee2())) {
-            
+        if (!game.getCercleDeJeu().contientPoint(modelPos)) {
+            return;
+        }
+
+        if (game.fleursConnectées(game.getFleurSelectionnee1(), game.getFleurSelectionnee2())) {
+
             if (game.jouerCoupAvecFleursSelectionnees()) {
+
                 jeuGraphique.refreshScores();
                 jeuGraphique.repaint();
-            } else {
-                System.out.println("Placement impossible : limite de pions ou position invalide.");
+
+                game.lancerIA(() -> {
+
+                    javax.swing.SwingUtilities.invokeLater(() -> {
+                        jeuGraphique.refreshScores();
+                        jeuGraphique.repaint();
+                    });
+                });
             }
+
             return;
         }
 
-        // Sélection de fleur
         if (game.toucherFleur(modelPos)) {
-            System.out.println("Clic sur une fleur !");
+
             jeuGraphique.refreshScores();
             jeuGraphique.repaint();
-            return;
         }
+
     }
 
     

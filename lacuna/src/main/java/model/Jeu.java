@@ -7,11 +7,20 @@ import java.util.Random;
 
 import global.Configuration;
 
+import model.IA.IA;
+import model.IA.NiveauxIA;
+import model.IA.CoupIA;
+import model.IA.EtatJeu;
+import model.IA.ThreadIA;
+
+
+
+
 public class Jeu {
 
     // =========================================================
-    // ===================== ATTRIBUTS ==========================
-    // =========================================================
+    // ===================== ATTRIBUTS 
+    // =====================================
     private Cercle cercleDeJeu; // le cercle du jeu
     private ArrayList<Pion> pions; // contient tous les pions actuel dans le cercle
     private ArrayList<Fleur> fleurs;
@@ -57,6 +66,11 @@ public class Jeu {
     private boolean avantageInitialApplique = false;
     private boolean enPhaseSelectionAvantage = false;
     private String feedbackMessage = "";
+
+
+    ///////////////// IA /////////////////
+    private IA ia;
+    private boolean iaEnCours = false;
 
     public String getFeedbackMessage() {
         return feedbackMessage;
@@ -622,7 +636,7 @@ public class Jeu {
     }
 
     // =========================================================
-    // ========================= (Aide IA et Guide) ==========================
+    // ========================= (Guide) ==========================
     // =========================================================
 
     public List<Coordonnees> pointsDuSegment(Coordonnees A, Coordonnees B) {
@@ -862,5 +876,71 @@ public class Jeu {
     // Charge l'état d'une partie depuis un fichier texte et reconstruit le jeu
     public void chargerPartie(String cheminFichier) {
         historique.chargerPartie(this, cheminFichier);
+    }
+
+
+
+
+    // =========================================================
+    // ========================= (IA) ==========================
+    // =========================================================///////////////////
+
+    // Activation de l'ia
+    public void activerIA(NiveauxIA niveau) {
+
+        againstIA = true;
+         ia = niveau.creerIA(1);
+    }
+
+    // Savoir si l'ia est en cours
+    public boolean isIAEnCours() {
+        return iaEnCours;
+    }
+
+    // Savoir si c'est le tour de l'ia
+    public boolean estTourIA() {
+        
+         if (!againstIA)
+            return false;
+        return getJoueurActuel() instanceof JoueurIa;
+    }
+
+    // L'AI joue un coup
+    public void jouerCoupIA(CoupIA coup) {
+        
+        if (coup == null)
+            return;
+
+        Joueur joueur = getJoueurActuel();
+
+        Pion pionLibre = getPionLibre(joueur.getTypePion());
+
+        if (pionLibre == null) return;
+
+        jouerCoup(joueur,pionLibre,coup.position,coup.fleur1,coup.fleur2);
+    }
+
+
+    // Lancement du thread pour l'ia
+    public void lancerIA(Runnable callbackFin) {
+
+        if (!againstIA || ia == null || iaEnCours)
+            return;
+        
+        if (!estTourIA()) return;
+
+        iaEnCours = true; //
+
+        EtatJeu etat = EtatJeu.depuisJeu(this, currentPlayerIndex);
+
+        ThreadIA thread = new ThreadIA(ia,etat,coup -> {
+                jouerCoupIA(coup);
+                iaEnCours = false;
+                if (callbackFin != null) {
+                    callbackFin.run();
+                    }
+                });
+
+        thread.start();
     }
 }

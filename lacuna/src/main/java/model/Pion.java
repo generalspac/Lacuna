@@ -30,6 +30,21 @@ public class Pion {
         
     }
 
+
+    ///////////// AUTRES METHODES ///////////////
+    public  static Pion copiePion(Pion p) {
+        Coordonnees pos = p.getPosition();
+        Coordonnees copiePos;
+
+        if (pos == null) {
+            copiePos = null;
+        }
+         else {
+            copiePos = new Coordonnees(pos.getX(), pos.getY());
+        }
+        return new Pion(p.getType(), copiePos);
+    }
+
     public char typePionToChar() {
         switch (type) {
             case OR:

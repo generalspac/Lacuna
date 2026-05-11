@@ -10,6 +10,8 @@ import java.io.IOException;
 import controller.ControleurBoutons;
 import controller.EcouteurDeClavier;
 
+import model.IA.NiveauxIA;
+
 public class InterfaceGraphique implements Runnable {
 
     JFrame frame;
@@ -108,6 +110,48 @@ public class InterfaceGraphique implements Runnable {
         JeuGraphique aire = new JeuGraphique(frame, scoreArgent, scoreOr, scoreLabel, instructionLabel, statusLabel);
         aire.setBackground(Color.BLACK);
         aire.setOpaque(true);
+        
+        // ==================== OPTIONS DE JEU =========================== //
+        String[] options = {
+            "Humain vs Humain",
+            "IA Facile",
+            "IA Moyenne",
+            "IA Difficile"
+            };
+
+        String choix = (String) JOptionPane.showInputDialog(
+            frame,
+            "Choisissez un mode",
+            "Lacuna",
+            JOptionPane.QUESTION_MESSAGE,
+            null,
+            options,
+            options[0]);
+            
+        if (choix != null) {
+
+            switch (choix) {
+
+                case "IA Facile":
+                    aire.jeu.activerIA(NiveauxIA.FACILE);
+                    break;
+
+                case "IA Moyenne":
+                    aire.jeu.activerIA(NiveauxIA.MOYEN);
+                    break;
+
+                case "IA Difficile":
+                    aire.jeu.activerIA(NiveauxIA.DIFFICILE);
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        ///////////////////////////////////
+
+        
 
         // Mettre à jour le statusLabel avec le joueur qui commence
         statusLabel.setText("Bienvenue ! " + aire.jeu.getJoueurActuel().getTypePion() + " commence.");

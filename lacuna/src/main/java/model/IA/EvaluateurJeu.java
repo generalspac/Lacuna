@@ -1,5 +1,8 @@
 package model.IA;
 
+import model.Fleur;
+import model.Types;
+
 
 
 // Calcule le score heuristique d'un état
@@ -8,8 +11,8 @@ public class EvaluateurJeu {
     // Sert à définir si il y aura une utilisation du bonus ou non
     private final boolean utiliserBonus;
 
-    EvaluateurJeu(boolean utiliserBonus){
-        utiliserBonus = utiliserBonus;
+    public EvaluateurJeu(boolean utiliserBonus){
+        this.utiliserBonus = utiliserBonus;
     }
 
 
@@ -22,16 +25,15 @@ public class EvaluateurJeu {
         int couleursIA    = compterCouleursMajoritaires(etat, indexIA);
         int couleursJoueur = compterCouleursMajoritaires(etat, indexJoueur);
 
-        // Calcul du bonus pour IA et joueur
-        int bonusIA    = bonus(etat, indexIA, indexJoueur);
-        int bonusJoueur = bonus(etat, indexJoueur, indexIA);
-
         // Formule de calcul du score
-        int score = (couleursIA - couleursJoueur) * 100;
+        int score = (couleursIA - couleursJoueur) * 1000;
+
+        score += (nombreFleurs(etat, indexIA) - nombreFleurs(etat, indexJoueur)) * 20;
+        score += (scoreCouleursProchesMajorite(etat, indexIA) - scoreCouleursProchesMajorite(etat, indexJoueur)) * 10;
 
         // Conditions de l'utilisation du bonus
         if (utiliserBonus) {
-            score += bonus(etat, indexIA) - bonus(etat, indexAdv);
+            score += bonus(etat, indexIA) - bonus(etat, indexJoueur);
         }
 
         return score;
@@ -40,14 +42,63 @@ public class EvaluateurJeu {
 
     // Renvoie le nombre de couleurs majoritaires pour un joueur et un état donné
     public int compterCouleursMajoritaires(EtatJeu etat, int index){
-        return 0;
+        int compteur = 0;
+
+        for (Types.TypeFleur type : Types.TypeFleur.values()) {
+            if (nombreFleursDeCouleur(etat, index, type) >= 4) {
+                compteur++;
+            }
+        }
+
+        return compteur;
     }
 
     // Renvoie le bonus pour départager deux coups de valeures égales
     public int bonus(EtatJeu etat,int index){
-        return 0;
+        int score = 0;
+
+        for (Types.TypeFleur type : Types.TypeFleur.values()) {
+            int nb = nombreFleursDeCouleur(etat, index, type);
+
+            if (nb == 3) {
+                score += 40;
+            } else if (nb == 2) {
+                score += 15;
+            } else if (nb >= 4) {
+                score += 60;
+            }
+        }
+
+        return score;
+    }
+
+    private int scoreCouleursProchesMajorite(EtatJeu etat, int index) {
+        int score = 0;
+
+        for (Types.TypeFleur type : Types.TypeFleur.values()) {
+            int nb = nombreFleursDeCouleur(etat, index, type);
+            if (nb > 0 && nb < 4) {
+                score += nb;
+            }
+        }
+
+        return score;
+    }
+
+    private int nombreFleurs(EtatJeu etat, int index) {
+        return etat.fleursParJoueur[index].size();
+    }
+
+    private int nombreFleursDeCouleur(EtatJeu etat, int index, Types.TypeFleur type) {
+        int compteur = 0;
+
+        for (Fleur f : etat.fleursParJoueur[index]) {
+            if (f.getType() == type) {
+                compteur++;
+            }
+        }
+
+        return compteur;
     }
 
 }
-
-// TODO: implémenter bonus et compterCouleursMajoritaires

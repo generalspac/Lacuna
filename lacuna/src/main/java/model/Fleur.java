@@ -35,6 +35,14 @@ public class Fleur {
         position.y = pos.y;
     }
 
+
+    //////////// AUTRES METHODES /////////////
+    public static Fleur copieFleur(Fleur f) {
+        Coordonnees pos = f.getPosition();
+        return new Fleur(f.getType(), new Coordonnees(pos.getX(), pos.getY()));
+    }
+
+
     
 
     public char typeFleurToChar() {

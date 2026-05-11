@@ -35,6 +35,7 @@ run_game() {
     javac -d target/classes \
     src/main/java/global/*.java \
     src/main/java/model/*.java \
+    src/main/java/model/IA/*.java \
     src/main/java/view/*.java \
     src/main/java/controller/*.java \
     src/main/java/main/*.java
