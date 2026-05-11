@@ -37,6 +37,10 @@ public class PionOr extends JComponent {
 
             @Override
             public void mousePressed(MouseEvent e) {
+                if (jeu.isIAEnCours() || jeu.estTourIA() || jeu.getJoueurActuel().getTypePion() != Types.TypePion.OR) {
+                    return;
+                }
+
                 for (int i = 0; i < zonesPions.size(); i++) {
                     Rectangle r = zonesPions.get(i);
                     if (r.contains(e.getPoint())) {

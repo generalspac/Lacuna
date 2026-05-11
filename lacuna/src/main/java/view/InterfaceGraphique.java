@@ -154,8 +154,8 @@ public class InterfaceGraphique implements Runnable {
         
 
         // Mettre à jour le statusLabel avec le joueur qui commence
-        statusLabel.setText("Bienvenue ! " + aire.jeu.getJoueurActuel().getTypePion() + " commence.");
-        instructionLabel.setText("Phase d'avantage : Joeur " + aire.jeu.getJoueurActuel().getTypePion() + " doit choisir une fleur");   
+        statusLabel.setText("Bienvenue ! " + aire.jeu.nomJoueurActuelPourAffichage() + " commence.");
+        instructionLabel.setText("Phase d'avantage : " + aire.jeu.nomJoueurActuelPourAffichage() + " doit choisir une fleur");   
 
 
         // ================= BOUTONS UNDO/REDO/RESET =================
@@ -203,12 +203,21 @@ public class InterfaceGraphique implements Runnable {
         chargerButton.setPreferredSize(new Dimension(120, 40));
         chargerButton.addActionListener(e -> {
             aire.jeu.chargerPartie("sauvegarde.txt");
-            aire.refreshScores();
-            aire.repaint();
+            aire.refreshScoresEtTourIA();
         });
 
         buttonPanel.add(sauvegarderButton);
         buttonPanel.add(chargerButton);
+
+        new Timer(150, e -> {
+            boolean iaOccupe = aire.jeu.isIAEnCours() || aire.jeu.estTourIA();
+            sauvegarderButton.setEnabled(!iaOccupe);
+            // Pendant le tour de l'IA, on laisse seulement Undo, Redo, Reset et Load utilisables.
+            undoButton.setEnabled(true);
+            redoButton.setEnabled(true);
+            resetButton.setEnabled(true);
+            chargerButton.setEnabled(true);
+        }).start();
 
         PionArgent leftPile = new PionArgent(frame, aire.jeu);
         leftPile.setPreferredSize(new Dimension(80, 600));

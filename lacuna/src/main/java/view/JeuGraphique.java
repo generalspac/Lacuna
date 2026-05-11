@@ -114,12 +114,13 @@ public class JeuGraphique extends JComponent {
 
                     Coordonnees model = screenToModel(e.getX(), e.getY());
 
-                    jeu.placerPionDepuisDrag(model, payload);
+                    if (!jeu.isIAEnCours() && !jeu.estTourIA()) {
+                        jeu.placerPionDepuisDrag(model, payload);
+                    }
 
                     layer.clear();
 
-                    refreshScores();
-                    repaint();
+                    refreshScoresEtTourIA();
                 }
             }
         });
@@ -144,18 +145,38 @@ public class JeuGraphique extends JComponent {
         updateStatusMessage();
     }
 
+    public void refreshScoresEtTourIA() {
+        refreshScores();
+        repaint();
+
+        jeu.lancerIA(() -> {
+            refreshScores();
+            repaint();
+        });
+    }
+
     private void updateInstructionMessage() {
+        if (jeu.isIAEnCours()) {
+            instructionLabel.setText("IA (" + jeu.getJoueurActuel().getTypePion() + ") réfléchit... Vous pouvez utiliser Undo, Redo, Reset ou Load.");
+            return;
+        }
+
+        if (jeu.estTourIA()) {
+            instructionLabel.setText("Tour de l'IA (" + jeu.getJoueurActuel().getTypePion() + ")...");
+            return;
+        }
+
         if (jeu.isEnPhaseSelectionAvantage()) {
             instructionLabel.setText(
-                    jeu.getJoueurActuel().getTypePion() +
-                            " : Choisissez une fleur pour votre avantage");
+                    jeu.nomJoueurActuelPourAffichage() +
+                            " : choisissez une fleur pour votre avantage");
             return;
         }
 
         if (jeu.getFleurSelectionnee1() == null) {
-            instructionLabel.setText("Joueur " + (jeu.getJoueurActuel().getTypePion()) + " : Cliquez sur une fleur pour commencer.");
+            instructionLabel.setText(jeu.nomJoueurActuelPourAffichage() + " : cliquez sur une fleur pour commencer.");
         } else if (jeu.getFleurSelectionnee2() == null) {
-            instructionLabel.setText("Sélectionnez une seconde fleur du même type.");
+            instructionLabel.setText(jeu.nomJoueurActuelPourAffichage() + " : sélectionnez une seconde fleur du même type.");
         } else if (jeu.fleursConnectées(jeu.getFleurSelectionnee1(), jeu.getFleurSelectionnee2())) {
             instructionLabel.setText("Fleurs connectées : un pion sera placé en cliquant.");
         } else {

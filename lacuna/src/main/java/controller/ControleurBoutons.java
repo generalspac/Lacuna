@@ -11,19 +11,16 @@ public class ControleurBoutons {
 
     public void undo() {
         vue.jeu.undo();
-        vue.refreshScores();
-        vue.repaint();
+        vue.refreshScoresEtTourIA();
     }
 
     public void redo() {
         vue.jeu.redo();
-        vue.refreshScores();
-        vue.repaint();
+        vue.refreshScoresEtTourIA();
     }
 
     public void reset() {
         vue.jeu.reset();
-        vue.refreshScores();
-        vue.repaint();
+        vue.refreshScoresEtTourIA();
     }
 }

@@ -71,6 +71,7 @@ public class Jeu {
     ///////////////// IA /////////////////
     private IA ia;
     private boolean iaEnCours = false;
+    private int generationIA = 0;
 
     public String getFeedbackMessage() {
         return feedbackMessage;
@@ -220,7 +221,7 @@ public class Jeu {
     void initPlayers() {
         if (isAgainstIA()) {
             joueurs = new Joueur[] {
-                    new JoueurHumain("HUMAN", Types.TypePion.OR),
+                    new JoueurHumain("Humain", Types.TypePion.OR),
                     new JoueurIa("IA", Types.TypePion.ARGENT)
             };
             currentPlayerIndex = 0;
@@ -743,44 +744,6 @@ public class Jeu {
         return null;
     }
 
-
-    /*
-     * public Fleur getFleurProche(Coordonnees pos, double distanceMax) {
-     * Fleur best = null;
-     * double min = Double.MAX_VALUE;
-     *
-     * for (Fleur f : fleurs) {
-     * double d = distance(pos, f.getPosition());
-     * if (d < min && d < distanceMax) {
-     * min = d;
-     * best = f;
-     * }
-     * }
-     * return best;
-     * }
-     *
-     * public Fleur getFleurAlignee(Fleur ref) {
-     *
-     * for (Fleur f : fleurs) {
-     *
-     * if (f == ref)
-     * continue;
-     * if (f.getType() != ref.getType())
-     * continue;
-     *
-     * int dx = Math.abs(f.getPosition().getX() - ref.getPosition().getX());
-     * int dy = Math.abs(f.getPosition().getY() - ref.getPosition().getY());
-     *
-     * // horizontal OU vertical
-     * if (dx < 15 || dy < 15) {
-     * return f;
-     * }
-     * }
-     *
-     * return null;
-     * }
-     */
-
     // =========================================================
     // ======================= AFFICHAGE ========================
     // =========================================================
@@ -849,14 +812,17 @@ public class Jeu {
     // =========================================================
 
     public void undo() {
+        annulerIAEnCours();
         historique.undo(this);
     }
 
     public void redo() {
+        annulerIAEnCours();
         historique.redo(this);
     }
 
     public void reset() {
+        annulerIAEnCours();
         // Réinitialiser le jeu à son état initial
         avantageInitialApplique = false;
         enPhaseSelectionAvantage = false;
@@ -875,6 +841,7 @@ public class Jeu {
 
     // Charge l'état d'une partie depuis un fichier texte et reconstruit le jeu
     public void chargerPartie(String cheminFichier) {
+        annulerIAEnCours();
         historique.chargerPartie(this, cheminFichier);
     }
 
@@ -889,7 +856,18 @@ public class Jeu {
     public void activerIA(NiveauxIA niveau) {
 
         againstIA = true;
-         ia = niveau.creerIA(1);
+        ia = niveau.creerIA(1);
+
+        // Le Jeu est construit avant que le menu ne choisisse le mode.
+        // Il faut donc remplacer les joueurs humains par Humain + IA ici,
+        // sinon estTourIA() reste toujours faux et l'IA ne joue jamais.
+        joueurs = new Joueur[] {
+                new JoueurHumain("Humain", Types.TypePion.OR),
+                new JoueurIa("IA", Types.TypePion.ARGENT)
+        };
+        currentPlayerIndex = 0;
+        iaEnCours = false;
+        setFeedbackMessage("Mode IA activé (" + niveau + "). Humain (OR) commence.");
     }
 
     // Savoir si l'ia est en cours
@@ -905,21 +883,82 @@ public class Jeu {
         return getJoueurActuel() instanceof JoueurIa;
     }
 
-    // L'AI joue un coup
-    public void jouerCoupIA(CoupIA coup) {
-        
-        if (coup == null)
-            return;
+    private Fleur retrouverFleurDuPlateau(Fleur recherchee) {
+        if (recherchee == null) {
+            return null;
+        }
 
-        Joueur joueur = getJoueurActuel();
+        for (Fleur f : fleurs) {
+            if (f.getType() == recherchee.getType()
+                    && f.getPosition().equals(recherchee.getPosition())) {
+                return f;
+            }
+        }
 
-        Pion pionLibre = getPionLibre(joueur.getTypePion());
-
-        if (pionLibre == null) return;
-
-        jouerCoup(joueur,pionLibre,coup.position,coup.fleur1,coup.fleur2);
+        return null;
     }
 
+    // L'AI joue un coup
+    public void jouerCoupIA(CoupIA coup) {
+
+        if (coup == null) {
+            setFeedbackMessage("L'IA n'a trouvé aucun coup jouable.");
+            return;
+        }
+
+        if (!estTourIA()) {
+            return;
+        }
+
+        Joueur joueur = getJoueurActuel();
+        Pion pionLibre = getPionLibre(joueur.getTypePion());
+
+        if (pionLibre == null) {
+            setFeedbackMessage("L'IA n'a plus de pion disponible.");
+            return;
+        }
+
+        Fleur f1 = retrouverFleurDuPlateau(coup.fleur1);
+        Fleur f2 = retrouverFleurDuPlateau(coup.fleur2);
+
+        if (f1 == null || f2 == null) {
+            setFeedbackMessage("Le coup IA n'est plus valide : il a été ignoré.");
+            return;
+        }
+
+        jouerCoup(joueur, pionLibre, coup.position, f1, f2);
+
+        if (getJoueurActuel() instanceof JoueurIa) {
+            setFeedbackMessage("Le coup IA a échoué : aucun changement de tour.");
+        } else {
+            setFeedbackMessage("IA (" + joueur.getTypePion() + ") a joué. C'est à Humain (" + getJoueurActuel().getTypePion() + ") de jouer.");
+        }
+    }
+
+
+    /**
+     * Annule logiquement le calcul IA en cours.
+     * Le thread déjà lancé peut finir plus tard, mais son résultat sera ignoré
+     * grâce au numéro de génération.
+     */
+    public void annulerIAEnCours() {
+        generationIA++;
+        iaEnCours = false;
+    }
+
+    public String nomJoueurPourAffichage(Joueur joueur) {
+        if (joueur instanceof JoueurIa) {
+            return "IA (" + joueur.getTypePion() + ")";
+        }
+        if (againstIA) {
+            return "Humain (" + joueur.getTypePion() + ")";
+        }
+        return joueur.getNom() + " (" + joueur.getTypePion() + ")";
+    }
+
+    public String nomJoueurActuelPourAffichage() {
+        return nomJoueurPourAffichage(getJoueurActuel());
+    }
 
     // Lancement du thread pour l'ia
     public void lancerIA(Runnable callbackFin) {
@@ -929,17 +968,28 @@ public class Jeu {
         
         if (!estTourIA()) return;
 
-        iaEnCours = true; //
+        iaEnCours = true;
+        final int generationLancee = ++generationIA;
+        setFeedbackMessage("Tour de l'IA (" + getJoueurActuel().getTypePion() + ") : elle réfléchit...");
 
         EtatJeu etat = EtatJeu.depuisJeu(this, currentPlayerIndex);
 
-        ThreadIA thread = new ThreadIA(ia,etat,coup -> {
-                jouerCoupIA(coup);
-                iaEnCours = false;
-                if (callbackFin != null) {
-                    callbackFin.run();
+        ThreadIA thread = new ThreadIA(ia, etat, coup -> {
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                if (generationLancee != generationIA) {
+                    return;
+                }
+
+                try {
+                    jouerCoupIA(coup);
+                } finally {
+                    iaEnCours = false;
+                    if (callbackFin != null) {
+                        callbackFin.run();
                     }
-                });
+                }
+            });
+        });
 
         thread.start();
     }

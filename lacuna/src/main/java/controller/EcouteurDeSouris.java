@@ -38,8 +38,7 @@ public class EcouteurDeSouris extends MouseAdapter {
 
         if (game.secondePhase()) {
 
-            jeuGraphique.refreshScores();
-            jeuGraphique.repaint();
+            jeuGraphique.refreshScoresEtTourIA();
 
             return;
         }
@@ -52,16 +51,7 @@ public class EcouteurDeSouris extends MouseAdapter {
 
             if (game.jouerCoupAvecFleursSelectionnees()) {
 
-                jeuGraphique.refreshScores();
-                jeuGraphique.repaint();
-
-                game.lancerIA(() -> {
-
-                    javax.swing.SwingUtilities.invokeLater(() -> {
-                        jeuGraphique.refreshScores();
-                        jeuGraphique.repaint();
-                    });
-                });
+                jeuGraphique.refreshScoresEtTourIA();
             }
 
             return;
