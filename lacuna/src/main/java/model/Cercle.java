@@ -3,7 +3,7 @@ package model;
 import global.Configuration;
 
 public class Cercle {
-    
+
     private  Coordonnees centre;
     private int rayon;
     //double echelle = 0.5; // échelle    
@@ -23,7 +23,7 @@ public class Cercle {
     public Coordonnees getCentre(){
         return centre;
     }
-   
+
     public int getRayon(){
         return rayon;
     }
@@ -39,10 +39,10 @@ public class Cercle {
 
 
      ////////// AUTRES  METHODES ///////////////
-     
+
     /*les methodes aire et perimetre sont ajoutées car vu qu'on est sur un objet de  type cercle,
         c'est les infos de base à savoir (peut être que ça nous aidera plus tard aussi ) */
-    
+
     public double aire() {
         return Math.PI * rayon * rayon;
     }
@@ -53,12 +53,7 @@ public class Cercle {
 
     //connaitre la distance d'un point par rapport au centre 
     public double distanceAuCentre(Coordonnees p){
-        int x = p.getX();
-        int y = p.getY();
-        
-        int dx = x - centre.getX();
-        int dy = y - centre.getY();
-        double distance = Math.sqrt(dx * dx + dy * dy);
+        double distance = centre.distance(p);
         Configuration.debugeur("Distance au centre %f\n", distance);
         return distance;
     }
@@ -76,7 +71,7 @@ public class Cercle {
         return new Cercle(centre , rayon );
     }
 
-    
+
 
 
 
