@@ -11,7 +11,7 @@ public class RoundedButton extends JButton {
         super(text);
         setFocusPainted(false);
         setContentAreaFilled(false); // IMPORTANT
-        setBorderPainted(false);     // IMPORTANT
+        setBorderPainted(false); // IMPORTANT
         setOpaque(false);
     }
 
@@ -20,11 +20,21 @@ public class RoundedButton extends JButton {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        // fond arrondi (couleur normale)
+        // fond arrondi
         g2.setColor(getBackground());
         g2.fillRoundRect(0, 0, getWidth(), getHeight(), radius, radius);
 
-        super.paintComponent(g);
+        // texte du bouton
+        FontMetrics fm = g2.getFontMetrics();
+        Rectangle stringBounds = fm.getStringBounds(getText(), g2).getBounds();
+
+        int x = (getWidth() - stringBounds.width) / 2;
+        int y = (getHeight() - stringBounds.height) / 2 + fm.getAscent();
+
+        g2.setColor(getForeground());
+        g2.setFont(getFont());
+        g2.drawString(getText(), x, y);
+
         g2.dispose();
     }
 
@@ -35,7 +45,7 @@ public class RoundedButton extends JButton {
 
         // bordure simple (pas flashy)
         g2.setColor(Color.WHITE);
-        g2.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, radius, radius);
+        g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, radius, radius);
 
         g2.dispose();
     }

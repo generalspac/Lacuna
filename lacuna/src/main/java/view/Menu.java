@@ -49,7 +49,8 @@ public class Menu extends JPanel {
 
         nouvellePartie.setBackground(Color.BLACK);
         nouvellePartie.setForeground(Color.WHITE);
-        nouvellePartie.setOpaque(false);
+        nouvellePartie.setOpaque(true);
+        nouvellePartie.setContentAreaFilled(true);
         nouvellePartie.setFocusPainted(false);
         nouvellePartie.setBorderPainted(true);
         nouvellePartie.setMargin(new Insets(15, 30, 15, 30));
@@ -58,7 +59,8 @@ public class Menu extends JPanel {
 
         chargerPartie.setBackground(Color.BLACK);
         chargerPartie.setForeground(Color.WHITE);
-        chargerPartie.setOpaque(false);
+        chargerPartie.setOpaque(true);
+        chargerPartie.setContentAreaFilled(true);
         chargerPartie.setFocusPainted(false);
         chargerPartie.setBorderPainted(true);
         chargerPartie.setMargin(new Insets(15, 30, 15, 30));
@@ -66,15 +68,17 @@ public class Menu extends JPanel {
 
         leaderBoard.setBackground(Color.BLACK);
         leaderBoard.setForeground(Color.WHITE);
-        leaderBoard.setOpaque(false);
+        leaderBoard.setOpaque(true);
+        leaderBoard.setContentAreaFilled(true);
         leaderBoard.setFocusPainted(false);
         leaderBoard.setBorderPainted(true);
         leaderBoard.setMargin(new Insets(15, 30, 15, 30));
         leaderBoard.setFont(new Font("Arial", Font.BOLD, 25));
 
-        regles.setBackground(Color.BLACK);
+        regles.setBackground(new Color(18, 18, 18));
         regles.setForeground(Color.WHITE);
-        regles.setOpaque(false);
+        regles.setOpaque(true);
+        regles.setContentAreaFilled(true);
         regles.setFocusPainted(false);
         regles.setBorderPainted(true);
         regles.setMargin(new Insets(15, 30, 15, 30));
