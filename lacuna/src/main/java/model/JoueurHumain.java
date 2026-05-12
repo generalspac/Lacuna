@@ -9,7 +9,7 @@ package model;
  * @author thsba
  */
 public class JoueurHumain extends Joueur {
-    public JoueurHumain(String nom, Types.TypePion typePion) {
+    public JoueurHumain(String nom, Pion.TypePion typePion) {
         super(nom, typePion);
     }
 }

@@ -1,5 +1,6 @@
 package controller;
 
+import model.Fleur;
 import view.JeuGraphique;
 
 public class ControleurBoutons {
@@ -25,5 +26,14 @@ public class ControleurBoutons {
         vue.annulerAnimationsVisuelles();
         vue.jeu.reset();
         vue.refreshScoresEtTourIA();
+    }
+    
+    // ======= AFFICHAGE COUPS POSSIBLES ========
+    public void toggleCoupsPossibles(Fleur.TypeFleur couleur, boolean masquer) {
+        if (masquer) {
+            vue.afficherCoupsPossibles(null, true);
+        } else {
+            vue.afficherCoupsPossibles(couleur, false);
+        }
     }
 }

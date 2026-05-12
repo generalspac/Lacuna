@@ -7,7 +7,7 @@ import model.Coordonnees;
 
 
 
-public class FuzzCercleStandalone {
+public class FuzzCercle {
 
 
     public static void fuzzerTestOneInput(

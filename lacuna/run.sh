@@ -1,11 +1,8 @@
-# run.sh
-
-
 #!/bin/bash
 
 # Utilisation :
 #
-# ./run.sh 
+# ./run.sh
 #     -> lance le jeu
 #     @param mvn pour compiler et lancer avec Maven (nécessaire pour les tests et fuzzers)
 #
@@ -18,13 +15,13 @@
 #
 # ./run.sh fuzz
 #     -> lance le fuzzer par défaut :
-#        fuzzer.fuzzmodel.FuzzJeuStandalone
+#        fuzzer.fuzzmodel.FuzzJeu
 #
-# ./run.sh fuzz=FuzzCercleStandalone
+# ./run.sh fuzz=FuzzCercle
 #     -> lance un fuzzer précis
-# Par défaut, le fuzzer lancé est FuzzJeuStandalone
+# Par défaut, le fuzzer lancé est FuzzJeu
 
-DEFAULT_FUZZ="fuzzer.fuzzmodel.FuzzJeuStandalone"
+DEFAULT_FUZZ="fuzzer.fuzzmodel.FuzzJeu"
 
 run_game() {
     echo "[INFO] Compilation sans Maven"
@@ -40,9 +37,12 @@ run_game() {
     src/main/java/controller/*.java \
     src/main/java/main/*.java
 
+    cp -r src/main/resources/* target/classes/
+
     echo "[INFO] Lancement de Lacuna"
 
-    java -cp "target/classes:src/main/resources" main.Lacuna
+
+    java -cp "target/classes" main.Lacuna
 }
 
 run_game_maven() {
@@ -84,7 +84,6 @@ run_fuzzer() {
     -max_total_time=30
 }
 
-
 if [ $# -eq 0 ]; then
     run_game
     exit 0
@@ -115,7 +114,6 @@ do
         fuzz=*)
             FUZZ_NAME="${arg#*=}"
 
-            # si package non précisé
             if [[ "$FUZZ_NAME" != *"."* ]]; then
                 FUZZ_NAME="fuzzer.fuzzmodel.$FUZZ_NAME"
             fi

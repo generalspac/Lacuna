@@ -7,8 +7,8 @@ import model.Jeu;
 import model.Pion;
 
 
-import static model.Types.TypePion.ARGENT;
-import static model.Types.TypePion.OR;
+import static model.Pion.TypePion.ARGENT;
+import static model.Pion.TypePion.OR;
 
 public class InterfaceTextuelle {
     public void lancer() {

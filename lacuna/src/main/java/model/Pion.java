@@ -5,15 +5,20 @@
 package model;
 
 public class Pion {
-    private Types.TypePion type;
+
+    public enum TypePion {
+        OR, ARGENT
+    }
+
+    private TypePion type;
     private Coordonnees position;
 
-    public Pion(Types.TypePion type, Coordonnees position) {
+    public Pion(TypePion type, Coordonnees position) {
         this.type = type;
         this.position = position;
     }
 
-    public Types.TypePion getType() {
+    public TypePion getType() {
         return type;
     }
 
@@ -21,7 +26,7 @@ public class Pion {
         return position;
     }
 
-    public void setType(Types.TypePion type){
+    public void setType(TypePion type){
         this.type = type ;
     }
     

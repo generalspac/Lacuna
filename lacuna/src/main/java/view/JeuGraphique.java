@@ -15,6 +15,7 @@ import global.Configuration;
 import model.*;
 import model.IA.CoupIA;
 import java.util.ArrayList;
+import java.util.List;
 import controller.EcouteurDeSouris;
 
 public class JeuGraphique extends JComponent {
@@ -48,6 +49,8 @@ public class JeuGraphique extends JComponent {
     private int phase2ComparePulse = 0;
     private Joueur gagnantAnime = null;
     private int winnerPulse = 0;
+    private boolean afficherCoupsPossibles = false;
+    private Fleur.TypeFleur filtreCouleurCoups = null;
 
     public JeuGraphique(JFrame frame) {
         this(frame, null, null, null, null, null);
@@ -140,7 +143,7 @@ public class JeuGraphique extends JComponent {
 
                 DragLayer layer = (DragLayer) frame.getGlassPane();
 
-                Types.TypePion payload = (Types.TypePion) layer.getPayload();
+                Pion.TypePion payload = (Pion.TypePion) layer.getPayload();
 
                 if (payload != null) {
 
@@ -237,6 +240,67 @@ public class JeuGraphique extends JComponent {
             } else {
                 statusLabel.setText(message);
             }
+        }
+    }
+
+    // ======= AFFICHAGE COUPS POSSIBLES ========
+    public void afficherCoupsPossibles(Fleur.TypeFleur couleur, boolean masquer) {
+        if (masquer) {
+            afficherCoupsPossibles = false;
+            filtreCouleurCoups = null;
+            jeu.setFeedbackMessage("Affichage des coups possibles masqué.");
+        } else {
+            if (afficherCoupsPossibles && filtreCouleurCoups == couleur) {
+                afficherCoupsPossibles = false;
+                filtreCouleurCoups = null;
+                jeu.setFeedbackMessage("Affichage des coups possibles masqué.");
+            } else {
+                afficherCoupsPossibles = true;
+                filtreCouleurCoups = couleur;
+                String couleurTexte = (couleur == null) ? "toutes les couleurs" : couleur.name().toLowerCase();
+                jeu.setFeedbackMessage("Affichage des coups possibles pour " + couleurTexte + ".");
+            }
+        }
+
+        repaint();
+        updateStatusMessage();
+    }
+
+    // ======= DESSIN DES COUPS POSSIBLES ========
+    private void drawPossibleMoves(Graphics2D g2, int fleurSize) {
+        if (!afficherCoupsPossibles) {
+            return;
+        }
+
+        Fleur f1 = jeu.getFleurSelectionnee1();
+        Fleur f2 = jeu.getFleurSelectionnee2();
+
+        g2.setColor(new Color(0, 255, 255, 170));
+        g2.setStroke(new BasicStroke(2));
+
+        if (f1 != null && f2 != null && jeu.fleursConnectées(f1, f2)) {
+            for (Coordonnees pos : jeu.pointsDuSegment(f1.getPosition(), f2.getPosition())) {
+                Coordonnees screen = modelToScreen(pos.getX(), pos.getY());
+                g2.drawOval(screen.getX() - fleurSize / 3,
+                        screen.getY() - fleurSize / 3,
+                        fleurSize * 2 / 3,
+                        fleurSize * 2 / 3);
+            }
+            return;
+        }
+
+        // ====== Dessiner des lignes entre les paires de fleurs connectées ======
+        List<Fleur[]> paires = jeu.pairesConnectees(filtreCouleurCoups);
+        for (Fleur[] paire : paires) {
+            Coordonnees p1 = modelToScreen(paire[0].getPosition().x, paire[0].getPosition().y);
+            Coordonnees p2 = modelToScreen(paire[1].getPosition().x, paire[1].getPosition().y);
+            g2.drawLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
+        }
+
+        if (paires.size() > 12) { // Limiter l'affichage si trop de lignes
+            g2.setFont(new Font("SansSerif", Font.BOLD, 12));
+            //String text = "+" + (paires.size() - 12) + " autres connexions";
+            //g2.drawString(text, 16, getHeight() - 16);
         }
     }
 
@@ -423,7 +487,7 @@ public class JeuGraphique extends JComponent {
     }
 
     private Point pointScorePourJoueur(Joueur joueur, int decalage, DragLayer layer) {
-        JComponent cible = (joueur.getTypePion() == Types.TypePion.ARGENT) ? scoreArgent : scoreOr;
+        JComponent cible = (joueur.getTypePion() == Pion.TypePion.ARGENT) ? scoreArgent : scoreOr;
         int x = cible.getWidth() / 2 + (decalage * 22) - 11;
         int y = Math.max(55, cible.getHeight() / 2);
         return SwingUtilities.convertPoint(cible, new Point(x, y), layer);
@@ -522,13 +586,14 @@ public class JeuGraphique extends JComponent {
                     fleurSize, fleurSize, null);
         }
 
+        drawPossibleMoves(g2, fleurSize);
         drawSelection(g2);
         drawPhase2Illustration(g2);
         drawPions(g2, fleurSize);
         drawWinnerOverlay(g2);
     }
 
-    private Image getFlowerImage(Types.TypeFleur type) {
+    private Image getFlowerImage(Fleur.TypeFleur type) {
         switch (type) {
             case ROUGE:
                 return rougeImg;
@@ -722,7 +787,7 @@ public class JeuGraphique extends JComponent {
             if (p.getPosition() == null)
                 continue;
 
-            Image img = (p.getType() == Types.TypePion.OR) ? orImg : argentImg;
+            Image img = (p.getType() == Pion.TypePion.OR) ? orImg : argentImg;
 
             Coordonnees pos = modelToScreen(p.getPosition().x, p.getPosition().y);
 

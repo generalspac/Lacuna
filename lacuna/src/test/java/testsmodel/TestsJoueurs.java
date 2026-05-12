@@ -6,9 +6,13 @@ package testsmodel;
 
 import model.Coordonnees;
 import model.Fleur;
+import model.Pion;
 import model.JoueurHumain;
 import model.JoueurIa;
-import model.Types;
+<<<<<<< HEAD
+import model.Pion;
+=======
+>>>>>>> 7121749 (rajout de tests pour les classes Jeu et Historique et réctification de la boucle infinie dans Jeu)
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,18 +54,18 @@ public class TestsJoueurs {
     // Tests pour Joueur
     @Test
     public void testJoueurConstructor() {
-        JoueurHumain j = new JoueurHumain("Alice", Types.TypePion.OR);
+        JoueurHumain j = new JoueurHumain("Alice", Pion.TypePion.OR);
         assertEquals("Alice", j.getNom());
-        assertEquals(Types.TypePion.OR, j.getTypePion());
+        assertEquals(Pion.TypePion.OR, j.getTypePion());
         assertNotNull(j.getFleursGagnees());
         assertEquals(0, j.getFleursGagnees().size());
     }
 
     @Test
     public void testJoueurAjouterFleur() {
-        JoueurHumain j = new JoueurHumain("Bob", Types.TypePion.ARGENT);
-        Fleur f1 = new Fleur(Types.TypeFleur.ROUGE, new Coordonnees(0, 0));
-        Fleur f2 = new Fleur(Types.TypeFleur.BLEUE, new Coordonnees(1, 1));
+        JoueurHumain j = new JoueurHumain("Bob", Pion.TypePion.ARGENT);
+        Fleur f1 = new Fleur(Fleur.TypeFleur.ROUGE, new Coordonnees(0, 0));
+        Fleur f2 = new Fleur(Fleur.TypeFleur.BLEUE, new Coordonnees(1, 1));
         j.ajouterFleur(f1);
         j.ajouterFleur(f2);
         assertEquals(2, j.getFleursGagnees().size());
@@ -71,19 +75,19 @@ public class TestsJoueurs {
 
     @Test
     public void testJoueurGetScoreTotal() {
-        JoueurIa j = new JoueurIa("IA", Types.TypePion.OR);
+        JoueurIa j = new JoueurIa("IA", Pion.TypePion.OR);
         assertEquals(0, j.getScoreTotal());
-        j.ajouterFleur(new Fleur(Types.TypeFleur.JAUNE, new Coordonnees(0, 0)));
+        j.ajouterFleur(new Fleur(Fleur.TypeFleur.JAUNE, new Coordonnees(0, 0)));
         assertEquals(1, j.getScoreTotal());
     }
 
     @Test
     public void testJoueurNbFleursDeCouleur() {
-        JoueurHumain j = new JoueurHumain("Charlie", Types.TypePion.ARGENT);
-        j.ajouterFleur(new Fleur(Types.TypeFleur.ROUGE, new Coordonnees(0, 0)));
-        j.ajouterFleur(new Fleur(Types.TypeFleur.ROUGE, new Coordonnees(1, 1)));
-        j.ajouterFleur(new Fleur(Types.TypeFleur.BLEUE, new Coordonnees(2, 2)));
-        assertEquals(2, j.nbFleursDeCouleur(Types.TypeFleur.ROUGE));
-        assertEquals(1, j.nbFleursDeCouleur(Types.TypeFleur.BLEUE));
+        JoueurHumain j = new JoueurHumain("Charlie", Pion.TypePion.ARGENT);
+        j.ajouterFleur(new Fleur(Fleur.TypeFleur.ROUGE, new Coordonnees(0, 0)));
+        j.ajouterFleur(new Fleur(Fleur.TypeFleur.ROUGE, new Coordonnees(1, 1)));
+        j.ajouterFleur(new Fleur(Fleur.TypeFleur.BLEUE, new Coordonnees(2, 2)));
+        assertEquals(2, j.nbFleursDeCouleur(Fleur.TypeFleur.ROUGE));
+        assertEquals(1, j.nbFleursDeCouleur(Fleur.TypeFleur.BLEUE));
     }
 }

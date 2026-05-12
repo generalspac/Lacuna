@@ -3,7 +3,6 @@ package view;
 import global.Configuration;
 import model.Jeu;
 import model.Pion;
-import model.Types;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -42,8 +41,7 @@ public class PionArgent extends JComponent {
 
             @Override
             public void mousePressed(MouseEvent e) {
-                if (jeu.isIAEnCours() || jeu.estTourIA()
-                        || jeu.getJoueurActuel().getTypePion() != Types.TypePion.ARGENT) {
+                if (jeu.isIAEnCours() || jeu.estTourIA() || jeu.getJoueurActuel().getTypePion() != Pion.TypePion.ARGENT) {
                     return;
                 }
 
@@ -62,7 +60,7 @@ public class PionArgent extends JComponent {
 
                         dl.startDrag(
                                 pionArgent,
-                                Types.TypePion.ARGENT,
+                                Pion.TypePion.ARGENT,
                                 screen);
 
                         dragging = true;
@@ -156,7 +154,7 @@ public class PionArgent extends JComponent {
 
         int placed = 0;
         for (Pion p : jeu.getPions()) {
-            if (p.getType() == Types.TypePion.ARGENT && p.getPosition() != null) {
+            if (p.getType() == Pion.TypePion.ARGENT && p.getPosition() != null) {
                 placed++;
             }
         }

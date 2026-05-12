@@ -1,17 +1,22 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 package model;
 
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
 
+/**
+ *
+ * @author thsba
+ */
 public abstract class Joueur {
-    private static final int NB_COULEURS = 6;
     protected String nom;
-    protected Types.TypePion typePion;
+    protected Pion.TypePion typePion;
     protected List<Fleur> fleursGagnees;
 
-    public Joueur(String nom, Types.TypePion typePion) {
+    public Joueur(String nom, Pion.TypePion typePion) {
         this.nom = nom;
         this.typePion = typePion;
         this.fleursGagnees = new ArrayList<>();
@@ -21,7 +26,7 @@ public abstract class Joueur {
         return nom;
     }
 
-    public Types.TypePion getTypePion() {
+    public Pion.TypePion getTypePion() {
         return typePion;
     }
 
@@ -37,7 +42,7 @@ public abstract class Joueur {
         return fleursGagnees.size();
     }
 
-    public int nbFleursDeCouleur(Types.TypeFleur type) {
+    public int nbFleursDeCouleur(Fleur.TypeFleur type) {
         int compteur = 0;
 
         for (Fleur f : fleursGagnees) {
@@ -52,7 +57,7 @@ public abstract class Joueur {
     public int nbCouleursGagnees() {
         int compteur = 0;
 
-        for (Types.TypeFleur type : Types.TypeFleur.values()) {
+        for (Fleur.TypeFleur type : Fleur.TypeFleur.values()) {
             if (nbFleursDeCouleur(type) >= 4) {
                 compteur++;
             }
@@ -61,10 +66,8 @@ public abstract class Joueur {
         return compteur;
     }
 
-
-
     public boolean aGagne() {
-        return nbCouleursGagnees() >= 4 ; 
+        return nbCouleursGagnees() >= 4;
     }
 
     public void reset() {

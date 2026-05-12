@@ -1,17 +1,16 @@
 package view;
 
-import model.Types;
-import global.Configuration;
-import javax.imageio.ImageIO;
+import model.Pion;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.IOException;
 
 import controller.ControleurBoutons;
 import controller.EcouteurDeClavier;
 
 import model.IA.NiveauxIA;
+import model.Fleur;
 
 public class InterfaceGraphique implements Runnable {
 
@@ -213,10 +212,10 @@ public class InterfaceGraphique implements Runnable {
                 scoreHeader.setPreferredSize(new Dimension(0, 200));
                 scoreHeader.setGap(100);
 
-                Score scoreArgent = new Score(Types.TypePion.ARGENT);
+                Score scoreArgent = new Score(Pion.TypePion.ARGENT);
                 scoreArgent.setPreferredSize(new Dimension(250, 320));
 
-                Score scoreOr = new Score(Types.TypePion.OR);
+                Score scoreOr = new Score(Pion.TypePion.OR);
                 scoreOr.setPreferredSize(new Dimension(250, 320));
 
                 JLabel scoreLabel = new JLabel("0 - 0", SwingConstants.CENTER);
@@ -291,9 +290,39 @@ public class InterfaceGraphique implements Runnable {
                 JButton resetButton = new JButton("Reset");
                 resetButton.addActionListener(e -> controleurBoutons.reset());
 
+                JButton gitButton = new JButton("Git");
+                gitButton.addActionListener(e -> {
+                    Object[] options = new Object[Fleur.TypeFleur.values().length + 2];
+                    options[0] = "Masquer";
+                    options[1] = "Toutes";
+                    for (int i = 0; i < Fleur.TypeFleur.values().length; i++) {
+                        options[i + 2] = Fleur.TypeFleur.values()[i];
+                    }
+                    Object choix = JOptionPane.showInputDialog(frame,
+                            "Afficher les coups possibles pour quelle couleur de fleurs ?",
+                            "Couleur des fleurs",
+                            JOptionPane.PLAIN_MESSAGE,
+                            null,
+                            options,
+                            options[0]);
+                    if (choix == null) {
+                        return;
+                    }
+                    if ("Masquer".equals(choix)) {
+                        controleurBoutons.toggleCoupsPossibles(null, true);
+                    } else {
+                        Fleur.TypeFleur couleur = null;
+                        if (choix instanceof Fleur.TypeFleur) {
+                            couleur = (Fleur.TypeFleur) choix;
+                        }
+                        controleurBoutons.toggleCoupsPossibles(couleur, false);
+                    }
+                });
+
                 buttonPanel.add(undoButton);
                 buttonPanel.add(redoButton);
                 buttonPanel.add(resetButton);
+                buttonPanel.add(gitButton);
 
                 // Bouton sauvegarder
                 JButton sauvegarderButton = new JButton("Save");
