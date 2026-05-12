@@ -6,9 +6,13 @@ package testsmodel;
 
 import model.Coordonnees;
 import model.Fleur;
+import model.Pion;
 import model.JoueurHumain;
 import model.JoueurIa;
+<<<<<<< HEAD
 import model.Pion;
+=======
+>>>>>>> 7121749 (rajout de tests pour les classes Jeu et Historique et réctification de la boucle infinie dans Jeu)
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;

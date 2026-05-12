@@ -270,6 +270,7 @@ public class Jeu {
     // Génération de position aleatoire pour les fleurs
     private Coordonnees genererPositionAleatoire(ArrayList<Fleur> fleurs) {
         Coordonnees pos;
+        int tentatives = 0; // compteur de tentatives pour éviter une boucle infinie
 
         do {
             double angle = Math.random() * 2 * Math.PI;
@@ -280,7 +281,8 @@ public class Jeu {
             double y = cercleDeJeu.getCentre().getY() + r * Math.sin(angle);
             pos = new Coordonnees((int) x, (int) y);
 
-        } while (!positionValide(pos, fleurs));
+            tentatives++;
+        } while (!positionValide(pos, fleurs) && tentatives++ < 1000);
 
         return pos;
     }

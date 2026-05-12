@@ -1,13 +1,11 @@
 model/Fleur.class
 controller/ControleurBoutons.class
 view/PionArgent$1.class
-model/Types$TypePion.class
 controller/EcouteurDeSouris.class
 model/Coordonnees.class
 model/JoueurHumain.class
 view/FlexPanel$Align.class
 main/Lacuna$1.class
-model/Jeu$ActionJeu.class
 view/Score.class
 controller/EcouteurDeClavier.class
 global/Configuration$Mode.class
@@ -22,7 +20,6 @@ model/IA/EvaluateurJeu.class
 model/Cercle.class
 model/Jeu.class
 model/Pion.class
-model/Pion$1.class
 model/Joueur.class
 view/FlexPanel.class
 view/InterfaceGraphique.class
@@ -31,11 +28,8 @@ view/PionArgent$2.class
 view/JeuGraphique.class
 view/PionOr$1.class
 model/JoueurIa.class
-model/Fleur$1.class
 view/JeuGraphique$2.class
-model/Types$TypeFleur.class
 view/InterfaceTextuelle.class
-model/Types.class
 view/PionArgent.class
 main/Lacuna.class
 view/FlexPanel$Justify.class

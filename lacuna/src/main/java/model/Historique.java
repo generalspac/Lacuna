@@ -30,6 +30,26 @@ public class Historique {
             this.f2 = f2;
             this.joueur = joueur;
         }
+
+        public Pion getPion() {
+            return pion;
+        }
+
+        public Fleur getFleur1() {
+            return f1;
+        }
+
+        public Fleur getFleur2() {
+            return f2;
+        }
+
+        public Joueur getJoueur() {
+            return joueur;
+        }
+
+        public Coordonnees getPosition() {
+            return position;
+        }
     }
 
     public void enregistrerAction(Pion pion, Fleur f1, Fleur f2, Joueur joueur) {
