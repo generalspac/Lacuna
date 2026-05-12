@@ -20,6 +20,10 @@ public class PionOr extends JComponent {
     private JFrame frame;
     private Jeu jeu;
     private int draggedIndex = -1;
+    private boolean isTurn = false;
+    private Timer pulseTimer;
+    private float pulse = 0f;
+    private boolean pulseUp = true;
 
     public PionOr(JFrame frame, Jeu jeu) {
         this.frame = frame;
@@ -42,7 +46,8 @@ public class PionOr extends JComponent {
                 }
 
                 DragLayer dl = getDragLayer();
-                if (dl == null) return;
+                if (dl == null)
+                    return;
 
                 for (int i = 0; i < zonesPions.size(); i++) {
                     Rectangle r = zonesPions.get(i);
@@ -81,7 +86,8 @@ public class PionOr extends JComponent {
                     return;
 
                 DragLayer dl = getDragLayer();
-                if (dl == null) return;
+                if (dl == null)
+                    return;
 
                 Point screen = SwingUtilities.convertPoint(
                         PionOr.this,
@@ -91,8 +97,41 @@ public class PionOr extends JComponent {
                 dl.updateMouse(screen);
             }
         });
+
+        pulseTimer = new Timer(35, e -> {
+
+            if (!isTurn) {
+                pulse = 0f;
+                repaint();
+                return;
+            }
+
+            if (pulseUp) {
+                pulse += 0.06f;
+                if (pulse >= 1f)
+                    pulseUp = false;
+            } else {
+                pulse -= 0.06f;
+                if (pulse <= 0f)
+                    pulseUp = true;
+            }
+
+            repaint();
+        });
+
+        pulseTimer.start();
     }
 
+    public void setIsTurn(boolean isTurn) {
+        this.isTurn = isTurn;
+
+        if (!isTurn) {
+            pulse = 0f;
+            pulseUp = true;
+        }
+
+        repaint();
+    }
     private DragLayer getDragLayer() {
         Component gp = frame.getGlassPane();
         if (gp instanceof DragLayer) {
@@ -148,7 +187,24 @@ public class PionOr extends JComponent {
             if (dragging && i == draggedIndex)
                 continue;
 
-            g.drawImage(pionOr, x, y, size, size, null);
+            Graphics2D g2 = (Graphics2D) g;
+            if (isTurn) {
+
+                int expand = (int) (pulse * 2);
+                int alpha = 80 + (int) (pulse * 140);
+
+                g2.setColor(new Color(255, 215, 0, alpha));
+                g2.setStroke(new BasicStroke(2 + pulse * 4));
+
+                g2.drawOval(
+                        x - expand,
+                        y - expand,
+                        size + expand * 2,
+                        size + expand * 2);
+            }
+
+            // image du pion
+            g2.drawImage(pionOr, x, y, size, size, null);
         }
     }
 }

@@ -316,6 +316,7 @@ public class InterfaceGraphique implements Runnable {
                 PionOr rightPile = new PionOr(frame, aire.jeu);
                 rightPile.setPreferredSize(new Dimension(80, 600));
                 rightPile.setBackground(Color.BLACK);
+                
 
                 aire.setSidePiles(leftPile, rightPile);
 
