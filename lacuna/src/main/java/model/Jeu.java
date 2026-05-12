@@ -821,6 +821,61 @@ public class Jeu {
         return coups;
     }
 
+    public List<Coordonnees> coupsPossibles(Types.TypeFleur type) {
+        if (type == null) {
+            return coupsPossibles();
+        }
+
+        List<Coordonnees> coups = new ArrayList<>();
+
+        for (int i = 0; i < fleurs.size(); i++) {
+            Fleur f1 = fleurs.get(i);
+            if (f1.getType() != type) {
+                continue;
+            }
+            for (int j = i + 1; j < fleurs.size(); j++) {
+                Fleur f2 = fleurs.get(j);
+                if (f2.getType() != type) {
+                    continue;
+                }
+                if (fleursConnectées(f1, f2)) {
+                    coups.addAll(pointsDuSegment(f1.getPosition(), f2.getPosition()));
+                }
+            }
+        }
+
+        return coups;
+    }
+
+    public List<Fleur[]> pairesConnectees(Types.TypeFleur type) {
+        List<Fleur[]> paires = new ArrayList<>();
+        // Si type est null, on considère toutes les fleurs, donc on vérifie toutes les paires possibles
+        if (type == null) {
+            for (int i = 0; i < fleurs.size(); i++) {
+                for (int j = i + 1; j < fleurs.size(); j++) {
+                    Fleur f1 = fleurs.get(i);
+                    Fleur f2 = fleurs.get(j);
+                    if (fleursConnectées(f1, f2)) {
+                        paires.add(new Fleur[]{f1, f2});
+                    }
+                }
+            }
+        } else {// Sinon, on ne considère que les fleurs du type spécifié, donc on vérifie uniquement les paires de ce type
+            for (int i = 0; i < fleurs.size(); i++) {
+                Fleur f1 = fleurs.get(i);
+                if (f1.getType() != type) continue;
+                for (int j = i + 1; j < fleurs.size(); j++) {
+                    Fleur f2 = fleurs.get(j);
+                    if (f2.getType() != type) continue;
+                    if (fleursConnectées(f1, f2)) {
+                        paires.add(new Fleur[]{f1, f2});
+                    }
+                }
+            }
+        }
+        return paires;
+    }
+
     public boolean existeCoupConnecte() {
         return !coupsPossibles().isEmpty();
     }
