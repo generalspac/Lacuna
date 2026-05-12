@@ -33,6 +33,11 @@ public class Jeu {
     int nbFleurs = 49; // nombre de fleurs
 
     private static final double DIST_MIN_FLEURS = 30; // distance min entre les fleurs
+
+    // Ces Dimensions sont utilisées pour éviter les superpositioins
+    private static final double DIAMETRE_FLEUR_MODELE = DIST_MIN_FLEURS;
+    private static final double DIAMETRE_PION_MODELE = DIST_MIN_FLEURS;
+    private static final double MARGE_COLLISION = 2;
     private static final int NB_JOUEURS = 2;
     private static final int MAX_PIONS_PAR_JOUEUR = 6;
     private static final int NB_COULEURS = 6;
@@ -289,12 +294,33 @@ public class Jeu {
 
     // Si la position pour mettre les fleurs est valide
     private boolean positionValide(Coordonnees pos, ArrayList<Fleur> fleurs) {
+        return !fleurTropProcheDuneAutre(pos, fleurs);
+    }
+
+    // Vérification si les objets ne se superposent pas
+    private boolean objetsSeSuperposent(Coordonnees a, Coordonnees b, double distanceMin) {
+        return Coordonnees.distance(a, b) <= distanceMin;
+    }
+
+    // Vérifieee si une nouvelle fleur est trop proche d'une fleur déjà sur le plateau
+    private boolean fleurTropProcheDuneAutre(Coordonnees pos, ArrayList<Fleur> fleurs) {
         for (Fleur f : fleurs) {
-            if (Coordonnees.distance(pos, f.getPosition()) < DIST_MIN_FLEURS) {
-                return false;
+            if (objetsSeSuperposent(pos, f.getPosition(), DIAMETRE_FLEUR_MODELE + MARGE_COLLISION)) {
+                return true;
             }
         }
-        return true;
+        return false;
+    }
+
+    //Vérifie si un nouveau pion est trop proche d'un pion déjà placé
+    private boolean pionTropProcheDunAutre(Coordonnees pos) {
+        for (Pion p : pions) {
+            if (p.getPosition() != null 
+                       && objetsSeSuperposent(pos, p.getPosition(), DIAMETRE_PION_MODELE + MARGE_COLLISION)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // =========================================================
@@ -402,14 +428,12 @@ public class Jeu {
             return false;
         }
 
-        Coordonnees pos = positionSegmentLaPlusProcheDuClic( fleurSelectionnee1.getPosition(), 
+        Coordonnees pos = positionSegmentLaPlusProcheDuClic( fleurSelectionnee1.getPosition(),
                 fleurSelectionnee2.getPosition(),
                 clic);
 
         if (pos == null) {
             setFeedbackMessage("Aucune zone libre sur ce segment : choisissez une autre paire de fleurs.");
-            resetFleursSelectionnee1();
-            resetFleursSelectionnee2();
             return false;
         }
 
