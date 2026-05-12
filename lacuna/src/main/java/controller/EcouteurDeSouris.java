@@ -19,7 +19,7 @@ public class EcouteurDeSouris extends MouseAdapter {
         this.game = jeuGraphique.jeu;
         this.jeuGraphique = jeuGraphique;
     }
-    
+
     @Override
     public void mousePressed(MouseEvent e) {
 
@@ -74,9 +74,8 @@ public class EcouteurDeSouris extends MouseAdapter {
 
     }
 
-    
     @Override
     public void mouseReleased(MouseEvent e) {
-      
+
     }
 }

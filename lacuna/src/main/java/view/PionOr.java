@@ -24,7 +24,7 @@ public class PionOr extends JComponent {
     public PionOr(JFrame frame, Jeu jeu) {
         this.frame = frame;
         this.jeu = jeu;
-        this.dragLayer = (DragLayer) frame.getGlassPane();
+
         try {
             pionOr = ImageIO.read(Configuration.ouvre("pion_or.png"));
         } catch (Exception e) {
@@ -41,6 +41,9 @@ public class PionOr extends JComponent {
                     return;
                 }
 
+                DragLayer dl = getDragLayer();
+                if (dl == null) return;
+
                 for (int i = 0; i < zonesPions.size(); i++) {
                     Rectangle r = zonesPions.get(i);
                     if (r.contains(e.getPoint())) {
@@ -50,7 +53,7 @@ public class PionOr extends JComponent {
                                 e.getPoint(),
                                 frame);
 
-                        dragLayer.startDrag(
+                        dl.startDrag(
                                 pionOr,
                                 Types.TypePion.OR,
                                 screen);
@@ -77,14 +80,25 @@ public class PionOr extends JComponent {
                 if (!dragging)
                     return;
 
+                DragLayer dl = getDragLayer();
+                if (dl == null) return;
+
                 Point screen = SwingUtilities.convertPoint(
                         PionOr.this,
                         e.getPoint(),
                         frame);
 
-                dragLayer.updateMouse(screen);
+                dl.updateMouse(screen);
             }
         });
+    }
+
+    private DragLayer getDragLayer() {
+        Component gp = frame.getGlassPane();
+        if (gp instanceof DragLayer) {
+            return (DragLayer) gp;
+        }
+        return null;
     }
 
     @Override

@@ -15,10 +15,10 @@ public class InterfaceTextuelle {
         Configuration.debugeur("Interface textuelle lancée !\n");
 
         Jeu jeu = new Jeu(50, 30, new Cercle(new Coordonnees(25, 15), 15));
-        jeu.afficher();
+      //  jeu.afficher();
 
         jeu.placePion(new Pion(OR,new Coordonnees(5,5)),new Coordonnees(5,5));
         jeu.placePion(new Pion(ARGENT,new Coordonnees(20,20)),new Coordonnees(20,20));
-        jeu.afficher();
+     //   jeu.afficher();
     }
 }
