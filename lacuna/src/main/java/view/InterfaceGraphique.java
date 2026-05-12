@@ -112,12 +112,82 @@ public class InterfaceGraphique implements Runnable {
         }
 
         // Afficher un écran de chargement temporaire
+
         JPanel loadingPanel = new JPanel(new BorderLayout());
         loadingPanel.setBackground(Color.BLACK);
-        JLabel loadingLabel = new JLabel("Chargement du plateau...", SwingConstants.CENTER);
+
+        // ================= SPINNER =================
+        JPanel spinner = new JPanel() {
+
+            double angle = 0;
+
+            {
+                setOpaque(false);
+
+                new javax.swing.Timer(16, e -> {
+                    angle += 0.25;
+                    repaint();
+                }).start();
+            }
+
+            @Override
+            protected void paintComponent(Graphics g) {
+
+                Graphics2D g2 = (Graphics2D) g.create();
+
+                g2.setRenderingHint(
+                        RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
+
+                int size = 50;
+
+                int x = getWidth() / 2 - size / 2;
+                int y = getHeight() / 2 - size / 2;
+
+                // cercle de fond
+                g2.setStroke(new BasicStroke(5f));
+                g2.setColor(new Color(255, 255, 255, 40));
+                g2.drawOval(x, y, size, size);
+
+                // arc animé
+                g2.setColor(Color.WHITE);
+
+                int start = (int) (angle * 40) % 360;
+
+                g2.drawArc(x, y, size, size, start, 90);
+
+                g2.dispose();
+            }
+        };
+
+        spinner.setPreferredSize(new Dimension(100, 100));
+
+        // ================= TEXTE =================
+        JLabel loadingLabel = new JLabel(
+                "Chargement du plateau...",
+                SwingConstants.CENTER);
+
         loadingLabel.setForeground(Color.WHITE);
-        loadingLabel.setFont(new Font("Arial", Font.ITALIC, 24));
-        loadingPanel.add(loadingLabel, BorderLayout.CENTER);
+        loadingLabel.setFont(
+                new Font("Arial", Font.ITALIC, 24));
+
+        // ================= PANEL CENTRAL =================
+        JPanel center = new JPanel();
+        center.setOpaque(false);
+        center.setLayout(new BoxLayout(center, BoxLayout.Y_AXIS));
+
+        spinner.setAlignmentX(Component.CENTER_ALIGNMENT);
+        loadingLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        center.add(Box.createVerticalGlue());
+        center.add(spinner);
+        center.add(Box.createRigidArea(new Dimension(0, 20)));
+        center.add(loadingLabel);
+        center.add(Box.createVerticalGlue());
+
+        // ================= ASSEMBLAGE =================
+        loadingPanel.add(center, BorderLayout.CENTER);
+
         frame.setContentPane(loadingPanel);
         frame.revalidate();
         frame.repaint();
