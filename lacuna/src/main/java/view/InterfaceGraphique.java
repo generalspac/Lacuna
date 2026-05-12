@@ -5,6 +5,7 @@ import model.Pion;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.List;
 
 import controller.ControleurBoutons;
 import controller.EcouteurDeClavier;
@@ -324,15 +325,40 @@ public class InterfaceGraphique implements Runnable {
                 buttonPanel.add(resetButton);
                 buttonPanel.add(gitButton);
 
-                // Bouton sauvegarder
+                // Bouton sauvegarder : demande un nom à l'utilisateur avant de sauvegarder
                 JButton sauvegarderButton = new JButton("Save");
-                sauvegarderButton.addActionListener(e -> aire.jeu.sauvegarderPartie("sauvegarde.txt"));
+                sauvegarderButton.addActionListener(e -> {
+                    String nom = JOptionPane.showInputDialog(frame, "Nom de la partie :", "Sauvegarder", JOptionPane.PLAIN_MESSAGE);
+                    // on ne fait rien si l'utilisateur annule ou laisse le champ vide
+                    if (nom != null && !nom.trim().isEmpty()) {
+                        aire.jeu.sauvegarderPartie(nom.trim());
+                    }
+                });
 
-                // Bouton charger
+                // Bouton charger : affiche la liste des parties dans un JComboBox pour que l'utilisateur choisisse
                 JButton chargerButton = new JButton("Load");
                 chargerButton.addActionListener(e -> {
-                    aire.jeu.chargerPartie("sauvegarde.txt");
+                    List<String> parties = aire.jeu.listerParties();
+                    if (parties.isEmpty()) {
+                        JOptionPane.showMessageDialog(frame, "Aucune partie sauvegardée.");
+                        return;
+                    }
+                    // showInputDialog avec un tableau de valeurs crée un JComboBox natif
+                    String choix = (String) JOptionPane.showInputDialog(
+                        frame,
+                        "Choisir une partie :",
+                        "Charger",
+                        JOptionPane.PLAIN_MESSAGE,
+                        null,
+                        parties.toArray(),
+                        parties.get(0)
+                    );
+                    if (choix == null) return; // l'utilisateur a annulé
+                    // l'id est le premier élément avant le " - " dans le format "id - nom (date)"
+                    int id = Integer.parseInt(choix.split(" - ")[0].trim());
+                    aire.jeu.chargerPartie(id);
                     aire.refreshScores();
+                    aire.repaint();
                 });
 
                 buttonPanel.add(sauvegarderButton);
