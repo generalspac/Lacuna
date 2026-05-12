@@ -402,13 +402,14 @@ public class Jeu {
             return false;
         }
 
-        Coordonnees pos = positionSegmentLaPlusProcheDuClic(
-                fleurSelectionnee1.getPosition(),
+        Coordonnees pos = positionSegmentLaPlusProcheDuClic( fleurSelectionnee1.getPosition(), 
                 fleurSelectionnee2.getPosition(),
                 clic);
 
         if (pos == null) {
             setFeedbackMessage("Aucune zone libre sur ce segment : choisissez une autre paire de fleurs.");
+            resetFleursSelectionnee1();
+            resetFleursSelectionnee2();
             return false;
         }
 
@@ -478,7 +479,7 @@ public class Jeu {
          */
         // on verifie qu'il y a une distance aussi avec les pions
         for (Pion p : pions) {
-            if (p.getPosition() != null && Coordonnees.distance(pos, p.getPosition()) < DIST_MIN_FLEURS) {
+            if (p.getPosition() != null && Coordonnees.distance(pos, p.getPosition()) <= DIST_MIN_FLEURS) {
                 return false;
             }
         }
@@ -1162,8 +1163,7 @@ public class Jeu {
         }
 
         for (Fleur f : fleurs) {
-            if (f.getType() == recherchee.getType()
-                    && f.getPosition().equals(recherchee.getPosition())) {
+            if (f.getType() == recherchee.getType() && f.getPosition().equals(recherchee.getPosition())) {
                 return f;
             }
         }
