@@ -15,6 +15,7 @@ import global.Configuration;
 import model.*;
 import model.IA.CoupIA;
 import java.util.ArrayList;
+import model.*;
 import java.util.List;
 import controller.EcouteurDeSouris;
 
@@ -801,7 +802,7 @@ public class JeuGraphique extends JComponent {
     public void animerChangementJoueur() {
         if (jeu.getJoueurActuel() == null)
             return;
-        else if (jeu.getJoueurActuel().getTypePion() == Types.TypePion.OR) {
+        else if (jeu.getJoueurActuel().getTypePion() == Pion.TypePion.OR) {
             rightPile.setIsTurn(true);
             leftPile.setIsTurn(false);
         } else {

@@ -47,7 +47,7 @@ public class Menu extends JPanel {
         leaderBoard.setAlignmentX(Component.CENTER_ALIGNMENT);
         regles.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        nouvellePartie.setBackground(new Color(18, 18, 18));
+        nouvellePartie.setBackground(Color.BLACK);
         nouvellePartie.setForeground(Color.WHITE);
         nouvellePartie.setOpaque(false);
         nouvellePartie.setFocusPainted(false);
@@ -56,7 +56,7 @@ public class Menu extends JPanel {
         nouvellePartie.setFont(new Font("Arial", Font.BOLD, 25));
         nouvellePartie.setContentAreaFilled(false);
 
-        chargerPartie.setBackground(new Color(18, 18, 18));
+        chargerPartie.setBackground(Color.BLACK);
         chargerPartie.setForeground(Color.WHITE);
         chargerPartie.setOpaque(false);
         chargerPartie.setFocusPainted(false);
@@ -64,7 +64,7 @@ public class Menu extends JPanel {
         chargerPartie.setMargin(new Insets(15, 30, 15, 30));
         chargerPartie.setFont(new Font("Arial", Font.BOLD, 25));
 
-        leaderBoard.setBackground(new Color(18, 18, 18));
+        leaderBoard.setBackground(Color.BLACK);
         leaderBoard.setForeground(Color.WHITE);
         leaderBoard.setOpaque(false);
         leaderBoard.setFocusPainted(false);
@@ -72,7 +72,7 @@ public class Menu extends JPanel {
         leaderBoard.setMargin(new Insets(15, 30, 15, 30));
         leaderBoard.setFont(new Font("Arial", Font.BOLD, 25));
 
-        regles.setBackground(new Color(18, 18, 18));
+        regles.setBackground(Color.BLACK);
         regles.setForeground(Color.WHITE);
         regles.setOpaque(false);
         regles.setFocusPainted(false);
