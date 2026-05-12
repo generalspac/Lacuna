@@ -7,20 +7,24 @@ package model;
 
 
 public class Fleur {
-    private Types.TypeFleur type; // Type de la fleur 
+    public enum TypeFleur {
+        ROUGE, BLEUE, JAUNE, VERTE, ORANGE, VIOLETTE, ROSE
+    }
+
+    private TypeFleur type; // Type de la fleur 
     private Coordonnees position; // Position de la fleur
 
-    public Fleur(Types.TypeFleur type, Coordonnees position) {
+    public Fleur(TypeFleur type, Coordonnees position) {
         this.type = type;
         this.position = position;
     }
     
-    public Fleur(Types.TypeFleur type) {
+    public Fleur(TypeFleur type) {
         this.type = type;
         position = new Coordonnees(0, 0);
     }
 
-    public Types.TypeFleur getType() {
+    public TypeFleur getType() {
         return type;
     }
 

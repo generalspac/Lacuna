@@ -1,7 +1,6 @@
 package model.IA;
 
 import model.Fleur;
-import model.Types;
 
 
 
@@ -44,7 +43,7 @@ public class EvaluateurJeu {
     public int compterCouleursMajoritaires(EtatJeu etat, int index){
         int compteur = 0;
 
-        for (Types.TypeFleur type : Types.TypeFleur.values()) {
+        for (Fleur.TypeFleur type : Fleur.TypeFleur.values()) {
             if (nombreFleursDeCouleur(etat, index, type) >= 4) {
                 compteur++;
             }
@@ -57,7 +56,7 @@ public class EvaluateurJeu {
     public int bonus(EtatJeu etat,int index){
         int score = 0;
 
-        for (Types.TypeFleur type : Types.TypeFleur.values()) {
+        for (Fleur.TypeFleur type : Fleur.TypeFleur.values()) {
             int nb = nombreFleursDeCouleur(etat, index, type);
 
             if (nb == 3) {
@@ -75,7 +74,7 @@ public class EvaluateurJeu {
     private int scoreCouleursProchesMajorite(EtatJeu etat, int index) {
         int score = 0;
 
-        for (Types.TypeFleur type : Types.TypeFleur.values()) {
+        for (Fleur.TypeFleur type : Fleur.TypeFleur.values()) {
             int nb = nombreFleursDeCouleur(etat, index, type);
             if (nb > 0 && nb < 4) {
                 score += nb;
@@ -89,7 +88,7 @@ public class EvaluateurJeu {
         return etat.fleursParJoueur[index].size();
     }
 
-    private int nombreFleursDeCouleur(EtatJeu etat, int index, Types.TypeFleur type) {
+    private int nombreFleursDeCouleur(EtatJeu etat, int index, Fleur.TypeFleur type) {
         int compteur = 0;
 
         for (Fleur f : etat.fleursParJoueur[index]) {

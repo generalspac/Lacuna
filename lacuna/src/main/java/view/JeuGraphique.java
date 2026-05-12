@@ -140,7 +140,7 @@ public class JeuGraphique extends JComponent {
 
                 DragLayer layer = (DragLayer) frame.getGlassPane();
 
-                Types.TypePion payload = (Types.TypePion) layer.getPayload();
+                Pion.TypePion payload = (Pion.TypePion) layer.getPayload();
 
                 if (payload != null) {
 
@@ -410,7 +410,7 @@ public class JeuGraphique extends JComponent {
     }
 
     private Point pointScorePourJoueur(Joueur joueur, int decalage, DragLayer layer) {
-        JComponent cible = (joueur.getTypePion() == Types.TypePion.ARGENT) ? scoreArgent : scoreOr;
+        JComponent cible = (joueur.getTypePion() == Pion.TypePion.ARGENT) ? scoreArgent : scoreOr;
         int x = cible.getWidth() / 2 + (decalage * 22) - 11;
         int y = Math.max(55, cible.getHeight() / 2);
         return SwingUtilities.convertPoint(cible, new Point(x, y), layer);
@@ -517,7 +517,7 @@ public class JeuGraphique extends JComponent {
         drawWinnerOverlay(g2);
     }
 
-    private Image getFlowerImage(Types.TypeFleur type) {
+    private Image getFlowerImage(Fleur.TypeFleur type) {
         switch (type) {
             case ROUGE:
                 return rougeImg;
@@ -710,7 +710,7 @@ public class JeuGraphique extends JComponent {
             if (p.getPosition() == null)
                 continue;
 
-            Image img = (p.getType() == Types.TypePion.OR) ? orImg : argentImg;
+            Image img = (p.getType() == Pion.TypePion.OR) ? orImg : argentImg;
 
             Coordonnees pos = modelToScreen(p.getPosition().x, p.getPosition().y);
 

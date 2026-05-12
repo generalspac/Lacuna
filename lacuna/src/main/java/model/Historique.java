@@ -256,7 +256,7 @@ public class Historique {
 
                     case "PIONS": {
                         String[] parts = ligne.split(" ");
-                        Types.TypePion type = Types.TypePion.valueOf(parts[0]);
+                        Pion.TypePion type = Pion.TypePion.valueOf(parts[0]);
                         Coordonnees pos = null;
                         if (!parts[1].equals("null")) {
                             pos = new Coordonnees(Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
@@ -267,7 +267,7 @@ public class Historique {
 
                     case "FLEURS_PLATEAU": {
                         String[] parts = ligne.split(" ");
-                        Types.TypeFleur type = Types.TypeFleur.valueOf(parts[0]);
+                        Fleur.TypeFleur type = Fleur.TypeFleur.valueOf(parts[0]);
                         Coordonnees pos = new Coordonnees(Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
                         jeu.getFleurs().add(new Fleur(type, pos));
                         break;
@@ -276,7 +276,7 @@ public class Historique {
                     case "FLEURS_COLLECTEES": {
                         String[] parts = ligne.split(" ");
                         int joueurIndex = Integer.parseInt(parts[0]);
-                        Types.TypeFleur type = Types.TypeFleur.valueOf(parts[1]);
+                        Fleur.TypeFleur type = Fleur.TypeFleur.valueOf(parts[1]);
                         Coordonnees pos = new Coordonnees(Integer.parseInt(parts[2]), Integer.parseInt(parts[3]));
                         jeu.getJoueurs()[joueurIndex].ajouterFleur(new Fleur(type, pos));
                         break;
@@ -292,7 +292,7 @@ public class Historique {
                         // Lecture du pion
                         if (!segments[0].trim().equals("null")) {
                             String[] pionParts = segments[0].trim().split(" ");
-                            Types.TypePion pionType = Types.TypePion.valueOf(pionParts[0]);
+                            Pion.TypePion pionType = Pion.TypePion.valueOf(pionParts[0]);
                             int px = Integer.parseInt(pionParts[1]);
                             int py = Integer.parseInt(pionParts[2]);
 
@@ -316,7 +316,7 @@ public class Historique {
                         String seg1 = segments[1].trim();
                         if (!seg1.equals("null")) {
                             String[] f1Parts = seg1.split(" ");
-                            Types.TypeFleur f1Type = Types.TypeFleur.valueOf(f1Parts[0]);
+                            Fleur.TypeFleur f1Type = Fleur.TypeFleur.valueOf(f1Parts[0]);
                             int f1x = Integer.parseInt(f1Parts[1]);
                             int f1y = Integer.parseInt(f1Parts[2]);
                             // Recherche dans les fleurs collectées du joueur
@@ -335,7 +335,7 @@ public class Historique {
                         String seg2 = segments[2].trim();
                         if (!seg2.equals("null")) {
                             String[] f2Parts = seg2.split(" ");
-                            Types.TypeFleur f2Type = Types.TypeFleur.valueOf(f2Parts[0]);
+                            Fleur.TypeFleur f2Type = Fleur.TypeFleur.valueOf(f2Parts[0]);
                             int f2x = Integer.parseInt(f2Parts[1]);
                             int f2y = Integer.parseInt(f2Parts[2]);
                             // Recherche dans les fleurs collectées du joueur

@@ -3,7 +3,8 @@ package view;
 import global.Configuration;
 import model.Fleur;
 import model.Joueur;
-import model.Types;
+import model.Pion;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.util.*;
@@ -15,11 +16,11 @@ import java.awt.AlphaComposite;
 
 public class Score extends JComponent {
     private Image pawnImage;
-    private Map<Types.TypeFleur, Image> flowerImages;
-    private Map<Types.TypeFleur, Integer> flowerCounts;
-    private Types.TypePion playerType;
+    private Map<Fleur.TypeFleur, Image> flowerImages;
+    private Map<Fleur.TypeFleur, Integer> flowerCounts;
+    private Pion.TypePion playerType;
 
-    public Score(Types.TypePion type) {
+    public Score(Pion.TypePion type) {
         this.playerType = type;
         this.flowerImages = new HashMap<>();
         this.flowerCounts = new HashMap<>();
@@ -27,35 +28,35 @@ public class Score extends JComponent {
 
         loadImages();
 
-        for (Types.TypeFleur t : Types.TypeFleur.values()) {
+        for (Fleur.TypeFleur t : Fleur.TypeFleur.values()) {
             flowerCounts.put(t, 0);
         }
     }
 
     private void loadImages() {
         try {
-            String pawnFile = (playerType == Types.TypePion.OR) ? "pion_or.png" : "pion_argent.png";
+            String pawnFile = (playerType == Pion.TypePion.OR) ? "pion_or.png" : "pion_argent.png";
             pawnImage = ImageIO.read(Configuration.ouvre(pawnFile));
 
-            flowerImages.put(Types.TypeFleur.ROUGE, ImageIO.read(Configuration.ouvre("fleur_rouge.png")));
-            flowerImages.put(Types.TypeFleur.BLEUE, ImageIO.read(Configuration.ouvre("fleur_bleue.png")));
-            flowerImages.put(Types.TypeFleur.JAUNE, ImageIO.read(Configuration.ouvre("fleur_jaune.png")));
-            flowerImages.put(Types.TypeFleur.VERTE, ImageIO.read(Configuration.ouvre("fleur_verte.png")));
-            flowerImages.put(Types.TypeFleur.ORANGE, ImageIO.read(Configuration.ouvre("fleur_orange.png")));
-            flowerImages.put(Types.TypeFleur.VIOLETTE, ImageIO.read(Configuration.ouvre("fleur_violette.png")));
-            flowerImages.put(Types.TypeFleur.ROSE, ImageIO.read(Configuration.ouvre("fleur_rose.png")));
+            flowerImages.put(Fleur.TypeFleur.ROUGE, ImageIO.read(Configuration.ouvre("fleur_rouge.png")));
+            flowerImages.put(Fleur.TypeFleur.BLEUE, ImageIO.read(Configuration.ouvre("fleur_bleue.png")));
+            flowerImages.put(Fleur.TypeFleur.JAUNE, ImageIO.read(Configuration.ouvre("fleur_jaune.png")));
+            flowerImages.put(Fleur.TypeFleur.VERTE, ImageIO.read(Configuration.ouvre("fleur_verte.png")));
+            flowerImages.put(Fleur.TypeFleur.ORANGE, ImageIO.read(Configuration.ouvre("fleur_orange.png")));
+            flowerImages.put(Fleur.TypeFleur.VIOLETTE, ImageIO.read(Configuration.ouvre("fleur_violette.png")));
+            flowerImages.put(Fleur.TypeFleur.ROSE, ImageIO.read(Configuration.ouvre("fleur_rose.png")));
         } catch (Exception e) {
             Configuration.debugeurErreur("Erreur chargement images Score : " + e.getMessage());
         }
     }
 
-    public void setFlowerCount(Types.TypeFleur type, int count) {
+    public void setFlowerCount(Fleur.TypeFleur type, int count) {
         flowerCounts.put(type, count);
         repaint();
     }
 
-    public void updateScore(Map<Types.TypeFleur, Integer> newCounts) {
-        for (Types.TypeFleur t : Types.TypeFleur.values()) {
+    public void updateScore(Map<Fleur.TypeFleur, Integer> newCounts) {
+        for (Fleur.TypeFleur t : Fleur.TypeFleur.values()) {
             flowerCounts.put(t, newCounts.getOrDefault(t, 0));
         }
         repaint();
@@ -63,9 +64,9 @@ public class Score extends JComponent {
 
     public void updateFromGame(Joueur joueur) {
 
-        Map<Types.TypeFleur, Integer> data = new HashMap<>();
+        Map<Fleur.TypeFleur, Integer> data = new HashMap<>();
 
-        for (Types.TypeFleur t : Types.TypeFleur.values()) {
+        for (Fleur.TypeFleur t : Fleur.TypeFleur.values()) {
             data.put(t, 0);
         }
 
@@ -119,9 +120,9 @@ public class Score extends JComponent {
         int totalGridW = 7 * boxSize + 6 * gap;
         int startX = (w - totalGridW) / 2;
 
-        Types.TypeFleur[] types = Types.TypeFleur.values();
+        Fleur.TypeFleur[] types = Fleur.TypeFleur.values();
         for (int i = 0; i < types.length; i++) {
-            Types.TypeFleur type = types[i];
+            Fleur.TypeFleur type = types[i];
             int y = currentY + i * (boxSize + gap);
             int count = flowerCounts.get(type);
 

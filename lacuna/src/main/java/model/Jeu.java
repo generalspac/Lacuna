@@ -190,7 +190,7 @@ public class Jeu {
         return enPhaseSelectionAvantage;
     }
 
-    public Pion getPionLibre(Types.TypePion type) {
+    public Pion getPionLibre(Pion.TypePion type) {
         for (Pion p : pions) {
             if (p.getType() == type && p.getPosition() == null) {
                 return p;
@@ -200,7 +200,7 @@ public class Jeu {
     }
 
     // Le nombre de pions par type placés dans le cercle
-    private int nombreDePionsPlacees(Types.TypePion type) {
+    private int nombreDePionsPlacees(Pion.TypePion type) {
         int compteur = 0;
         for (Pion p : pions) {
             if (p.getType() == type && p.getPosition() != null) {
@@ -211,7 +211,7 @@ public class Jeu {
     }
 
     // si on peut placer un pion d'un certain type(or ou argent) dans le cercle
-    private boolean peutPlacerPionDeType(Types.TypePion type) {
+    private boolean peutPlacerPionDeType(Pion.TypePion type) {
         return nombreDePionsPlacees(type) < MAX_PIONS_PAR_JOUEUR;
     }
 
@@ -222,14 +222,14 @@ public class Jeu {
     void initPlayers() {
         if (isAgainstIA()) {
             joueurs = new Joueur[] {
-                    new JoueurHumain("Humain", Types.TypePion.OR),
-                    new JoueurIa("IA", Types.TypePion.ARGENT)
+                    new JoueurHumain("Humain", Pion.TypePion.OR),
+                    new JoueurIa("IA", Pion.TypePion.ARGENT)
             };
             currentPlayerIndex = 0;
         } else {
             joueurs = new Joueur[] {
-                    new JoueurHumain("Joueur 1", Types.TypePion.OR),
-                    new JoueurHumain("Joueur 2", Types.TypePion.ARGENT)
+                    new JoueurHumain("Joueur 1", Pion.TypePion.OR),
+                    new JoueurHumain("Joueur 2", Pion.TypePion.ARGENT)
             };
             currentPlayerIndex = random.nextInt(getNbJoueurs());
             setFeedbackMessage(feedbackMessage + " Le joueur qui commence est : " + getJoueurActuel().getNom() + " (" + getJoueurActuel().getTypePion() + ").") ;
@@ -241,7 +241,7 @@ public class Jeu {
     public void initFleurs() {
         fleurs.clear();
 
-        for (Types.TypeFleur type : Types.TypeFleur.values()) {
+        for (Fleur.TypeFleur type : Fleur.TypeFleur.values()) {
             for (int i = 0; i < 7; i++) { //CHAQUE COULEUR À 6 PIONS    
                 Coordonnees pos = genererPositionAleatoire(fleurs);
                 fleurs.add(new Fleur(type, pos));
@@ -252,7 +252,7 @@ public class Jeu {
     public void initPions() {
         pions.clear();
 
-        for (Types.TypePion type : Types.TypePion.values()) {
+        for (Pion.TypePion type : Pion.TypePion.values()) {
             for (int i = 0; i < MAX_PIONS_PAR_JOUEUR; i++) {
                 Coordonnees pos = null;
                 pions.add(new Pion(type, pos));
@@ -411,7 +411,7 @@ public class Jeu {
         }
 
         Joueur joueurActuel = getJoueurActuel();
-        Types.TypePion pionType = joueurActuel.getTypePion();
+        Pion.TypePion pionType = joueurActuel.getTypePion();
         Pion pionLibre = getPionLibre(pionType);
 
         if (pionLibre == null) {
@@ -850,7 +850,7 @@ public class Jeu {
         return true;
     }
 
-    private Coordonnees positionLibreDeSecours(Types.TypePion type) {
+    private Coordonnees positionLibreDeSecours(Pion.TypePion type) {
         Coordonnees centre = cercleDeJeu.getCentre();
         double rayonMax = cercleDeJeu.getRayon() - Math.max(10, marge);
 
@@ -900,12 +900,12 @@ public class Jeu {
         if (payload == null)
             return;
 
-        if (!(payload instanceof Types.TypePion)) {
+        if (!(payload instanceof Pion.TypePion)) {
             System.out.println("Payload invalide");
             return;
         }
 
-        Types.TypePion type = (Types.TypePion) payload;
+        Pion.TypePion type = (Pion.TypePion) payload;
         Joueur joueurActuel = getJoueurActuel();
 
         if (joueurActuel.getTypePion() != type) {
@@ -938,7 +938,7 @@ public class Jeu {
     }
 
     private Fleur[] trouverFleursPourPion(Coordonnees pos) {
-        for (Types.TypeFleur typeFleur : Types.TypeFleur.values()) {
+        for (Fleur.TypeFleur typeFleur : Fleur.TypeFleur.values()) {
             List<Fleur> deMemeType = new ArrayList<>();
             for (Fleur f : fleurs) {
                 if (f.getType() == typeFleur) {
@@ -1011,11 +1011,11 @@ public class Jeu {
     }
 //////////////////////////////////////////////////////////////////////
 
-    public Map<Types.TypeFleur, Integer> getScore(Joueur joueur) {
+    public Map<Fleur.TypeFleur, Integer> getScore(Joueur joueur) {
 
-        Map<Types.TypeFleur, Integer> map = new java.util.HashMap<>();
+        Map<Fleur.TypeFleur, Integer> map = new java.util.HashMap<>();
 
-        for (Types.TypeFleur t : Types.TypeFleur.values()) {
+        for (Fleur.TypeFleur t : Fleur.TypeFleur.values()) {
             map.put(t, 0);
         }
 
@@ -1078,8 +1078,8 @@ public class Jeu {
         ia = niveau.creerIA(1);
 
         joueurs = new Joueur[] {
-                new JoueurHumain("Humain", Types.TypePion.OR),
-                new JoueurIa("IA", Types.TypePion.ARGENT)
+                new JoueurHumain("Humain", Pion.TypePion.OR),
+                new JoueurIa("IA", Pion.TypePion.ARGENT)
         };
         currentPlayerIndex = 0;
         iaEnCours = false;

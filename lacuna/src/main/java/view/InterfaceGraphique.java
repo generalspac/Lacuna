@@ -1,12 +1,10 @@
 package view;
 
-import model.Types;
-import global.Configuration;
-import javax.imageio.ImageIO;
+import model.Pion;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.IOException;
 
 import controller.ControleurBoutons;
 import controller.EcouteurDeClavier;
@@ -143,10 +141,10 @@ public class InterfaceGraphique implements Runnable {
                 scoreHeader.setPreferredSize(new Dimension(0, 200));
                 scoreHeader.setGap(100);
 
-                Score scoreArgent = new Score(Types.TypePion.ARGENT);
+                Score scoreArgent = new Score(Pion.TypePion.ARGENT);
                 scoreArgent.setPreferredSize(new Dimension(250, 320));
 
-                Score scoreOr = new Score(Types.TypePion.OR);
+                Score scoreOr = new Score(Pion.TypePion.OR);
                 scoreOr.setPreferredSize(new Dimension(250, 320));
 
                 JLabel scoreLabel = new JLabel("0 - 0", SwingConstants.CENTER);

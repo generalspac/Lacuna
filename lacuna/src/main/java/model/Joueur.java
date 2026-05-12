@@ -13,10 +13,10 @@ import java.util.List;
  */
 public abstract class Joueur {
     protected String nom;
-    protected Types.TypePion typePion;
+    protected Pion.TypePion typePion;
     protected List<Fleur> fleursGagnees;
 
-    public Joueur(String nom, Types.TypePion typePion) {
+    public Joueur(String nom, Pion.TypePion typePion) {
         this.nom = nom;
         this.typePion = typePion;
         this.fleursGagnees = new ArrayList<>();
@@ -26,7 +26,7 @@ public abstract class Joueur {
         return nom;
     }
 
-    public Types.TypePion getTypePion() {
+    public Pion.TypePion getTypePion() {
         return typePion;
     }
 
@@ -42,7 +42,7 @@ public abstract class Joueur {
         return fleursGagnees.size();
     }
 
-    public int nbFleursDeCouleur(Types.TypeFleur type) {
+    public int nbFleursDeCouleur(Fleur.TypeFleur type) {
         int compteur = 0;
 
         for (Fleur f : fleursGagnees) {
@@ -57,7 +57,7 @@ public abstract class Joueur {
     public int nbCouleursGagnees() {
         int compteur = 0;
 
-        for (Types.TypeFleur type : Types.TypeFleur.values()) {
+        for (Fleur.TypeFleur type : Fleur.TypeFleur.values()) {
             if (nbFleursDeCouleur(type) >= 4) {
                 compteur++;
             }

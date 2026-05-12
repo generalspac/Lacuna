@@ -8,7 +8,6 @@ import model.Fleur;
 import model.Jeu;
 import model.Joueur;
 import model.Pion;
-import model.Types;
 
 // Copie l'état du plateau pour l'algo minimax
 
@@ -25,7 +24,7 @@ public class EtatJeu {
     public List<Fleur>[] fleursParJoueur;
 
     // Types de pion de chaque joueur
-    public Types.TypePion[] typesPionsJoueurs;
+    public Pion.TypePion[] typesPionsJoueurs;
 
     // Index du joueur courant ( 0 ou 1 )
     public int joueurCourant;
@@ -37,7 +36,7 @@ public class EtatJeu {
         fleursParJoueur = new ArrayList[2];
         fleursParJoueur[0] = new ArrayList<>();
         fleursParJoueur[1] = new ArrayList<>();
-        typesPionsJoueurs = new Types.TypePion[2];
+        typesPionsJoueurs = new Pion.TypePion[2];
     }
 
     public static EtatJeu depuisJeu(Jeu jeu, int joueurCourant) {
@@ -97,7 +96,7 @@ public class EtatJeu {
             return suivant;
         }
 
-        Types.TypePion typePion = suivant.typePionDuJoueur(suivant.joueurCourant);
+        Pion.TypePion typePion = suivant.typePionDuJoueur(suivant.joueurCourant);
         Pion pionLibre = suivant.getPionLibre(typePion);
 
         if (pionLibre != null) {
@@ -127,7 +126,7 @@ public class EtatJeu {
         return true;
     }
 
-    public Pion getPionLibre(Types.TypePion type) {
+    public Pion getPionLibre(Pion.TypePion type) {
         for (Pion p : pions) {
             if (p.getType() == type && p.getPosition() == null) {
                 return p;
@@ -137,7 +136,7 @@ public class EtatJeu {
         return null;
     }
 
-    public Types.TypePion typePionDuJoueur(int indexJoueur) {
+    public Pion.TypePion typePionDuJoueur(int indexJoueur) {
         return typesPionsJoueurs[indexJoueur];
     }
 
