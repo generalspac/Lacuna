@@ -1,5 +1,5 @@
-model/Fleur.class
 controller/ControleurBoutons.class
+model/Fleur.class
 view/PionArgent$1.class
 controller/EcouteurDeSouris.class
 model/Coordonnees.class
@@ -11,8 +11,8 @@ controller/EcouteurDeClavier.class
 global/Configuration$Mode.class
 view/JeuGraphique$1.class
 global/Configuration.class
-view/DragLayer.class
 model/IA/CoupIA.class
+view/DragLayer.class
 view/PionOr.class
 view/PionOr$2.class
 view/FlexPanel$Direction.class
@@ -26,8 +26,8 @@ view/InterfaceGraphique.class
 model/IA/EtatJeu.class
 view/PionArgent$2.class
 view/JeuGraphique.class
-view/PionOr$1.class
 model/JoueurIa.class
+view/PionOr$1.class
 view/JeuGraphique$2.class
 view/InterfaceTextuelle.class
 view/PionArgent.class
