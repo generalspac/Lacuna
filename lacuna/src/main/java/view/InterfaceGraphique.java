@@ -5,7 +5,6 @@ import model.Pion;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.List;
 
 import controller.ControleurBoutons;
 import controller.EcouteurDeClavier;
@@ -18,6 +17,14 @@ public class InterfaceGraphique implements Runnable {
     JFrame frame;
     boolean maximized = false;
     private Menu menu;
+
+    private static class ParametresPartie {
+        String mode;
+        String nomOr;
+        String nomArgent;
+        String nomHumain;
+        Pion.TypePion joueurQuiCommence;
+    }
 
     @Override
     public void run() {
@@ -69,125 +76,19 @@ public class InterfaceGraphique implements Runnable {
 
     public void lancerJeu() {
 
-        JPanel panel = new JPanel();
-        panel.setBackground(Color.BLACK);
-        panel.setLayout(new GridLayout(5, 1, 15, 15));
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-
-        JLabel title = new JLabel("Choisissez un mode");
-        title.setForeground(Color.WHITE);
-        title.setHorizontalAlignment(SwingConstants.CENTER);
-        title.setFont(new Font("Arial", Font.BOLD, 26));
-
-        String[] options = {
-                "Humain vs Humain",
-                "IA Facile",
-                "IA Moyenne",
-                "IA Difficile"
-        };
-
-        JComboBox<String> combo = new JComboBox<>(options);
-        combo.setFont(new Font("Arial", Font.PLAIN, 20));
-        combo.setPreferredSize(new Dimension(300, 50));
-
-        panel.add(title);
-        panel.add(combo);
-
-        JOptionPane optionPane = new JOptionPane(
-                panel,
-                JOptionPane.PLAIN_MESSAGE,
-                JOptionPane.OK_CANCEL_OPTION);
-
-        JDialog dialog = optionPane.createDialog(frame, "LACUNA");
-
-        dialog.setSize(500, 300);
-        dialog.setLocationRelativeTo(frame);
-        dialog.setVisible(true);
-
-        Object selectedValue = optionPane.getInputValue();
-        String choix = (String) combo.getSelectedItem();
-
-        if (choix == null) {
-            return; // Annulé, on reste sur le menu
+        ParametresPartie parametres = demanderParametresPartie();
+        if (parametres == null) {
+            return;
         }
+        String choix = parametres.mode;
 
         // Afficher un écran de chargement temporaire
-
         JPanel loadingPanel = new JPanel(new BorderLayout());
         loadingPanel.setBackground(Color.BLACK);
-
-        // ================= SPINNER =================
-        JPanel spinner = new JPanel() {
-
-            double angle = 0;
-
-            {
-                setOpaque(false);
-
-                new javax.swing.Timer(16, e -> {
-                    angle += 0.25;
-                    repaint();
-                }).start();
-            }
-
-            @Override
-            protected void paintComponent(Graphics g) {
-
-                Graphics2D g2 = (Graphics2D) g.create();
-
-                g2.setRenderingHint(
-                        RenderingHints.KEY_ANTIALIASING,
-                        RenderingHints.VALUE_ANTIALIAS_ON);
-
-                int size = 50;
-
-                int x = getWidth() / 2 - size / 2;
-                int y = getHeight() / 2 - size / 2;
-
-                // cercle de fond
-                g2.setStroke(new BasicStroke(5f));
-                g2.setColor(new Color(255, 255, 255, 40));
-                g2.drawOval(x, y, size, size);
-
-                // arc animé
-                g2.setColor(Color.WHITE);
-
-                int start = (int) (angle * 40) % 360;
-
-                g2.drawArc(x, y, size, size, start, 90);
-
-                g2.dispose();
-            }
-        };
-
-        spinner.setPreferredSize(new Dimension(100, 100));
-
-        // ================= TEXTE =================
-        JLabel loadingLabel = new JLabel(
-                "Chargement du plateau...",
-                SwingConstants.CENTER);
-
+        JLabel loadingLabel = new JLabel("Chargement du plateau...", SwingConstants.CENTER);
         loadingLabel.setForeground(Color.WHITE);
-        loadingLabel.setFont(
-                new Font("Arial", Font.ITALIC, 24));
-
-        // ================= PANEL CENTRAL =================
-        JPanel center = new JPanel();
-        center.setOpaque(false);
-        center.setLayout(new BoxLayout(center, BoxLayout.Y_AXIS));
-
-        spinner.setAlignmentX(Component.CENTER_ALIGNMENT);
-        loadingLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        center.add(Box.createVerticalGlue());
-        center.add(spinner);
-        center.add(Box.createRigidArea(new Dimension(0, 20)));
-        center.add(loadingLabel);
-        center.add(Box.createVerticalGlue());
-
-        // ================= ASSEMBLAGE =================
-        loadingPanel.add(center, BorderLayout.CENTER);
-
+        loadingLabel.setFont(new Font("Arial", Font.ITALIC, 24));
+        loadingPanel.add(loadingLabel, BorderLayout.CENTER);
         frame.setContentPane(loadingPanel);
         frame.revalidate();
         frame.repaint();
@@ -254,18 +155,19 @@ public class InterfaceGraphique implements Runnable {
                 aire.setBackground(Color.BLACK);
                 aire.setOpaque(true);
 
-                // Appliquer le choix du mode
+                // Appliquer les choix de départ faits dans le menu.
                 switch (choix) {
                     case "IA Facile":
-                        aire.jeu.activerIA(NiveauxIA.FACILE);
+                        aire.jeu.activerIA(NiveauxIA.FACILE, parametres.nomHumain, parametres.joueurQuiCommence);
                         break;
                     case "IA Moyenne":
-                        aire.jeu.activerIA(NiveauxIA.MOYEN);
+                        aire.jeu.activerIA(NiveauxIA.MOYEN, parametres.nomHumain, parametres.joueurQuiCommence);
                         break;
                     case "IA Difficile":
-                        aire.jeu.activerIA(NiveauxIA.DIFFICILE);
+                        aire.jeu.activerIA(NiveauxIA.DIFFICILE, parametres.nomHumain, parametres.joueurQuiCommence);
                         break;
                     default:
+                        aire.jeu.configurerHumainVsHumain(parametres.nomOr, parametres.nomArgent, parametres.joueurQuiCommence);
                         break;
                 }
 
@@ -282,6 +184,8 @@ public class InterfaceGraphique implements Runnable {
                 aire.addKeyListener(new EcouteurDeClavier(controleurBoutons));
                 aire.setFocusable(true);
 
+                installerRaccourcisClavier(root, controleurBoutons);
+
                 JButton undoButton = new JButton("Undo");
                 undoButton.addActionListener(e -> controleurBoutons.undo());
 
@@ -290,6 +194,9 @@ public class InterfaceGraphique implements Runnable {
 
                 JButton resetButton = new JButton("Reset");
                 resetButton.addActionListener(e -> controleurBoutons.reset());
+
+                JButton abandonButton = new JButton("Abandonner");
+                abandonButton.addActionListener(e -> controleurBoutons.abandonner());
 
                 JButton gitButton = new JButton("Git");
                 gitButton.addActionListener(e -> {
@@ -323,42 +230,18 @@ public class InterfaceGraphique implements Runnable {
                 buttonPanel.add(undoButton);
                 buttonPanel.add(redoButton);
                 buttonPanel.add(resetButton);
+                buttonPanel.add(abandonButton);
                 buttonPanel.add(gitButton);
 
-                // Bouton sauvegarder : demande un nom à l'utilisateur avant de sauvegarder
+                // Bouton sauvegarder
                 JButton sauvegarderButton = new JButton("Save");
-                sauvegarderButton.addActionListener(e -> {
-                    String nom = JOptionPane.showInputDialog(frame, "Nom de la partie :", "Sauvegarder", JOptionPane.PLAIN_MESSAGE);
-                    // on ne fait rien si l'utilisateur annule ou laisse le champ vide
-                    if (nom != null && !nom.trim().isEmpty()) {
-                        aire.jeu.sauvegarderPartie(nom.trim());
-                    }
-                });
+                sauvegarderButton.addActionListener(e -> aire.jeu.sauvegarderPartie("sauvegarde.txt"));
 
-                // Bouton charger : affiche la liste des parties dans un JComboBox pour que l'utilisateur choisisse
+                // Bouton charger
                 JButton chargerButton = new JButton("Load");
                 chargerButton.addActionListener(e -> {
-                    List<String> parties = aire.jeu.listerParties();
-                    if (parties.isEmpty()) {
-                        JOptionPane.showMessageDialog(frame, "Aucune partie sauvegardée.");
-                        return;
-                    }
-                    // showInputDialog avec un tableau de valeurs crée un JComboBox natif
-                    String choix = (String) JOptionPane.showInputDialog(
-                        frame,
-                        "Choisir une partie :",
-                        "Charger",
-                        JOptionPane.PLAIN_MESSAGE,
-                        null,
-                        parties.toArray(),
-                        parties.get(0)
-                    );
-                    if (choix == null) return; // l'utilisateur a annulé
-                    // l'id est le premier élément avant le " - " dans le format "id - nom (date)"
-                    int id = Integer.parseInt(choix.split(" - ")[0].trim());
-                    aire.jeu.chargerPartie(id);
+                    aire.jeu.chargerPartie("sauvegarde.txt");
                     aire.refreshScores();
-                    aire.repaint();
                 });
 
                 buttonPanel.add(sauvegarderButton);
@@ -371,7 +254,6 @@ public class InterfaceGraphique implements Runnable {
                 PionOr rightPile = new PionOr(frame, aire.jeu);
                 rightPile.setPreferredSize(new Dimension(80, 600));
                 rightPile.setBackground(Color.BLACK);
-                
 
                 aire.setSidePiles(leftPile, rightPile);
 
@@ -421,6 +303,10 @@ public class InterfaceGraphique implements Runnable {
                     frame.repaint();
                     aire.requestFocusInWindow();
                     aire.refreshScores();
+                    if (aire.jeu.estTourIA()) {
+                        aire.jeu.jouerAvantageIA();
+                        aire.refreshScoresEtTourIA();
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     afficherMenu();
@@ -428,6 +314,126 @@ public class InterfaceGraphique implements Runnable {
             }
         };
         worker.execute();
+    }
+
+
+    private ParametresPartie demanderParametresPartie() {
+        JPanel panel = new JPanel(new GridLayout(0, 2, 12, 12));
+        panel.setBackground(Color.BLACK);
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        String[] modes = { "Humain vs Humain", "IA Facile", "IA Moyenne", "IA Difficile" };
+        JComboBox<String> modeCombo = new JComboBox<>(modes);
+
+        JTextField nomOrField = new JTextField();
+        JTextField nomArgentField = new JTextField();
+        JTextField nomHumainField = new JTextField();
+
+        JComboBox<String> commenceHumain = new JComboBox<>(new String[] { "Aléatoire", "OR", "ARGENT" });
+        JComboBox<String> commenceIA = new JComboBox<>(new String[] { "Aléatoire", "Humain", "IA" });
+
+        panel.add(labelBlanc("Mode"));
+        panel.add(modeCombo);
+        panel.add(labelBlanc("Nom joueur OR (optionnel)"));
+        panel.add(nomOrField);
+        panel.add(labelBlanc("Nom joueur ARGENT (optionnel)"));
+        panel.add(nomArgentField);
+        panel.add(labelBlanc("Nom humain vs IA (optionnel)"));
+        panel.add(nomHumainField);
+        panel.add(labelBlanc("Qui commence ?"));
+        panel.add(commenceHumain);
+
+        modeCombo.addActionListener(e -> {
+            boolean ia = !"Humain vs Humain".equals(modeCombo.getSelectedItem());
+            nomOrField.setEnabled(!ia);
+            nomArgentField.setEnabled(!ia);
+            nomHumainField.setEnabled(ia);
+            panel.remove(9);
+            panel.add(ia ? commenceIA : commenceHumain, 9);
+            panel.revalidate();
+            panel.repaint();
+        });
+
+        nomHumainField.setEnabled(false);
+
+        int result = JOptionPane.showConfirmDialog(frame, panel, "Nouvelle partie", JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE);
+        if (result != JOptionPane.OK_OPTION) {
+            return null;
+        }
+
+        ParametresPartie p = new ParametresPartie();
+        p.mode = (String) modeCombo.getSelectedItem();
+        p.nomOr = nomOrField.getText();
+        p.nomArgent = nomArgentField.getText();
+        p.nomHumain = nomHumainField.getText();
+
+        boolean modeIA = !"Humain vs Humain".equals(p.mode);
+        String choixDepart = (String) (modeIA ? commenceIA.getSelectedItem() : commenceHumain.getSelectedItem());
+        p.joueurQuiCommence = convertirChoixDepart(choixDepart, modeIA);
+        return p;
+    }
+
+    private JLabel labelBlanc(String texte) {
+        JLabel label = new JLabel(texte);
+        label.setForeground(Color.WHITE);
+        return label;
+    }
+
+    private Pion.TypePion convertirChoixDepart(String choix, boolean modeIA) {
+        if (choix == null || "Aléatoire".equals(choix)) {
+            return null;
+        }
+        if (modeIA) {
+            return "IA".equals(choix) ? Pion.TypePion.ARGENT : Pion.TypePion.OR;
+        }
+        return "ARGENT".equals(choix) ? Pion.TypePion.ARGENT : Pion.TypePion.OR;
+    }
+
+    private void installerRaccourcisClavier(JComponent cible, ControleurBoutons controleur) {
+       // key Bindings
+        InputMap inputMap = cible.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap actionMap = cible.getActionMap();
+
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "undo");
+        actionMap.put("undo", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                controleur.undo();
+            }
+        });
+
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "redo");
+        actionMap.put("redo", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                controleur.redo();
+            }
+        });
+
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_R, 0), "reset");
+        actionMap.put("reset", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                controleur.reset();
+            }
+        });
+
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_G, 0), "guides");
+        actionMap.put("guides", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                controleur.toggleCoupsPossibles(null, false);
+            }
+        });
+
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, 0), "abandon");
+        actionMap.put("abandon", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                controleur.abandonner();
+            }
+        });
     }
 
     public void toggleFullscreen() {

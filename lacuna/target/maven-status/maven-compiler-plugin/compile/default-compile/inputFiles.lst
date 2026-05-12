@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /Users/oury/Desktop/Lacuna/groupe-4/lacuna/src/main/java/controller/ControleurBoutons.java
 /Users/oury/Desktop/Lacuna/groupe-4/lacuna/src/main/java/controller/EcouteurDeClavier.java
 /Users/oury/Desktop/Lacuna/groupe-4/lacuna/src/main/java/controller/EcouteurDeSouris.java
@@ -6,6 +5,7 @@
 /Users/oury/Desktop/Lacuna/groupe-4/lacuna/src/main/java/main/Lacuna.java
 /Users/oury/Desktop/Lacuna/groupe-4/lacuna/src/main/java/model/Cercle.java
 /Users/oury/Desktop/Lacuna/groupe-4/lacuna/src/main/java/model/Coordonnees.java
+/Users/oury/Desktop/Lacuna/groupe-4/lacuna/src/main/java/model/DatabaseManager.java
 /Users/oury/Desktop/Lacuna/groupe-4/lacuna/src/main/java/model/Fleur.java
 /Users/oury/Desktop/Lacuna/groupe-4/lacuna/src/main/java/model/Historique.java
 /Users/oury/Desktop/Lacuna/groupe-4/lacuna/src/main/java/model/IA/CoupIA.java
@@ -36,43 +36,3 @@
 /Users/oury/Desktop/Lacuna/groupe-4/lacuna/src/main/java/view/Regles.java
 /Users/oury/Desktop/Lacuna/groupe-4/lacuna/src/main/java/view/RoundedButton.java
 /Users/oury/Desktop/Lacuna/groupe-4/lacuna/src/main/java/view/Score.java
-=======
-/home/jouiniyed/groupe-4/lacuna/src/main/java/model/IA/EvaluateurJeu.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/model/Joueur.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/controller/EcouteurDeClavier.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/model/IA/IADifficile.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/model/IA/NiveauxIA.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/view/FlexPanel.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/global/Configuration.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/model/Coordonnees.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/view/Regles.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/model/IA/IA.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/controller/EcouteurDeSouris.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/model/Fleur.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/view/InterfaceTextuelle.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/view/PionArgent.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/model/JoueurIa.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/model/IA/ThreadIA.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/view/LacunaGradientLabel.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/view/Score.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/view/PionOr.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/view/InterfaceGraphique.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/controller/ControleurBoutons.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/model/IA/Minimax.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/model/Historique.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/model/Jeu.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/model/Cercle.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/model/JoueurHumain.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/main/Lacuna.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/model/IA/GenerateurCoup.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/view/RoundedButton.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/model/IA/EtatJeu.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/view/Menu.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/model/Pion.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/model/IA/IAFacile.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/view/JeuGraphique.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/view/DragLayer.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/model/DatabaseManager.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/model/IA/CoupIA.java
-/home/jouiniyed/groupe-4/lacuna/src/main/java/model/IA/IAMoyen.java
->>>>>>> 50b77ca56bbdb9cc476092cd5818e6431ae79a2c

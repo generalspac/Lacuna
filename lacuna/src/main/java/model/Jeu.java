@@ -33,8 +33,6 @@ public class Jeu {
     int nbFleurs = 49; // nombre de fleurs
 
     private static final double DIST_MIN_FLEURS = 30; // distance min entre les fleurs
-
-    // Ces Dimensions sont utilisées pour éviter les superpositioins
     private static final double DIAMETRE_FLEUR_MODELE = DIST_MIN_FLEURS;
     private static final double DIAMETRE_PION_MODELE = DIST_MIN_FLEURS;
     private static final double MARGE_COLLISION = 2;
@@ -73,6 +71,10 @@ public class Jeu {
     private boolean enPhaseSelectionAvantage = false;
     private String feedbackMessage = "";
 
+    // Fin anticipée de partie (abandon)
+    private boolean partieAbandonnee = false;
+    private Joueur gagnantParAbandon = null;
+
 
     ///////////////// IA /////////////////
     private IA ia;
@@ -85,6 +87,14 @@ public class Jeu {
 
     public void setFeedbackMessage(String feedbackMessage) {
         this.feedbackMessage = feedbackMessage;
+    }
+
+    public boolean isPartieAbandonnee() {
+        return partieAbandonnee;
+    }
+
+    public boolean isPartieTerminee() {
+        return partieAbandonnee || (tousLesPionsPlaces() && fleurs.isEmpty());
     }
 
     // =========================================================
@@ -183,6 +193,70 @@ public class Jeu {
         currentPlayerIndex = (currentPlayerIndex - 1 + NB_JOUEURS) % NB_JOUEURS;
     }
 
+
+    // Configuration des jeoueurs qui commencent
+    // On donne à chacun son nom
+    public void configurerHumainVsHumain(String nomOr, String nomArgent, Pion.TypePion joueurQuiCommence) {
+        againstIA = false;
+        ia = null;
+        iaEnCours = false;
+        partieAbandonnee = false;
+        gagnantParAbandon = null;
+        joueurs = new Joueur[] {
+                new JoueurHumain(nomValide(nomOr, "OR"), Pion.TypePion.OR),
+                new JoueurHumain(nomValide(nomArgent, "ARGENT"), Pion.TypePion.ARGENT)
+        };
+        choisirJoueurQuiCommence(joueurQuiCommence);
+        setFeedbackMessage("Le joueur qui commence est : " + nomJoueurActuelPourAffichage() + ".");
+    }
+
+    // Replace les noms par défaut si le champ est vide
+    // En fait ici s'il y 'a pas de nom on laisse les noms parDefaut du jeu'
+    private String nomValide(String nom, String nomParDefaut) {
+        if (nom == null || nom.trim().isEmpty()) {
+            return nomParDefaut;
+        }
+        return nom.trim();
+    }
+
+    // Choix de l'index du joueur qui commence
+    private void choisirJoueurQuiCommence(Pion.TypePion type) {
+        if (type == null) {
+            currentPlayerIndex = random.nextInt(getNbJoueurs());
+            return;
+        }
+        for (int i = 0; i < joueurs.length; i++) {
+            if (joueurs[i].getTypePion() == type) {
+                currentPlayerIndex = i;
+                return;
+            }
+        }
+        currentPlayerIndex = 0;
+    }
+
+    // Abandon de la partie
+    public void abandonnerPartie() {
+        annulerIAEnCours();
+        partieAbandonnee = true;
+        enPhaseSelectionAvantage = false;
+        resetFleursSelectionnee1();
+        resetFleursSelectionnee2();
+        gagnantParAbandon = joueurs[(currentPlayerIndex + 1) % NB_JOUEURS];
+        setFeedbackMessage(nomJoueurActuelPourAffichage() + " abandonne. "
+                + nomJoueurPourAffichage(gagnantParAbandon) + " gagne par abandon.");
+    }
+
+    // Avantage de l'ia
+    // A REVOIR REFACTORING (UTILISATION DE LA FONCTION D'AVANTAGE POUR HUMAIN)
+    public void jouerAvantageIA() {
+        if (!enPhaseSelectionAvantage || !estTourIA() || fleurs.isEmpty()) {
+            return;
+        }
+        Fleur fleurChoisie = fleurs.get(random.nextInt(fleurs.size()));
+        appliquerAvantageAvecFleur(fleurChoisie);
+        setFeedbackMessage("IA (" + getJoueurActuel().getTypePion() + ") choisit une fleur " + fleurChoisie.getType() + " pour l'avantage initial.");
+    }
+
     public boolean isAgainstIA() {
         return againstIA;
     }
@@ -225,6 +299,8 @@ public class Jeu {
     // =========================================================
 
     void initPlayers() {
+        partieAbandonnee = false;
+        gagnantParAbandon = null;
         if (isAgainstIA()) {
             joueurs = new Joueur[] {
                     new JoueurHumain("Humain", Pion.TypePion.OR),
@@ -297,12 +373,12 @@ public class Jeu {
         return !fleurTropProcheDuneAutre(pos, fleurs);
     }
 
-    // Vérification si les objets ne se superposent pas
+    // Vérifie si deux objets dessinés se superposent
     private boolean objetsSeSuperposent(Coordonnees a, Coordonnees b, double distanceMin) {
         return Coordonnees.distance(a, b) <= distanceMin;
     }
 
-    // Vérifieee si une nouvelle fleur est trop proche d'une fleur déjà sur le plateau
+    // Vérifieddd si une fleur générée est trop proche d'une autre fleur
     private boolean fleurTropProcheDuneAutre(Coordonnees pos, ArrayList<Fleur> fleurs) {
         for (Fleur f : fleurs) {
             if (objetsSeSuperposent(pos, f.getPosition(), DIAMETRE_FLEUR_MODELE + MARGE_COLLISION)) {
@@ -312,11 +388,11 @@ public class Jeu {
         return false;
     }
 
-    //Vérifie si un nouveau pion est trop proche d'un pion déjà placé
+    // Vérifie si un pion placé est trop proche d'un autre pion
     private boolean pionTropProcheDunAutre(Coordonnees pos) {
         for (Pion p : pions) {
-            if (p.getPosition() != null 
-                       && objetsSeSuperposent(pos, p.getPosition(), DIAMETRE_PION_MODELE + MARGE_COLLISION)) {
+            if (p.getPosition() != null
+                    && objetsSeSuperposent(pos, p.getPosition(), DIAMETRE_PION_MODELE + MARGE_COLLISION)) {
                 return true;
             }
         }
@@ -360,6 +436,11 @@ public class Jeu {
 
     // pour placer un pion dans le cercle de jeu
     public boolean placePion(Pion pion, Coordonnees pos) {
+
+        if (partieAbandonnee) {
+            setFeedbackMessage("La partie est terminée : un joueur a abandonné.");
+            return false;
+        }
 
         if (!peutPlacerPionDeType(pion.getType())) {
             setFeedbackMessage("Impossible : plus de pions de type " + pion.getType() + " disponibles.");
@@ -424,11 +505,16 @@ public class Jeu {
 
     public boolean jouerCoupAvecFleursSelectionnees(Coordonnees clic) {
 
+        if (partieAbandonnee) {
+            return false;
+        }
+
         if (!fleursConnectées(fleurSelectionnee1, fleurSelectionnee2)) {
             return false;
         }
 
-        Coordonnees pos = positionSegmentLaPlusProcheDuClic( fleurSelectionnee1.getPosition(),
+        Coordonnees pos = positionSegmentLaPlusProcheDuClic(
+                fleurSelectionnee1.getPosition(),
                 fleurSelectionnee2.getPosition(),
                 clic);
 
@@ -493,22 +579,7 @@ public class Jeu {
     // on verifie si la position où on place le pion est libre
     // A REVOIR
     private boolean positionLibrePourPion(Coordonnees pos) {
-        // on verifie qu'il y a une distance avec toutes les fleurs
-        /*
-         * for (Fleur f : fleurs) {
-         * if (distance(pos, f.getPosition()) < DIST_MIN_FLEURS) {
-         * return false;
-         * }
-         * }
-         */
-        // on verifie qu'il y a une distance aussi avec les pions
-        for (Pion p : pions) {
-            if (p.getPosition() != null && Coordonnees.distance(pos, p.getPosition()) <= DIST_MIN_FLEURS) {
-                return false;
-            }
-        }
-
-        return true;
+        return !pionTropProcheDunAutre(pos);
     }
 
     // pour savoir si le joueur mange les fleurs ( mange et renvoie vrai si oui)
@@ -661,6 +732,10 @@ public class Jeu {
     }
 
     public Joueur getGagnant() {
+        if (gagnantParAbandon != null) {
+            return gagnantParAbandon;
+        }
+
         int couleursJ0 = joueurs[0].nbCouleursGagnees();
         int couleursJ1 = joueurs[1].nbCouleursGagnees();
         if (couleursJ0 > couleursJ1) return joueurs[0];
@@ -688,6 +763,9 @@ public class Jeu {
     // =========================================================
 
     public boolean toucherFleur(Coordonnees pos) {
+        if (partieAbandonnee) {
+            return false;
+        }
         for (Fleur f : fleurs) {
 
             if (Coordonnees.distance(pos, f.getPosition()) < 10) {
@@ -1124,6 +1202,8 @@ public class Jeu {
 
     public void reset() {
         annulerIAEnCours();
+        partieAbandonnee = false;
+        gagnantParAbandon = null;
         // init le jeu à son état initial
         avantageInitialApplique = false;
         enPhaseSelectionAvantage = false;
@@ -1135,47 +1215,16 @@ public class Jeu {
         setFeedbackMessage("Partie réinitialisée. Choisissez une fleur pour l'avantage initial.");
     }
 
-    // Sauvegarde l'état complet de la partie dans la base de données SQLite
-    public void sauvegarderPartie(String nom) {
-        DatabaseManager db = new DatabaseManager();
-        try {
-            db.ouvrirConnexion();
-            db.sauvegarderPartie(this, nom);
-            Configuration.debugeur("Partie sauvegardée : %s\n", nom);
-        } catch (java.sql.SQLException e) {
-            Configuration.debugeurErreur("Erreur lors de la sauvegarde : %s\n", e.getMessage());
-        } finally {
-            try { db.fermerConnexion(); } catch (java.sql.SQLException e) { /* ignoré */ }
-        }
+    // Sauvegarde l'état complet de la partie dans un fichier texte
+    ///// FONCTION À REVOIR CAR L'HISTORIQUE EST CHANGÉ
+    public void sauvegarderPartie(String cheminFichier) {
+        historique.sauvegarderPartie(this, cheminFichier);
     }
 
-    // Charge l'état d'une partie depuis la base de données SQLite pour un id donné
-    public void chargerPartie(int idPartie) {
+    // Charge l'état d'une partie depuis un fichier texte et reconstruit le jeu
+    public void chargerPartie(String cheminFichier) {
         annulerIAEnCours();
-        DatabaseManager db = new DatabaseManager();
-        try {
-            db.ouvrirConnexion();
-            db.chargerPartie(this, idPartie);
-            Configuration.debugeur("Partie chargée (id=%d)\n", idPartie);
-        } catch (java.sql.SQLException e) {
-            Configuration.debugeurErreur("Erreur lors du chargement : %s\n", e.getMessage());
-        } finally {
-            try { db.fermerConnexion(); } catch (java.sql.SQLException e) { /* ignoré */ }
-        }
-    }
-
-    // Retourne la liste des parties sauvegardées (id, nom, date) depuis la base de données
-    public List<String> listerParties() {
-        DatabaseManager db = new DatabaseManager();
-        try {
-            db.ouvrirConnexion();
-            return db.listerParties();
-        } catch (java.sql.SQLException e) {
-            Configuration.debugeurErreur("Erreur lors du listage des parties : %s\n", e.getMessage());
-            return new ArrayList<>();
-        } finally {
-            try { db.fermerConnexion(); } catch (java.sql.SQLException e) { /* ignoré */ }
-        }
+        historique.chargerPartie(this, cheminFichier);
     }
 
 
@@ -1187,17 +1236,24 @@ public class Jeu {
 
     // Activation de l'ia
     public void activerIA(NiveauxIA niveau) {
+        activerIA(niveau, "Humain", Pion.TypePion.OR);
+    }
+
+    //Active le mode IA en laissant --- choisir celui qui commence
+    public void activerIA(NiveauxIA niveau, String nomHumain, Pion.TypePion joueurQuiCommence) {
 
         againstIA = true;
         ia = niveau.creerIA(1);
+        partieAbandonnee = false;
+        gagnantParAbandon = null;
 
         joueurs = new Joueur[] {
-                new JoueurHumain("Humain", Pion.TypePion.OR),
+                new JoueurHumain(nomValide(nomHumain, "Humain"), Pion.TypePion.OR),
                 new JoueurIa("IA", Pion.TypePion.ARGENT)
         };
-        currentPlayerIndex = 0;
+        choisirJoueurQuiCommence(joueurQuiCommence);
         iaEnCours = false;
-        setFeedbackMessage("Mode IA activé (" + niveau + "). Humain (OR) commence.");
+        setFeedbackMessage("Mode IA activé (" + niveau + "). " + nomJoueurActuelPourAffichage() + " commence.");
     }
 
     // Savoir si l'ia est en cours
