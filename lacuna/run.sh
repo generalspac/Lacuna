@@ -29,7 +29,7 @@ run_game() {
     rm -rf target/classes
     mkdir -p target/classes
 
-    javac -d target/classes \
+    javac -cp "lib/sqlite-jdbc.jar" -d target/classes \
     src/main/java/global/*.java \
     src/main/java/model/*.java \
     src/main/java/model/IA/*.java \
@@ -42,7 +42,7 @@ run_game() {
     echo "[INFO] Lancement de Lacuna"
 
 
-    java -cp "target/classes" main.Lacuna
+    java -cp "target/classes:lib/sqlite-jdbc.jar" main.Lacuna
 }
 
 run_game_maven() {

@@ -1135,15 +1135,47 @@ public class Jeu {
         setFeedbackMessage("Partie réinitialisée. Choisissez une fleur pour l'avantage initial.");
     }
 
-    // Sauvegarde l'état complet de la partie dans un fichier texte
-    public void sauvegarderPartie(String cheminFichier) {
-        historique.sauvegarderPartie(this, cheminFichier);
+    // Sauvegarde l'état complet de la partie dans la base de données SQLite
+    public void sauvegarderPartie(String nom) {
+        DatabaseManager db = new DatabaseManager();
+        try {
+            db.ouvrirConnexion();
+            db.sauvegarderPartie(this, nom);
+            Configuration.debugeur("Partie sauvegardée : %s\n", nom);
+        } catch (java.sql.SQLException e) {
+            Configuration.debugeurErreur("Erreur lors de la sauvegarde : %s\n", e.getMessage());
+        } finally {
+            try { db.fermerConnexion(); } catch (java.sql.SQLException e) { /* ignoré */ }
+        }
     }
 
-    // Charge l'état d'une partie depuis un fichier texte et reconstruit le jeu
-    public void chargerPartie(String cheminFichier) {
+    // Charge l'état d'une partie depuis la base de données SQLite pour un id donné
+    public void chargerPartie(int idPartie) {
         annulerIAEnCours();
-        historique.chargerPartie(this, cheminFichier);
+        DatabaseManager db = new DatabaseManager();
+        try {
+            db.ouvrirConnexion();
+            db.chargerPartie(this, idPartie);
+            Configuration.debugeur("Partie chargée (id=%d)\n", idPartie);
+        } catch (java.sql.SQLException e) {
+            Configuration.debugeurErreur("Erreur lors du chargement : %s\n", e.getMessage());
+        } finally {
+            try { db.fermerConnexion(); } catch (java.sql.SQLException e) { /* ignoré */ }
+        }
+    }
+
+    // Retourne la liste des parties sauvegardées (id, nom, date) depuis la base de données
+    public List<String> listerParties() {
+        DatabaseManager db = new DatabaseManager();
+        try {
+            db.ouvrirConnexion();
+            return db.listerParties();
+        } catch (java.sql.SQLException e) {
+            Configuration.debugeurErreur("Erreur lors du listage des parties : %s\n", e.getMessage());
+            return new ArrayList<>();
+        } finally {
+            try { db.fermerConnexion(); } catch (java.sql.SQLException e) { /* ignoré */ }
+        }
     }
 
 

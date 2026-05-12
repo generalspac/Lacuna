@@ -38,6 +38,13 @@
             <version>0.24.0</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- SQLite pour la sauvegarde des parties -->
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.36.0.3</version>
+        </dependency>
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
