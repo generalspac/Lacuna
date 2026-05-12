@@ -821,7 +821,7 @@ public class Jeu {
         return coups;
     }
 
-    public List<Coordonnees> coupsPossibles(Types.TypeFleur type) {
+    public List<Coordonnees> coupsPossibles(Fleur.TypeFleur type) {
         if (type == null) {
             return coupsPossibles();
         }
@@ -847,7 +847,7 @@ public class Jeu {
         return coups;
     }
 
-    public List<Fleur[]> pairesConnectees(Types.TypeFleur type) {
+    public List<Fleur[]> pairesConnectees(Fleur.TypeFleur type) {
         List<Fleur[]> paires = new ArrayList<>();
         // Si type est null, on considère toutes les fleurs, donc on vérifie toutes les paires possibles
         if (type == null) {

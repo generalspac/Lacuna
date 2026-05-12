@@ -6,7 +6,6 @@ package testsmodel;
 
 import model.Coordonnees;
 import model.Fleur;
-import model.Types;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,20 +50,20 @@ public class TestsFleur {
     @Test
     public void testFleurConstructor() {
         Coordonnees pos = new Coordonnees(1, 1);
-        Fleur f = new Fleur(Types.TypeFleur.ROUGE, pos);
-        assertEquals(Types.TypeFleur.ROUGE, f.getType());
+        Fleur f = new Fleur(Fleur.TypeFleur.ROUGE, pos);
+        assertEquals(Fleur.TypeFleur.ROUGE, f.getType());
         assertEquals(pos, f.getPosition());
     }
 
     @Test
     public void testFleurTypeFleurToChar() {
         Coordonnees pos = new Coordonnees(0, 0);
-        assertEquals('R', new Fleur(Types.TypeFleur.ROUGE, pos).typeFleurToChar());
-        assertEquals('B', new Fleur(Types.TypeFleur.BLEUE, pos).typeFleurToChar());
-        assertEquals('J', new Fleur(Types.TypeFleur.JAUNE, pos).typeFleurToChar());
-        assertEquals('V', new Fleur(Types.TypeFleur.VERTE, pos).typeFleurToChar());
-        assertEquals('O', new Fleur(Types.TypeFleur.ORANGE, pos).typeFleurToChar());
-        assertEquals('P', new Fleur(Types.TypeFleur.VIOLETTE, pos).typeFleurToChar());
-        assertEquals('S', new Fleur(Types.TypeFleur.ROSE, pos).typeFleurToChar());
+        assertEquals('R', new Fleur(Fleur.TypeFleur.ROUGE, pos).typeFleurToChar());
+        assertEquals('B', new Fleur(Fleur.TypeFleur.BLEUE, pos).typeFleurToChar());
+        assertEquals('J', new Fleur(Fleur.TypeFleur.JAUNE, pos).typeFleurToChar());
+        assertEquals('V', new Fleur(Fleur.TypeFleur.VERTE, pos).typeFleurToChar());
+        assertEquals('O', new Fleur(Fleur.TypeFleur.ORANGE, pos).typeFleurToChar());
+        assertEquals('P', new Fleur(Fleur.TypeFleur.VIOLETTE, pos).typeFleurToChar());
+        assertEquals('S', new Fleur(Fleur.TypeFleur.ROSE, pos).typeFleurToChar());
     }
 }

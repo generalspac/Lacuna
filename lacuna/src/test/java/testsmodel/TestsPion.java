@@ -6,7 +6,6 @@ package testsmodel;
 
 import model.Coordonnees;
 import model.Pion;
-import model.Types;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,8 +50,8 @@ public class TestsPion {
     @Test
     public void testPionConstructor() {
         Coordonnees pos = new Coordonnees(2, 3);
-        Pion p = new Pion(Types.TypePion.OR, pos);
-        assertEquals(Types.TypePion.OR, p.getType());
+        Pion p = new Pion(Pion.TypePion.OR, pos);
+        assertEquals(Pion.TypePion.OR, p.getType());
         assertEquals(pos, p.getPosition());
     }
 
@@ -60,17 +59,17 @@ public class TestsPion {
     public void testPionSetters() {
         Coordonnees pos1 = new Coordonnees(0, 0);
         Coordonnees pos2 = new Coordonnees(5, 5);
-        Pion p = new Pion(Types.TypePion.ARGENT, pos1);
-        p.setType(Types.TypePion.OR);
+        Pion p = new Pion(Pion.TypePion.ARGENT, pos1);
+        p.setType(Pion.TypePion.OR);
         p.setPosition(pos2);
-        assertEquals(Types.TypePion.OR, p.getType());
+        assertEquals(Pion.TypePion.OR, p.getType());
         assertEquals(pos2, p.getPosition());
     }
 
     @Test
     public void testPionTypePionToChar() {
         Coordonnees pos = new Coordonnees(0, 0);
-        assertEquals('X', new Pion(Types.TypePion.OR, pos).typePionToChar());
-        assertEquals('A', new Pion(Types.TypePion.ARGENT, pos).typePionToChar());
+        assertEquals('X', new Pion(Pion.TypePion.OR, pos).typePionToChar());
+        assertEquals('A', new Pion(Pion.TypePion.ARGENT, pos).typePionToChar());
     }
 }

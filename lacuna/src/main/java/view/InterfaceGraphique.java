@@ -10,6 +10,7 @@ import controller.ControleurBoutons;
 import controller.EcouteurDeClavier;
 
 import model.IA.NiveauxIA;
+import model.Fleur;
 
 public class InterfaceGraphique implements Runnable {
 
@@ -221,11 +222,11 @@ public class InterfaceGraphique implements Runnable {
 
                 JButton gitButton = new JButton("Git");
                 gitButton.addActionListener(e -> {
-                    Object[] options = new Object[Types.TypeFleur.values().length + 2];
+                    Object[] options = new Object[Fleur.TypeFleur.values().length + 2];
                     options[0] = "Masquer";
                     options[1] = "Toutes";
-                    for (int i = 0; i < Types.TypeFleur.values().length; i++) {
-                        options[i + 2] = Types.TypeFleur.values()[i];
+                    for (int i = 0; i < Fleur.TypeFleur.values().length; i++) {
+                        options[i + 2] = Fleur.TypeFleur.values()[i];
                     }
                     Object choix = JOptionPane.showInputDialog(frame,
                             "Afficher les coups possibles pour quelle couleur de fleurs ?",
@@ -240,9 +241,9 @@ public class InterfaceGraphique implements Runnable {
                     if ("Masquer".equals(choix)) {
                         controleurBoutons.toggleCoupsPossibles(null, true);
                     } else {
-                        Types.TypeFleur couleur = null;
-                        if (choix instanceof Types.TypeFleur) {
-                            couleur = (Types.TypeFleur) choix;
+                        Fleur.TypeFleur couleur = null;
+                        if (choix instanceof Fleur.TypeFleur) {
+                            couleur = (Fleur.TypeFleur) choix;
                         }
                         controleurBoutons.toggleCoupsPossibles(couleur, false);
                     }

@@ -50,7 +50,7 @@ public class JeuGraphique extends JComponent {
     private Joueur gagnantAnime = null;
     private int winnerPulse = 0;
     private boolean afficherCoupsPossibles = false;
-    private Types.TypeFleur filtreCouleurCoups = null;
+    private Fleur.TypeFleur filtreCouleurCoups = null;
 
     public JeuGraphique(JFrame frame) {
         this(frame, null, null, null, null, null);
@@ -241,7 +241,7 @@ public class JeuGraphique extends JComponent {
     }
 
     // ======= AFFICHAGE COUPS POSSIBLES ========
-    public void afficherCoupsPossibles(Types.TypeFleur couleur, boolean masquer) {
+    public void afficherCoupsPossibles(Fleur.TypeFleur couleur, boolean masquer) {
         if (masquer) {
             afficherCoupsPossibles = false;
             filtreCouleurCoups = null;

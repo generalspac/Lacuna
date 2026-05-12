@@ -22,7 +22,6 @@ import model.Fleur;
 import model.Jeu;
 import model.Joueur;
 import model.Pion;
-import model.Types;
 import testsmodel.*;
 
 /**
@@ -96,7 +95,7 @@ public class TestsJeu {
             jeu.initFleurs();
             assertEquals(49, jeu.getFleurs().size()); // 7 types * 7 fleurs
             // Check that all types are present
-            int[] counts = new int[Types.TypeFleur.values().length];
+            int[] counts = new int[Fleur.TypeFleur.values().length];
             for (Fleur f : jeu.getFleurs()) {
                 counts[f.getType().ordinal()]++;
             }
@@ -115,8 +114,8 @@ public class TestsJeu {
             assertEquals(12, jeu.getPions().size()); // 2 types * 6 pions
             int orCount = 0, argentCount = 0;
             for (Pion p : jeu.getPions()) {
-                if (p.getType() == Types.TypePion.OR) orCount++;
-                else if (p.getType() == Types.TypePion.ARGENT) argentCount++;
+                if (p.getType() == Pion.TypePion.OR) orCount++;
+                else if (p.getType() == Pion.TypePion.ARGENT) argentCount++;
             }
             assertEquals(6, orCount);
             assertEquals(6, argentCount);
@@ -132,7 +131,7 @@ public class TestsJeu {
             Jeu jeu = new Jeu(300, 300,
                     new Cercle(new Coordonnees(150, 150), 150));
 
-            Pion pion = new Pion(Types.TypePion.OR, null);
+            Pion pion = new Pion(Pion.TypePion.OR, null);
 
             boolean resultat = jeu.placePion(
                     pion,
@@ -152,7 +151,7 @@ public class TestsJeu {
             Jeu jeu = new Jeu(300, 300,
                     new Cercle(new Coordonnees(150, 150), 100));
 
-            Pion pion = new Pion(Types.TypePion.OR, null);
+            Pion pion = new Pion(Pion.TypePion.OR, null);
 
             boolean resultat = jeu.placePion(
                     pion,
@@ -173,12 +172,12 @@ public class TestsJeu {
             jeu.getFleurs().clear();
 
             Fleur f1 = new Fleur(
-                    Types.TypeFleur.ROUGE,
+                    Fleur.TypeFleur.ROUGE,
                     new Coordonnees(100, 100)
             );
 
             Fleur f2 = new Fleur(
-                    Types.TypeFleur.JAUNE,
+                    Fleur.TypeFleur.JAUNE,
                     new Coordonnees(200, 200)
             );
 

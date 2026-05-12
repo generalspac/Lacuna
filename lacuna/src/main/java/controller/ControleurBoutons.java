@@ -1,6 +1,6 @@
 package controller;
 
-import model.Types;
+import model.Fleur;
 import view.JeuGraphique;
 
 public class ControleurBoutons {
@@ -29,7 +29,7 @@ public class ControleurBoutons {
     }
     
     // ======= AFFICHAGE COUPS POSSIBLES ========
-    public void toggleCoupsPossibles(Types.TypeFleur couleur, boolean masquer) {
+    public void toggleCoupsPossibles(Fleur.TypeFleur couleur, boolean masquer) {
         if (masquer) {
             vue.afficherCoupsPossibles(null, true);
         } else {
