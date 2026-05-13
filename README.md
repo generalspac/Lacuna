@@ -46,7 +46,6 @@ ou lancer le fichier run.sh en lui donnant les droit d'execution
 
 # Iyed
 -Participation aux tests IA
-- ajout de undo redo pour la phase 2
 - Revue de la division de points
 
 
