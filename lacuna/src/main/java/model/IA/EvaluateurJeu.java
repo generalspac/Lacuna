@@ -1,8 +1,8 @@
 package model.IA;
 
 import model.Fleur;
-
-
+import model.Pion;
+import model.Coordonnees;
 
 // Calcule le score heuristique d'un état
 public class EvaluateurJeu {
@@ -14,32 +14,27 @@ public class EvaluateurJeu {
         this.utiliserBonus = utiliserBonus;
     }
 
-
     public int evaluer(EtatJeu etat, int indexIA) {
 
-        // Index du joueur
         int indexJoueur = 1 - indexIA;
 
-        // Calcule des couleurs majoritaires pour IA et joueur
-        int couleursIA    = compterCouleursMajoritaires(etat, indexIA);
+        int couleursIA = compterCouleursMajoritaires(etat, indexIA);
         int couleursJoueur = compterCouleursMajoritaires(etat, indexJoueur);
 
-        // Formule de calcul du score
         int score = (couleursIA - couleursJoueur) * 1000;
 
         score += (nombreFleurs(etat, indexIA) - nombreFleurs(etat, indexJoueur)) * 20;
-        score += (scoreCouleursProchesMajorite(etat, indexIA) - scoreCouleursProchesMajorite(etat, indexJoueur)) * 10;
+        score += (scoreCouleursProchesMajorite(etat, indexIA)
+                - scoreCouleursProchesMajorite(etat, indexJoueur)) * 10;
 
-        // Conditions de l'utilisation du bonus
-        if (utiliserBonus) {
-            score += bonus(etat, indexIA) - bonus(etat, indexJoueur);
-        }
-
-        return score;
-
+      if (utiliserBonus) {
+        score += bonus(etat, indexIA) - bonus(etat, indexJoueur);
+        score += scorePhase2(etat, indexIA) - scorePhase2(etat, indexJoueur);
     }
 
-    // Renvoie le nombre de couleurs majoritaires pour un joueur et un état donné
+        return score;
+    }
+
     public int compterCouleursMajoritaires(EtatJeu etat, int index){
         int compteur = 0;
 
@@ -51,8 +46,7 @@ public class EvaluateurJeu {
 
         return compteur;
     }
-
-    // Renvoie le bonus pour départager deux coups de valeures égales
+    
     public int bonus(EtatJeu etat,int index){
         int score = 0;
 
@@ -71,11 +65,28 @@ public class EvaluateurJeu {
         return score;
     }
 
+   
+    // Anticipation de la phase 2
+    private int scorePhase2(EtatJeu etat, int index) {
+        int score = 0;
+
+        for (Fleur fleur : etat.fleursRestantes) {
+            Pion pionProche = pionLePlusProche(etat, fleur);
+
+            if (pionProche != null && pionProche.getType() == etat.typesPionsJoueurs[index]) {
+                score += 8;
+            }
+        }
+
+        return score;
+    }
+
     private int scoreCouleursProchesMajorite(EtatJeu etat, int index) {
         int score = 0;
 
         for (Fleur.TypeFleur type : Fleur.TypeFleur.values()) {
             int nb = nombreFleursDeCouleur(etat, index, type);
+
             if (nb > 0 && nb < 4) {
                 score += nb;
             }
@@ -100,4 +111,30 @@ public class EvaluateurJeu {
         return compteur;
     }
 
+
+    private Pion pionLePlusProche(EtatJeu etat, Fleur fleur) {
+
+        if (fleur == null || fleur.getPosition() == null) {
+            return null;
+        }
+
+        Pion meilleur = null;
+        double min = Double.MAX_VALUE;
+
+        for (Pion p : etat.pions) {
+
+            if (p.getPosition() == null) {
+                continue;
+            }
+
+            double d = Coordonnees.distance( fleur.getPosition(), p.getPosition());
+
+            if (d < min) {
+                min = d;
+                meilleur = p;
+            }
+        }
+
+        return meilleur;
+    }
 }

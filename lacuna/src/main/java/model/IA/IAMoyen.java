@@ -5,7 +5,7 @@ public class IAMoyen implements IA {
     // attribut minimax pour calculer le meilleur coup a choisir
     private final Minimax minimax;
     public IAMoyen(int indexIA){
-        minimax = new Minimax(new EvaluateurJeu(false), 5, indexIA);
+        minimax = new Minimax(new EvaluateurJeu(false), 3, indexIA);
     }
     // calcule le meilleur coup a choisir
     public CoupIA choisirCoup(EtatJeu etat){
