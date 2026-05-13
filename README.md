@@ -54,4 +54,6 @@ ou lancer le fichier run.sh en lui donnant les droit d'execution
 -IA vs HUmain -> quand l'humain choisit son nom, celà n'apparait pas lors du jeu
 
 
-
+# oury
+    -refaire une factorisation des variables globales utilisées par le modèle et generateurCoup ia
+        -peut être créer une autre classe (evite la duplication)
