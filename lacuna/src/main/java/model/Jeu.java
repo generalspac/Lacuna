@@ -1384,4 +1384,26 @@ public class Jeu {
 
         thread.start();
     }
+
+    //=============================CONFIGURATION POUR TESTER IA VS IA =================//
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////
+   public void configurerIAContreIA(NiveauxIA niveauOr, NiveauxIA niveauArgent, Pion.TypePion joueurQuiCommence) {
+        againstIA = true;
+        ia = null;
+        iaEnCours = false;
+        partieAbandonnee = false;
+        gagnantParAbandon = null;
+        
+        joueurs = new Joueur[] {new JoueurIa("IA " + niveauOr, Pion.TypePion.OR),
+                new JoueurIa("IA " + niveauArgent, Pion.TypePion.ARGENT)};
+
+        choisirJoueurQuiCommence(joueurQuiCommence);
+        
+        setFeedbackMessage("Test IA contre IA : " + niveauOr + " (OR) contre "
+                + niveauArgent + " (ARGENT). "
+                + nomJoueurActuelPourAffichage() + " commence.");
+    }
+    
 }
+
+
