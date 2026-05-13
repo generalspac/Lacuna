@@ -29,7 +29,6 @@ public class EtatJeu {
     // Index du joueur courant ( 0 ou 1 )
     public int joueurCourant;
 
-    //@SuppressWarnings("unchecked") //ajouter pour le warning du compilateur @les gars
     public EtatJeu() {
         fleursRestantes = new ArrayList<>();
         pions = new ArrayList<>();
@@ -83,7 +82,7 @@ public class EtatJeu {
 
     public EtatJeu appliquerCoup(CoupIA coup) {
         EtatJeu suivant = copie();
-
+        // On recherche la fleur f1 et f2 du coup 
         Fleur f1 = suivant.trouverFleur(coup.fleur1);
         Fleur f2 = suivant.trouverFleur(coup.fleur2);
 
@@ -98,12 +97,14 @@ public class EtatJeu {
             pionLibre.setPosition(new Coordonnees(coup.position.x, coup.position.y));
         }
 
+        // Suppression des fleurs gagnées dans le plateau
+        // Collection des fleurs gagnees par le joueur courant
         suivant.fleursRestantes.remove(f1);
         suivant.fleursRestantes.remove(f2);
         suivant.fleursParJoueur[suivant.joueurCourant].add(f1);
         suivant.fleursParJoueur[suivant.joueurCourant].add(f2);
 
-        suivant.joueurCourant = 1 - suivant.joueurCourant;
+        suivant.joueurCourant = 1 - suivant.joueurCourant; // MÀJ index joueurs
         return suivant;
     }
 

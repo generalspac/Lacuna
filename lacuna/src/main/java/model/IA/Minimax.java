@@ -1,5 +1,6 @@
 package model.IA;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -101,12 +102,31 @@ public class Minimax {
         }
     }
 
+    // Fonction prise chez chatgpt pour m'aider à améliorer la complexité
     private void trierCoups(EtatJeu etat, List<CoupIA> coups) {
-        coups.sort(Comparator.comparingInt((CoupIA coup) -> {
-            // Utilisation d'un tri "léger" ou partiel pour limiter l'overhead
-            // Ici on garde l'évaluation car elle a été optimisée dans EvaluateurJeu
+        List<CoupNote> coupsNotes = new ArrayList<>(coups.size());
+
+        for (CoupIA coup : coups) {
             EtatJeu suivant = etat.appliquerCoup(coup);
-            return evaluateur.evaluer(suivant, indexIA);
-        }).reversed());
+            int score = evaluateur.evaluer(suivant, indexIA);
+            coupsNotes.add(new CoupNote(coup, score));
+        }
+
+        coupsNotes.sort(Comparator.comparingInt((CoupNote coupNote) -> coupNote.score).reversed());
+
+        coups.clear();
+        for (CoupNote coupNote : coupsNotes) {
+            coups.add(coupNote.coup);
+        }
+    }
+
+    private static class CoupNote {
+        private final CoupIA coup;
+        private final int score;
+
+        private CoupNote(CoupIA coup, int score) {
+            this.coup = coup;
+            this.score = score;
+        }
     }
 }

@@ -27,8 +27,16 @@ public class ControleurBoutons {
         vue.jeu.reset();
         vue.refreshScoresEtTourIA();
     }
+
+    public void abandonner() {
+        vue.annulerAnimationsVisuelles();
+        vue.jeu.abandonnerPartie();
+        vue.afficherGagnantSansAnimation();
+        vue.refreshScores();
+        vue.repaint();
+    }
     
-    // ======= AFFICHAGE COUPS POSSIBLES ========
+    //==== Affichage des coups ========
     public void toggleCoupsPossibles(Fleur.TypeFleur couleur, boolean masquer) {
         if (masquer) {
             vue.afficherCoupsPossibles(null, true);

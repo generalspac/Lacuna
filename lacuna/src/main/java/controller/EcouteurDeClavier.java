@@ -38,6 +38,11 @@ public class EcouteurDeClavier extends KeyAdapter {
                 Configuration.debugeur("Le bouton G clavier a été pressé\n");
                 controleur.toggleCoupsPossibles(null, false);
                 break;
+
+            case KeyEvent.VK_A:
+                Configuration.debugeur("Le bouton A clavier a été pressé\n");
+                controleur.abandonner();
+                break;
         }
     }
 

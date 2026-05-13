@@ -18,41 +18,58 @@ java -cp bin main.Lacuna
 
 ou lancer le fichier run.sh en lui donnant les droit d'execution
 
-# A faire 
-Correction des bugs suivants : 
-- Avantage initial n'est pas dans undoStack : DONE :)
 
 # Faycal
 
-- Placement des pions (séléction des fleurs, ligne blanche et drag and drop du pion)
-- Création des boxs pour les scores des joueurs avec les fleurs mangées
-- S'organiser avec Layan pour le controleur souris
+-IHM avec layan (ne pas oublier le compte rendu pour l'audit et le projet final)
+-Ajout de retour au menu lorsqu'on abandonne la partie 
 
 # Tout le monde
 
-- Correction des bugs envoyés sur whatsapp (important)
-- Réduction de la taille des fleurs
-- Uniformisation de le répartition aléatoire des fleurs au début de partie
+-Jouer au jeu et vérifier les bugs 
+- Pour les bugs que vous pouvez resoudre, si vous les resolvez, 
+    supprimez les dans la partie bugs(en bas) et faites le savoir dans le groupe
 
-# Niels
+# Niels & oury
 
-- Partie IA
+- Partie IA(ameliorer la complexité car un peu lent selon les niveaux)
+- Tester les IA et faire le rapport 
+
 
 # Layan
 
-- S'organiser avec Faycal pour le controleur souris
-- Undo/redo/reset 
+- IHM
+
+# Souleymane
+-Tests 
+-REfactorisation
+
+# Iyed
+-Participation aux tests IA
+- Revue de la division de points
 
 
-#######perso oury#################
-logique: à partir de la detection de fin de jeu:
-    -les 2 joueurs ont placé tous leurs pions
-Il faudra attribué les fleurs restantes aux 2 joueurs 
-    -Utilsation de la methode brute au debut
-    -plus tard ajout d'une animation.
+# BUGS
+-(Aucune zone libre sur ce segment)->l'interface se fige
+-IA vs HUmain -> quand l'humain choisit son nom, celà n'apparait pas lors du jeu
 
---apres implementaton de cette logique, vu que c'est dans mousePressed secondePhase() 
- est appélée, alors elle n'est déclenchée qu'après un clic de la souris
---Donc il faudra que ça se fasse automatiquement plus tard (ça sera pour l'amelioration que je ferai après)
 
---Amelioration eventuelle: faire une animation pour la seconde phase car elle est brute pour l'instant
+# oury
+    -refaire une factorisation des variables globales utilisées par le modèle et generateurCoup ia
+        -peut être créer une autre classe (evite la duplication)
+    
+
+    tests IA : 
+    
+        sudo apt install sqlite3
+
+        sqlite3 lacuna.db "DELETE FROM resultats_ia;"
+        
+        ./run.sh
+
+        javac -cp "lib/sqlite-jdbc.jar:target/classes" -d target/test-classes src/test/java/testsmodel/TestsIAVsIA.java && java -cp "target/test-classes:target/classes:lib/sqlite-jdbc.jar" testsmodel.TestsIAVsIA
+
+        sqlite3 lacuna.db "SELECT * FROM resultats_ia;"
+    
+
+

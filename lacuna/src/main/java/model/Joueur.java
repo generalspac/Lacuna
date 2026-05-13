@@ -26,6 +26,10 @@ public abstract class Joueur {
         return nom;
     }
 
+    public void setNom(String nom) {
+        this.nom = nom;
+    }
+
     public Pion.TypePion getTypePion() {
         return typePion;
     }

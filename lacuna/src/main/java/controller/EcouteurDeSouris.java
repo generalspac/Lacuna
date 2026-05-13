@@ -23,7 +23,7 @@ public class EcouteurDeSouris extends MouseAdapter {
     @Override
     public void mousePressed(MouseEvent e) {
 
-        if (jeuGraphique.isAnimationEnCours()) {
+        if (jeuGraphique.isAnimationEnCours() || game.isPartieAbandonnee()) {
             return;
         }
 
