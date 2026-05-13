@@ -1243,6 +1243,9 @@ public class Jeu {
     public void activerIA(NiveauxIA niveau, String nomHumain, Pion.TypePion joueurQuiCommence) {
 
         againstIA = true;
+        if (niveau == null) {
+            niveau = NiveauxIA.FACILE;
+        }
         ia = niveau.creerIA(1);
         partieAbandonnee = false;
         gagnantParAbandon = null;

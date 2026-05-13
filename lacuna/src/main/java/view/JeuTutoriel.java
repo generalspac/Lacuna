@@ -2,6 +2,7 @@ package view;
 
 import javax.swing.*;
 import model.*;
+import model.IA.NiveauxIA;
 import java.awt.*;
 
 public class JeuTutoriel extends JeuGraphique {
@@ -14,6 +15,7 @@ public class JeuTutoriel extends JeuGraphique {
         super(frame);
         this.quitterAction = quitterAction;
         this.overlay = overlay;
+        setBackground(Color.BLACK);
 
         PionArgent leftPile = new PionArgent(frame, jeu);
         PionOr rightPile = new PionOr(frame, jeu);
@@ -24,7 +26,7 @@ public class JeuTutoriel extends JeuGraphique {
     }
 
     private void initialiserTutoriel() {
-        jeu.activerIA(null);
+        jeu.activerIA(NiveauxIA.FACILE);
         jeu.setEnPhaseSelectionAvantage(false);
         jeu.setAvantageInitialApplique(true);
         jeu.getFleurs().clear();
@@ -141,7 +143,10 @@ public class JeuTutoriel extends JeuGraphique {
 
     @Override
     public void refreshScoresEtTourIA() {
-        super.refreshScoresEtTourIA();
+        // Dans le tutoriel, on ne veut pas que l'IA joue automatiquement
+        // après le coup du joueur pour ne pas perturber les étapes.
+        refreshScores();
+        repaint();
         validerProgression();
     }
 
@@ -165,7 +170,14 @@ public class JeuTutoriel extends JeuGraphique {
                 break;
 
             case 2:
-                if (!jeu.getPions().isEmpty()) {
+                boolean unPionPlace = false;
+                for (Pion p : jeu.getPions()) {
+                    if (p.getPosition() != null) {
+                        unPionPlace = true;
+                        break;
+                    }
+                }
+                if (unPionPlace) {
                     etape = 3;
                     afficherMessageAvecDelai(300);
                 }

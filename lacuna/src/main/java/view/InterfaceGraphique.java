@@ -91,7 +91,7 @@ public class InterfaceGraphique implements Runnable {
 
         JeuTutoriel tutoriel = new JeuTutoriel(frame, overlay, () -> afficherMenu());
 
-        // On utilise un JLayeredPane pour superposer le tutoriel et l'overlay
+       
         JLayeredPane layeredPane = new JLayeredPane();
         layeredPane.setLayout(new OverlayLayout(layeredPane));
 
