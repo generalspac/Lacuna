@@ -247,6 +247,49 @@ public class InterfaceGraphique implements Runnable {
                 buttonPanel.add(sauvegarderButton);
                 buttonPanel.add(chargerButton);
 
+                // ================= CONTRÔLES PHASE 2 =================
+                FlexPanel phase2Panel = new FlexPanel();
+                phase2Panel.setDirection(FlexPanel.Direction.ROW);
+                phase2Panel.setJustify(FlexPanel.Justify.CENTER);
+                phase2Panel.setAlign(FlexPanel.Align.CENTER);
+                phase2Panel.setGap(10);
+                phase2Panel.setPreferredSize(new Dimension(0, 40));
+                phase2Panel.setBackground(Color.BLACK);
+
+                JLabel vitesseLabel = new JLabel("Vitesse Phase 2 :");
+                vitesseLabel.setForeground(Color.LIGHT_GRAY);
+                vitesseLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+
+                JLabel lentLabel = new JLabel("Lent");
+                lentLabel.setForeground(Color.LIGHT_GRAY);
+                lentLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+
+                // valeur 1 = lent (delai x4)
+                // valeur 3 = normal (x1) 
+                // valeur 5 = rapide (x0.25)
+                
+                JSlider sliderVitesse = new JSlider(JSlider.HORIZONTAL, 1, 5, 3);
+                sliderVitesse.setPreferredSize(new Dimension(150, 30));
+                sliderVitesse.setBackground(Color.BLACK);
+                sliderVitesse.setForeground(Color.LIGHT_GRAY);
+                sliderVitesse.addChangeListener(e -> {
+                    double facteur = Math.pow(2.0, 3 - sliderVitesse.getValue());
+                    aire.setFacteurVitesse(facteur);
+                });
+
+                JLabel rapideLabel = new JLabel("Rapide");
+                rapideLabel.setForeground(Color.LIGHT_GRAY);
+                rapideLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+
+                JButton skipButton = new JButton("Skip");
+                skipButton.addActionListener(e -> aire.skipAnimationPhase2());
+
+                phase2Panel.add(vitesseLabel);
+                phase2Panel.add(lentLabel);
+                phase2Panel.add(sliderVitesse);
+                phase2Panel.add(rapideLabel);
+                phase2Panel.add(skipButton);
+
                 PionArgent leftPile = new PionArgent(frame, aire.jeu);
                 leftPile.setPreferredSize(new Dimension(80, 600));
                 leftPile.setBackground(Color.BLACK);
@@ -284,6 +327,8 @@ public class InterfaceGraphique implements Runnable {
                 root.setFlexGrow(gameRow, 1);
                 root.add(buttonPanel);
                 root.setFlexGrow(buttonPanel, 0);
+                root.add(phase2Panel);
+                root.setFlexGrow(phase2Panel, 0);
 
                 return root;
             }

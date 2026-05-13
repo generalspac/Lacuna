@@ -49,6 +49,8 @@ public class JeuGraphique extends JComponent {
     private int phase2ComparePulse = 0;
     private Joueur gagnantAnime = null;
     private int winnerPulse = 0;
+    // facteur de vitesse phase 2 : <1.0 = plus rapide et >1.0 = plus lent
+    private double facteurVitesse = 1.0;
     private boolean afficherCoupsPossibles = false;
     private Fleur.TypeFleur filtreCouleurCoups = null;
 
@@ -101,6 +103,35 @@ public class JeuGraphique extends JComponent {
         gagnantAnime = null;
         winnerPulse = 0;
         repaint();
+    }
+
+    public void setFacteurVitesse(double facteur) {
+        this.facteurVitesse = facteur;
+    }
+
+    public void skipAnimationPhase2() {
+
+        // ne fait rien si on est pas dans la phase 2
+        if (!phase2Animee || !animationEnCours) return;
+
+        // appliquer toutes les fleurs restantes 
+        jeu.attribuerFleursRestantes();
+
+        // incrementer la génération pour arreter les timer en cours
+        final int generation = ++generationAnimation;
+
+        // Réinitialiser l'état d'illustration
+        fleurPhase2Illustree = null;
+        pionPhase2Illustre = null;
+        pionPhase2Compare = null;
+        phase2ComparePulse = 0;
+        jeu.resetFleursSelectionnee1();
+        jeu.resetFleursSelectionnee2();
+        refreshScores();
+        repaint();
+
+        // on passe directement à l'animation de gagnant
+        animerGagnant(generation);
     }
 
     /////////////// INIT ///////////////////////
@@ -417,7 +448,8 @@ public class JeuGraphique extends JComponent {
         refreshScores();
         repaint();
 
-        int delaiMesure = (attribution.comparaisonNecessaire && attribution.pionCompare != null) ? 1900 : 1150;
+        // Délai avant attribution ajusté selon le facteur de vitesse du slider
+        int delaiMesure = (int) ((attribution.comparaisonNecessaire && attribution.pionCompare != null) ? 1900 * facteurVitesse : 1150 * facteurVitesse);
         new Timer(delaiMesure, e -> {
             ((Timer) e.getSource()).stop();
             if (generation != generationAnimation) return;
