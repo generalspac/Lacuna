@@ -57,3 +57,19 @@ ou lancer le fichier run.sh en lui donnant les droit d'execution
 # oury
     -refaire une factorisation des variables globales utilisées par le modèle et generateurCoup ia
         -peut être créer une autre classe (evite la duplication)
+    
+
+    tests IA : 
+    
+        sudo apt install sqlite3
+
+        sqlite3 lacuna.db "DELETE FROM resultats_ia;"
+        
+        ./run.sh
+
+        javac -cp "lib/sqlite-jdbc.jar:target/classes" -d target/test-classes src/test/java/testsmodel/TestsIAVsIA.java && java -cp "target/test-classes:target/classes:lib/sqlite-jdbc.jar" testsmodel.TestsIAVsIA
+
+        sqlite3 lacuna.db "SELECT * FROM resultats_ia;"
+    
+
+

@@ -278,4 +278,25 @@ public class DatabaseManager {
     public Connection getConnexion() {
         return connexion;
     }
+
+    // sauvegarde les résultat d'un duel ai vs ai dans la table resultats_ia de la DB 
+    public void sauvegarderResultatsIA(String niveauOr, String niveauArgent, int victoiresOr, int victoiresArgent, int egalites) throws SQLException {
+        
+        PreparedStatement stmt = connexion.prepareStatement(
+            "INSERT INTO resultats_ia (niveauOr, niveauArgent, victoiresOr, victoiresArgent, egalites)" +
+            " VALUES (?, ?, ?, ?, ?)"
+        );
+
+        stmt.setString(1, niveauOr);
+
+        stmt.setString(2, niveauArgent);
+
+        stmt.setInt(3, victoiresOr);
+        stmt.setInt(4, victoiresArgent);
+
+        stmt.setInt(5, egalites);
+
+        stmt.executeUpdate();
+        stmt.close();
+    }
 }
