@@ -79,6 +79,16 @@ public class DatabaseManager {
             "position_y INTEGER)"
         );
 
+        stmt.execute(
+            "CREATE TABLE IF NOT EXISTS resultats_ia (" +
+            "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+            "niveauOr TEXT," +
+            "niveauArgent TEXT," +
+            "victoiresOr INTEGER," +
+            "victoiresArgent INTEGER," +
+            "egalites INTEGER)"
+        );
+
         stmt.close();
     }
 
