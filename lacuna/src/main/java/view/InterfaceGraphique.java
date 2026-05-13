@@ -47,6 +47,13 @@ public class InterfaceGraphique implements Runnable {
             }
         });
 
+        menu.tutoriel.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                afficherTutoriel();
+            }
+        });
+
         frame.setContentPane(menu);
         frame.revalidate();
         frame.repaint();
@@ -64,6 +71,41 @@ public class InterfaceGraphique implements Runnable {
         frame.setContentPane(reglesView);
         frame.revalidate();
         frame.repaint();
+    }
+
+    public void afficherTutoriel() {
+        lancerJeuTutoriel();
+    }
+
+    public void lancerJeuTutoriel() {
+
+        TutorialOverlay overlay = new TutorialOverlay();
+
+        JeuTutoriel tutoriel = new JeuTutoriel(frame, overlay, () -> afficherMenu());
+
+        // On utilise un JLayeredPane pour superposer le tutoriel et l'overlay
+        JLayeredPane layeredPane = new JLayeredPane();
+        layeredPane.setLayout(new OverlayLayout(layeredPane));
+
+        layeredPane.add(tutoriel, JLayeredPane.DEFAULT_LAYER);
+        layeredPane.add(overlay, JLayeredPane.PALETTE_LAYER);
+
+        // IMPORTANT
+        DragLayer dragLayer = new DragLayer();
+
+        dragLayer.setOpaque(false);
+
+        frame.setGlassPane(dragLayer);
+
+        frame.getGlassPane().setVisible(true);
+
+        frame.setContentPane(layeredPane);
+
+        frame.revalidate();
+
+        frame.repaint();
+
+        tutoriel.startTutorial();
     }
 
     public void lancerJeu() {
@@ -103,7 +145,12 @@ public class InterfaceGraphique implements Runnable {
         dialog.setLocationRelativeTo(frame);
         dialog.setVisible(true);
 
-        Object selectedValue = optionPane.getInputValue();
+        Object value = optionPane.getValue();
+
+        if (value == null || (int) value != JOptionPane.OK_OPTION) {
+            return; // utilisateur a cliqué sur Annuler ou fermé la fenêtre
+        }
+
         String choix = (String) combo.getSelectedItem();
 
         if (choix == null) {
@@ -345,7 +392,6 @@ public class InterfaceGraphique implements Runnable {
                 PionOr rightPile = new PionOr(frame, aire.jeu);
                 rightPile.setPreferredSize(new Dimension(80, 600));
                 rightPile.setBackground(Color.BLACK);
-                
 
                 aire.setSidePiles(leftPile, rightPile);
 

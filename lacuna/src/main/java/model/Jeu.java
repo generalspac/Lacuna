@@ -1130,6 +1130,11 @@ public class Jeu {
 
     // Activation de l'ia
     public void activerIA(NiveauxIA niveau) {
+        if (niveau == null) {
+            againstIA = false;
+            ia = null;
+            return;
+        }
 
         againstIA = true;
         ia = niveau.creerIA(1);

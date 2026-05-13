@@ -1,17 +1,9 @@
 package view;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.Insets;
-import java.awt.Graphics2D;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JPanel;
+import javax.swing.*;
 
 import global.Configuration;
 
@@ -21,78 +13,74 @@ public class Menu extends JPanel {
     public RoundedButton chargerPartie;
     public RoundedButton leaderBoard;
     public RoundedButton regles;
+    public RoundedButton tutoriel;
+
     private Image backgroundImage;
 
     public Menu() {
+
         try {
             backgroundImage = ImageIO.read(Configuration.ouvre("menu_back.png"));
         } catch (Exception e) {
             System.err.println("Erreur lors du chargement de l'image de fond : " + e.getMessage());
         }
 
+        setBackground(Color.white);
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+
         LacunaGradientLabel title = new LacunaGradientLabel("LACUNA");
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
         title.setPreferredSize(new Dimension(800, 180));
         title.setMaximumSize(new Dimension(800, 180));
         title.setMinimumSize(new Dimension(800, 180));
-        setBackground(Color.white);
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+
+        // =========================
+        // BOUTONS (ON GARDE TES STYLES)
+        // =========================
         nouvellePartie = new RoundedButton("Nouvelle Partie");
         chargerPartie = new RoundedButton("Charger Partie");
         leaderBoard = new RoundedButton("LeaderBoard");
         regles = new RoundedButton("Règles du jeu");
+        tutoriel = new RoundedButton("Tutoriel");
 
-        nouvellePartie.setAlignmentX(Component.CENTER_ALIGNMENT);
-        chargerPartie.setAlignmentX(Component.CENTER_ALIGNMENT);
-        leaderBoard.setAlignmentX(Component.CENTER_ALIGNMENT);
-        regles.setAlignmentX(Component.CENTER_ALIGNMENT);
+        RoundedButton[] buttons = {
+                nouvellePartie,
+                chargerPartie,
+                tutoriel,
+                leaderBoard,
+                regles
+        };
 
-        nouvellePartie.setBackground(Color.BLACK);
-        nouvellePartie.setForeground(Color.WHITE);
-        nouvellePartie.setOpaque(true);
-        nouvellePartie.setContentAreaFilled(true);
-        nouvellePartie.setFocusPainted(false);
-        nouvellePartie.setBorderPainted(true);
-        nouvellePartie.setMargin(new Insets(15, 30, 15, 30));
-        nouvellePartie.setFont(new Font("Arial", Font.BOLD, 25));
-        nouvellePartie.setContentAreaFilled(false);
+        for (RoundedButton b : buttons) {
+            b.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        chargerPartie.setBackground(Color.BLACK);
-        chargerPartie.setForeground(Color.WHITE);
-        chargerPartie.setOpaque(true);
-        chargerPartie.setContentAreaFilled(true);
-        chargerPartie.setFocusPainted(false);
-        chargerPartie.setBorderPainted(true);
-        chargerPartie.setMargin(new Insets(15, 30, 15, 30));
-        chargerPartie.setFont(new Font("Arial", Font.BOLD, 25));
+            // ===== TES STYLES CONSERVÉS =====
+            b.setBackground(Color.BLACK);
+            b.setForeground(Color.WHITE);
+            b.setMargin(new Insets(15, 30, 15, 30));
+            b.setFont(new Font("Arial", Font.BOLD, 25));
+            b.setMaximumSize(new Dimension(400, 450));
 
-        leaderBoard.setBackground(Color.BLACK);
-        leaderBoard.setForeground(Color.WHITE);
-        leaderBoard.setOpaque(true);
-        leaderBoard.setContentAreaFilled(true);
-        leaderBoard.setFocusPainted(false);
-        leaderBoard.setBorderPainted(true);
-        leaderBoard.setMargin(new Insets(15, 30, 15, 30));
-        leaderBoard.setFont(new Font("Arial", Font.BOLD, 25));
+            // ===== CORRECTION IMPORTANTE =====
+            // ne PAS laisser Swing casser ton custom painting
+            b.setOpaque(false);
+            b.setContentAreaFilled(false);
+            b.setBorderPainted(false);
+            b.setFocusPainted(false);
+        }
 
-        regles.setBackground(new Color(18, 18, 18));
-        regles.setForeground(Color.WHITE);
-        regles.setOpaque(true);
-        regles.setContentAreaFilled(true);
-        regles.setFocusPainted(false);
-        regles.setBorderPainted(true);
-        regles.setMargin(new Insets(15, 30, 15, 30));
-        regles.setFont(new Font("Arial", Font.BOLD, 25));
-
-        nouvellePartie.setMaximumSize(new Dimension(400, 450));
-        chargerPartie.setMaximumSize(new Dimension(400, 450));
-        leaderBoard.setMaximumSize(new Dimension(400, 450));
-        regles.setMaximumSize(new Dimension(400, 450));
-
+        // =========================
+        // ACTION COMMANDS
+        // =========================
         nouvellePartie.setActionCommand("nouvellePartie");
         chargerPartie.setActionCommand("chargerPartie");
         leaderBoard.setActionCommand("leaderBoard");
         regles.setActionCommand("regles");
+        tutoriel.setActionCommand("tutoriel");
+
+        // =========================
+        // LAYOUT (IDENTIQUE)
+        // =========================
         add(Box.createVerticalStrut(80));
         add(title);
         add(Box.createVerticalStrut(80));
@@ -102,18 +90,22 @@ public class Menu extends JPanel {
         add(Box.createRigidArea(new Dimension(0, 30)));
         add(chargerPartie);
         add(Box.createRigidArea(new Dimension(0, 30)));
+        add(tutoriel);
+        add(Box.createRigidArea(new Dimension(0, 30)));
         add(leaderBoard);
         add(Box.createRigidArea(new Dimension(0, 30)));
         add(regles);
         add(Box.createVerticalGlue());
-
     }
 
     @Override
     protected void paintComponent(Graphics g) {
-        super.paintComponent(g); // Dessine l'image sur toute la fenêtre
+        super.paintComponent(g);
 
-        g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+        if (backgroundImage != null) {
+            g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+        }
+
         Graphics2D g2d = (Graphics2D) g;
         g2d.setColor(new Color(0, 0, 0, 100));
         g2d.fillRect(0, 0, getWidth(), getHeight());

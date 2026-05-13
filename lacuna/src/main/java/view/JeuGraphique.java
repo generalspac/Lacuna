@@ -165,19 +165,21 @@ public class JeuGraphique extends JComponent {
     // ====SCORE =======
 
     public void refreshScores() {
-        scoreOr.updateFromGame(jeu.getJoueurs()[0]);
-        scoreArgent.updateFromGame(jeu.getJoueurs()[1]);
+        if (scoreOr != null) scoreOr.updateFromGame(jeu.getJoueurs()[0]);
+        if (scoreArgent != null) scoreArgent.updateFromGame(jeu.getJoueurs()[1]);
 
-        scoreLabel.setText(
-                jeu.getJoueurs()[1].getScoreTotal() + " - " +
-                        jeu.getJoueurs()[0].getScoreTotal());
+        if (scoreLabel != null) {
+            scoreLabel.setText(
+                    jeu.getJoueurs()[1].getScoreTotal() + " - " +
+                            jeu.getJoueurs()[0].getScoreTotal());
+        }
 
         if (leftPile != null)
             leftPile.repaint();
         if (rightPile != null)
             rightPile.repaint();
 
-        updateInstructionMessage();
+        updateInstructionText();
         updateStatusMessage();
         animerChangementJoueur();
     }
@@ -197,7 +199,9 @@ public class JeuGraphique extends JComponent {
         });
     }
 
-    private void updateInstructionMessage() {
+    private void updateInstructionText() {
+        if (instructionLabel == null) return;
+        
         if (animationEnCours) {
             instructionLabel.setText("Animation en cours... Vous pouvez utiliser Undo, Redo, Reset ou Load.");
             return;

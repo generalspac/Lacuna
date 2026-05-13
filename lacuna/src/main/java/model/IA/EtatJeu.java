@@ -43,7 +43,7 @@ public class EtatJeu {
         EtatJeu etat = new EtatJeu();
 
         for (Fleur f : jeu.getFleurs()) {
-            etat.fleursRestantes.add(Fleur.copieFleur(f));
+            etat.fleursRestantes.add(f);
         }
 
         for (Pion p : jeu.getPions()) {
@@ -55,7 +55,7 @@ public class EtatJeu {
             etat.typesPionsJoueurs[i] = joueurs[i].getTypePion();
 
             for (Fleur f : joueurs[i].getFleursGagnees()) {
-                etat.fleursParJoueur[i].add(Fleur.copieFleur(f));
+                etat.fleursParJoueur[i].add(f);
             }
         }
 
@@ -66,9 +66,7 @@ public class EtatJeu {
     public EtatJeu copie() {
         EtatJeu copie = new EtatJeu();
 
-        for (Fleur f : fleursRestantes) {
-            copie.fleursRestantes.add(Fleur.copieFleur(f));
-        }
+        copie.fleursRestantes.addAll(this.fleursRestantes);
 
         for (Pion p : pions) {
             copie.pions.add(Pion.copiePion(p));
@@ -76,10 +74,7 @@ public class EtatJeu {
 
         for (int i = 0; i < 2; i++) {
             copie.typesPionsJoueurs[i] = typesPionsJoueurs[i];
-
-            for (Fleur f : fleursParJoueur[i]) {
-                copie.fleursParJoueur[i].add(Fleur.copieFleur(f));
-            }
+            copie.fleursParJoueur[i].addAll(this.fleursParJoueur[i]);
         }
 
         copie.joueurCourant = joueurCourant;
@@ -100,7 +95,7 @@ public class EtatJeu {
         Pion pionLibre = suivant.getPionLibre(typePion);
 
         if (pionLibre != null) {
-            pionLibre.setPosition(Coordonnees.copieCoordonnees(coup.position));
+            pionLibre.setPosition(new Coordonnees(coup.position.x, coup.position.y));
         }
 
         suivant.fleursRestantes.remove(f1);

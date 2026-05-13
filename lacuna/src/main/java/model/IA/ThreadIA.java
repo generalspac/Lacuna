@@ -16,10 +16,17 @@ public class ThreadIA extends Thread {
 
     @Override
     public void run() {
-        CoupIA coup = ia.choisirCoup(etat);
+        try {
+            CoupIA coup = ia.choisirCoup(etat);
 
-        if (actionQuandCoupTrouve != null) {
-            actionQuandCoupTrouve.accept(coup);
+            if (actionQuandCoupTrouve != null) {
+                actionQuandCoupTrouve.accept(coup);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (actionQuandCoupTrouve != null) {
+                actionQuandCoupTrouve.accept(null);
+            }
         }
     }
 }

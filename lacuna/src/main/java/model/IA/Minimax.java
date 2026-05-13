@@ -24,6 +24,7 @@ public class Minimax {
             return null;
         }
 
+        // On trie toujours au niveau racine pour maximiser l'élagage alpha-beta
         trierCoups(etat, coups);
 
         CoupIA meilleur = null;
@@ -58,7 +59,11 @@ public class Minimax {
             return evaluateur.evaluer(etat, indexIA);
         }
 
-        trierCoups(etat, coups);// Trions pour améliorer la performance
+        // Optimisation : On ne trie les coups que si on est assez haut dans l'arbre
+        // car le tri lui-même coûte cher (appliquerCoup + evaluer)
+        if (profondeur > 2) {
+            trierCoups(etat, coups);
+        }
 
         if (etat.joueurCourant == indexIA) {
             int meilleurScore = Integer.MIN_VALUE;
@@ -98,6 +103,8 @@ public class Minimax {
 
     private void trierCoups(EtatJeu etat, List<CoupIA> coups) {
         coups.sort(Comparator.comparingInt((CoupIA coup) -> {
+            // Utilisation d'un tri "léger" ou partiel pour limiter l'overhead
+            // Ici on garde l'évaluation car elle a été optimisée dans EvaluateurJeu
             EtatJeu suivant = etat.appliquerCoup(coup);
             return evaluateur.evaluer(suivant, indexIA);
         }).reversed());
