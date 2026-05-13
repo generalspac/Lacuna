@@ -28,7 +28,7 @@ public class JeuGraphique extends JComponent {
     private int height = 440;
 
     private Score scoreArgent, scoreOr;
-    private JLabel scoreLabel;
+    //private JLabel scoreLabel;
     private JLabel instructionLabel;
     private JLabel statusLabel;
 
@@ -55,16 +55,15 @@ public class JeuGraphique extends JComponent {
     private Fleur.TypeFleur filtreCouleurCoups = null;
 
     public JeuGraphique(JFrame frame) {
-        this(frame, null, null, null, null, null);
+        this(frame, null, null, null, null);
     }
     
-    public JeuGraphique(JFrame frame, Score scoreArgent, Score scoreOr,
-            JLabel scoreLabel, JLabel instructionLabel, JLabel statusLabel) {
+    public JeuGraphique(JFrame frame, Score scoreArgent, Score scoreOr, JLabel instructionLabel, JLabel statusLabel) {
 
         this.frame = frame;
         this.scoreArgent = scoreArgent;
         this.scoreOr = scoreOr;
-        this.scoreLabel = scoreLabel;
+        //this.scoreLabel = scoreLabel;
         this.instructionLabel = instructionLabel;
         this.statusLabel = statusLabel;
 
@@ -73,7 +72,7 @@ public class JeuGraphique extends JComponent {
                 new Cercle(new Coordonnees(width / 2, height / 2),
                         Math.min(width, height) / 2));
 
-        setBackground(Color.BLACK);
+        setBackground(Color.WHITE);
         setOpaque(true);
         setFocusable(true);
 
@@ -149,7 +148,7 @@ public class JeuGraphique extends JComponent {
             orImg = load("pion_or.png");
             argentImg = load("pion_argent.png");
 
-            plateauImg = load("plateau.png");
+             plateauImg = load("plateau.png");
 
         } catch (Exception e) {
             Configuration.debugeurErreur("Erreur chargement images : " + e.getMessage());
@@ -198,9 +197,9 @@ public class JeuGraphique extends JComponent {
         scoreOr.updateFromGame(jeu.getJoueurs()[0]);
         scoreArgent.updateFromGame(jeu.getJoueurs()[1]);
 
-        scoreLabel.setText(
-                jeu.getJoueurs()[1].getScoreTotal() + " - " +
-                        jeu.getJoueurs()[0].getScoreTotal());
+        //scoreLabel.setText(
+        //        jeu.getJoueurs()[1].getScoreTotal() + " - " +
+         //               jeu.getJoueurs()[0].getScoreTotal());
 
         if (leftPile != null)
             leftPile.repaint();
@@ -572,9 +571,10 @@ public class JeuGraphique extends JComponent {
         Graphics2D g2 = (Graphics2D) g;
 
         int size = Math.min(getWidth(), getHeight());
+
         int offsetX = (getWidth() - size) / 2;
         int offsetY = (getHeight() - size) / 2;
-
+        
         int centerX = offsetX + size / 2;
         int centerY = offsetY + size / 2;
 
@@ -587,7 +587,7 @@ public class JeuGraphique extends JComponent {
         g2.setColor(getBackground());
         g2.fillRect(0, 0, getWidth(), getHeight());
 
-        g2.drawImage(plateauImg, offsetX, offsetY, size, size, null);
+         g2.drawImage(plateauImg, offsetX, offsetY, size, size, null);
 
         // Cercle
         g2.setColor(Color.RED);
