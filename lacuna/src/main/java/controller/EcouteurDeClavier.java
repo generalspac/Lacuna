@@ -36,9 +36,12 @@ public class EcouteurDeClavier extends KeyAdapter {
 
             case KeyEvent.VK_G:
                 Configuration.debugeur("Le bouton G clavier a été pressé\n");
-                controleur.toggleCoupsPossibles(null, false);
+                if(controleur.getvue().jeu.getFleurSelectionnee1() != null) {
+                    controleur.toggleCoupsPossibles(controleur.getvue().jeu.getFleurSelectionnee1().getType(), false);
+                } else {
+                    controleur.toggleCoupsPossibles(null, false);
+                }
                 break;
-
             case KeyEvent.VK_A:
                 Configuration.debugeur("Le bouton A clavier a été pressé\n");
                 controleur.abandonner();

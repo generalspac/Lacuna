@@ -586,7 +586,11 @@ public class InterfaceGraphique implements Runnable {
         actionMap.put("guides", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                controleur.toggleCoupsPossibles(null, false);
+                if(controleur.getvue().jeu.getFleurSelectionnee1() != null) {
+                    controleur.toggleCoupsPossibles(controleur.getvue().jeu.getFleurSelectionnee1().getType(), false);
+                } else {
+                    controleur.toggleCoupsPossibles(null, false);
+                }
             }
         });
 
