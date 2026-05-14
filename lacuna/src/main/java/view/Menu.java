@@ -20,7 +20,7 @@ public class Menu extends JPanel {
     public Menu() {
 
         try {
-            backgroundImage = ImageIO.read(Configuration.ouvre("menu_back.png"));
+            backgroundImage = ImageIO.read(Configuration.ouvre("menu.png"));
         } catch (Exception e) {
             System.err.println("Erreur lors du chargement de l'image de fond : " + e.getMessage());
         }
@@ -35,7 +35,7 @@ public class Menu extends JPanel {
         title.setMinimumSize(new Dimension(800, 180));
 
         // =========================
-        // BOUTONS (ON GARDE TES STYLES)
+        //Styles
         // =========================
         nouvellePartie = new RoundedButton("Nouvelle Partie");
         chargerPartie = new RoundedButton("Charger Partie");

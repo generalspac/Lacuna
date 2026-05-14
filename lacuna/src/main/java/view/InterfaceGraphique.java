@@ -82,16 +82,25 @@ public class InterfaceGraphique implements Runnable {
     }
 
     public void afficherTutoriel() {
-        lancerJeuTutoriel();
+
+        IntroductionPanel intro = new IntroductionPanel(() -> {
+            lancerJeuTutoriel();
+        });
+
+        frame.setContentPane(intro);
+        frame.revalidate();
+        frame.repaint();
     }
+
+  
 
     public void lancerJeuTutoriel() {
 
+       
         TutorialOverlay overlay = new TutorialOverlay();
 
         JeuTutoriel tutoriel = new JeuTutoriel(frame, overlay, () -> afficherMenu());
 
-       
         JLayeredPane layeredPane = new JLayeredPane();
         layeredPane.setLayout(new OverlayLayout(layeredPane));
 
