@@ -43,7 +43,7 @@ public class Jeu {
 
     private static final int NB_POINTS_SEGMENT = 24; // le nombre de points
     private static final double TOLERANCE_DROP_SEGMENT = 18;
-    private static final double MARGE_EXTREMITES_SEGMENT = DIAMETRE_FLEUR_MODELE / 2.0 + DIAMETRE_PION_MODELE / 2.0 + MARGE_COLLISION;
+    private static final double MARGE_EXTREMITES_SEGMENT = MARGE_COLLISION;
 
     //// Attributs pour les joueurs
     private Joueur[] joueurs; // la liste des joueurs

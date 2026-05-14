@@ -32,7 +32,6 @@ ou lancer le fichier run.sh en lui donnant les droit d'execution
 
 # Niels & oury
 
-- Partie IA(ameliorer la complexité car un peu lent selon les niveaux)
 - Tester les IA et faire le rapport 
 
 
@@ -45,14 +44,12 @@ ou lancer le fichier run.sh en lui donnant les droit d'execution
 -REfactorisation
 
 # Iyed
--Participation aux tests IA
-- Revue de la division de points
+ --Gestion de load (historique)
 
 
 # BUGS
--(Aucune zone libre sur ce segment)->l'interface se fige
--IA vs HUmain -> quand l'humain choisit son nom, celà n'apparait pas lors du jeu
-
+ --en appuyant sur une fleur pour placer un pion, il se place exactement à la place de la fleur après l'avoir 
+ --- collectée. Or que le pion doit être entre les 2 fleurs collectés
 
 # oury
     -refaire une factorisation des variables globales utilisées par le modèle et generateurCoup ia
