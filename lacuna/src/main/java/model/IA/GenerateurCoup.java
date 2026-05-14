@@ -1,6 +1,7 @@
 package model.IA;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import model.Coordonnees;
@@ -10,8 +11,9 @@ import model.Pion;
 // Liste tous les coups de l'IA depuis un état
 public class GenerateurCoup {
 
-    private static final double DIST_MIN_FLEURS = 30;
+    private static final double DIST_MIN_FLEURS = 24;
     private static final double TOLERANCE_SEGMENT = 12;
+    private static final double MARGE_EXTREMITES_SEGMENT = 26;
     private static final int NB_POINTS_SEGMENT = 24;
     private static final int MAX_COUPS_GENERES = 80;
 
@@ -29,10 +31,9 @@ public class GenerateurCoup {
                 if (f1.getType() == f2.getType()
                         && segmentLibre(etat, f1.getPosition(), f2.getPosition())) {
 
-                    List<Coordonnees> points = pointsDuSegment(
-                            etat,
-                            f1.getPosition(),
-                            f2.getPosition());
+                    List<Coordonnees> points = pointsDuSegment(etat,f1.getPosition(), f2.getPosition());
+                    
+                    Collections.shuffle(points);
 
                     for (Coordonnees pos : points) {
 
@@ -49,21 +50,22 @@ public class GenerateurCoup {
         return coups;
     }
 
-      private static List<Coordonnees> pointsDuSegment(
-            EtatJeu etat,
-            Coordonnees A,
-            Coordonnees B) {
+    private static List<Coordonnees> pointsDuSegment( EtatJeu etat,Coordonnees A, Coordonnees B) {
 
         List<Coordonnees> points = new ArrayList<>();
 
         for (Coordonnees pos : Coordonnees.pointsDuSegment(A, B, NB_POINTS_SEGMENT)) {
 
-            if (positionLibrePourPion(etat, pos)) {
+            if (positionLibrePourPion(etat, pos) && horsZoneFleursExtremites(A, B, pos)) {
                 points.add(pos);
             }
         }
 
         return points;
+    }
+
+    private static boolean horsZoneFleursExtremites(Coordonnees A, Coordonnees B, Coordonnees pos) {
+        return Coordonnees.distance(A, pos) >= MARGE_EXTREMITES_SEGMENT && Coordonnees.distance(B, pos) >= MARGE_EXTREMITES_SEGMENT;
     }
 
     private static boolean segmentLibre(EtatJeu etat, Coordonnees A, Coordonnees B) {

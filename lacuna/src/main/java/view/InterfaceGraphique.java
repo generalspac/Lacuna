@@ -324,7 +324,7 @@ public class InterfaceGraphique implements Runnable {
                 JButton abandonButton = new JButton("Abandonner");
                 abandonButton.addActionListener(e -> controleurBoutons.abandonner());
 
-                JButton gitButton = new JButton("Git");
+                JButton gitButton = new JButton("Guide");
                 gitButton.addActionListener(e -> {
                     Object[] options = new Object[Fleur.TypeFleur.values().length + 2];
                     options[0] = "Masquer";
