@@ -307,7 +307,6 @@ public class InterfaceGraphique implements Runnable {
                 buttonPanel.setBackground(Color.BLACK);
 
                 ControleurBoutons controleurBoutons = new ControleurBoutons(aire);
-                aire.addKeyListener(new EcouteurDeClavier(controleurBoutons));
                 aire.setFocusable(true);
 
                 installerRaccourcisClavier(root, controleurBoutons);

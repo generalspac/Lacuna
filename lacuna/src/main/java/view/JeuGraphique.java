@@ -312,28 +312,27 @@ public class JeuGraphique extends JComponent {
         Fleur f1 = jeu.getFleurSelectionnee1();
         Fleur f2 = jeu.getFleurSelectionnee2();
 
+        List<Fleur[]> paires = jeu.pairesConnectees(filtreCouleurCoups);
         g2.setColor(new Color(0, 255, 255, 170));
         g2.setStroke(new BasicStroke(2));
 
-        if (f1 != null && f2 != null && jeu.fleursConnectées(f1, f2)) {
-            Coordonnees p1 = modelToScreen(f1.getPosition().x, f1.getPosition().y);
-            Coordonnees p2 = modelToScreen(f2.getPosition().x, f2.getPosition().y);
-            g2.drawLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
-            return;
-        }
-
         // ====== Dessiner des lignes entre les paires de fleurs connectées ======
-        List<Fleur[]> paires = jeu.pairesConnectees(filtreCouleurCoups);
         for (Fleur[] paire : paires) {
             Coordonnees p1 = modelToScreen(paire[0].getPosition().x, paire[0].getPosition().y);
             Coordonnees p2 = modelToScreen(paire[1].getPosition().x, paire[1].getPosition().y);
             g2.drawLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
         }
-
-        if (paires.size() > 12) { // Limiter l'affichage si trop de lignes
-            g2.setFont(new Font("SansSerif", Font.BOLD, 12));
-            //String text = "+" + (paires.size() - 12) + " autres connexions";
-            //g2.drawString(text, 16, getHeight() - 16);
+        // ====== Dessiner une ligne plus épaisse entre les fleurs sélectionnées si elles sont connectées ======
+        if (f1 != null && f2 != null && jeu.fleursConnectées(f1, f2)) {
+            Coordonnees p1 = modelToScreen(f1.getPosition().x, f1.getPosition().y);
+            Coordonnees p2 = modelToScreen(f2.getPosition().x, f2.getPosition().y);
+            Stroke oldStroke = g2.getStroke();
+            Color oldColor = g2.getColor();
+            g2.setColor(new Color(255, 255, 255, 230));
+            g2.setStroke(new BasicStroke(4));
+            g2.drawLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
+            g2.setColor(oldColor);
+            g2.setStroke(oldStroke);
         }
     }
 
