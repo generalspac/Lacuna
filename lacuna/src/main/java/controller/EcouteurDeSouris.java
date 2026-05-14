@@ -23,7 +23,7 @@ public class EcouteurDeSouris extends MouseAdapter {
     @Override
     public void mousePressed(MouseEvent e) {
 
-        if (jeuGraphique.isAnimationEnCours() || game.isPartieAbandonnee()) {
+        if (jeuGraphique.isAnimationEnCours() || game.isPartieTerminee()) {
             return;
         }
 
@@ -40,7 +40,7 @@ public class EcouteurDeSouris extends MouseAdapter {
 
         Coordonnees modelPos = jeuGraphique.screenToModel(x, y);
 
-        if (jeuGraphique.lancerAnimationSecondePhaseSiBesoin()) {
+        if (jeuGraphique.lancerAnimationSecondePhase()) {
             return;
         }
 

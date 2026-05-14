@@ -8,7 +8,6 @@ import java.awt.geom.Point2D;
 import java.text.AttributedString;
 
 public class LacunaGradientLabel extends JLabel {
-
     private AttributedString attributedText;
 
     public LacunaGradientLabel(String text) {

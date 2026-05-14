@@ -3,6 +3,7 @@ package model.IA;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Random;
 
 // Algo Minimax
 public class Minimax {
@@ -10,6 +11,7 @@ public class Minimax {
     private final EvaluateurJeu evaluateur;
     private final int profondeurMax;
     private final int indexIA;
+    private final Random random = new Random();
 
     public Minimax(EvaluateurJeu eval, int profondeur, int indexIA) {
         this.evaluateur = eval;
@@ -25,10 +27,10 @@ public class Minimax {
             return null;
         }
 
-        // On trie toujours au niveau racine pour maximiser l'élagage alpha-beta
+        // Trions pour maximiser l'elagage alpha____beta
         trierCoups(etat, coups);
 
-        CoupIA meilleur = null;
+        List<CoupIA> meilleursCoups = new ArrayList<>();
         int meilleurScore = Integer.MIN_VALUE;
         int alpha = Integer.MIN_VALUE;
         int beta = Integer.MAX_VALUE;
@@ -36,16 +38,19 @@ public class Minimax {
         for (CoupIA coup : coups) {
             EtatJeu suivant = etat.appliquerCoup(coup);
             int score = minimax(suivant, profondeurMax - 1, alpha, beta);
-
-            if (score > meilleurScore || meilleur == null) {
+            if (score > meilleurScore) {
                 meilleurScore = score;
-                meilleur = coup;
+                meilleursCoups.clear();
+                meilleursCoups.add(coup);
+            } 
+            else if (score == meilleurScore) {
+                meilleursCoups.add(coup);
             }
 
             alpha = Math.max(alpha, meilleurScore);
         }
 
-        return meilleur;
+        return meilleursCoups.get(random.nextInt(meilleursCoups.size()));
     }
 
     // algo minimax

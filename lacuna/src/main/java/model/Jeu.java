@@ -34,14 +34,16 @@ public class Jeu {
 
     private static final double DIST_MIN_FLEURS = 30; // distance min entre les fleurs
     private static final double DIAMETRE_FLEUR_MODELE = DIST_MIN_FLEURS;
-    private static final double DIAMETRE_PION_MODELE = DIST_MIN_FLEURS;
+    private static final double DIAMETRE_PION_MODELE = 22;
     private static final double MARGE_COLLISION = 2;
     private static final int NB_JOUEURS = 2;
     private static final int MAX_PIONS_PAR_JOUEUR = 6;
     private static final int NB_COULEURS = 6;
 
 
-    private static final int NB_POINTS_SEGMENT = 3; // le nombre de points
+    private static final int NB_POINTS_SEGMENT = 24; // le nombre de points
+    private static final double TOLERANCE_DROP_SEGMENT = 18;
+    private static final double MARGE_EXTREMITES_SEGMENT = MARGE_COLLISION;
 
     //// Attributs pour les joueurs
     private Joueur[] joueurs; // la liste des joueurs
@@ -94,7 +96,11 @@ public class Jeu {
     }
 
     public boolean isPartieTerminee() {
-        return partieAbandonnee || (tousLesPionsPlaces() && fleurs.isEmpty());
+        return partieAbandonnee || estFinNormalePartie();
+    }
+
+    public boolean estFinNormalePartie() {
+        return tousLesPionsPlaces() && fleurs.isEmpty();
     }
 
     // =========================================================
@@ -236,6 +242,14 @@ public class Jeu {
 
     // Abandon de la partie
     public void abandonnerPartie() {
+        if (partieAbandonnee) {
+            setFeedbackMessage("La partie est déjà terminée.");
+            return;
+        }
+        if (estFinNormalePartie()) {
+            setFeedbackMessage("La partie est déjà terminée : l'abandon n'est plus possible.");
+            return;
+        }
         annulerIAEnCours();
         partieAbandonnee = true;
         enPhaseSelectionAvantage = false;
@@ -519,6 +533,8 @@ public class Jeu {
                 clic);
 
         if (pos == null) {
+            resetFleursSelectionnee1();
+            resetFleursSelectionnee2();
             setFeedbackMessage("Aucune zone libre sur ce segment : choisissez une autre paire de fleurs.");
             return false;
         }
@@ -893,12 +909,18 @@ public class Jeu {
         for (Coordonnees pos : Coordonnees.pointsDuSegment(A, B, NB_POINTS_SEGMENT)) {
 
             // Vérification:le pion peut être placé ici?
-            if (positionLibrePourPion(pos) && cercleDeJeu.contientPoint(pos)) {
+            if (positionLibrePourPion(pos) && cercleDeJeu.contientPoint(pos)
+                    && horsZoneFleursExtremites(A, B, pos)) {
                 points.add(pos);
             }
         }
 
         return points;
+    }
+
+    private boolean horsZoneFleursExtremites(Coordonnees A, Coordonnees B, Coordonnees pos) {
+        return Coordonnees.distance(A, pos) >= MARGE_EXTREMITES_SEGMENT
+                && Coordonnees.distance(B, pos) >= MARGE_EXTREMITES_SEGMENT;
     }
 
     // Retourne toutes les positions possibles pour jouer
@@ -986,6 +1008,11 @@ public class Jeu {
     }
 
     public boolean placerPionLibreSiAucunCoup(Coordonnees pos) {
+        if (partieAbandonnee || estFinNormalePartie()) {
+            setFeedbackMessage("La partie est terminée.");
+            return false;
+        }
+
         if (existeCoupConnecte()) {
             setFeedbackMessage("Il reste au moins une paire de fleurs connectée : il faut jouer une paire avant de placer librement.");
             return false;
@@ -1055,72 +1082,85 @@ public class Jeu {
     // ==================== DRAG AND DROP =======================
     // =========================================================
 
-    public void placerPionDepuisDrag(Coordonnees pos, Object payload) {
+    public boolean placerPionDepuisDrag(Coordonnees pos, Object payload) {
 
-        if (payload == null)
-            return;
+        if (payload == null) {
+            return false;
+        }
 
         if (!(payload instanceof Pion.TypePion)) {
-            System.out.println("Payload invalide");
-            return;
+            setFeedbackMessage("Placement invalide : pion non reconnu.");
+            return false;
+        }
+
+        if (partieAbandonnee || estFinNormalePartie()) {
+            setFeedbackMessage("La partie est terminée.");
+            return false;
         }
 
         Pion.TypePion type = (Pion.TypePion) payload;
         Joueur joueurActuel = getJoueurActuel();
 
         if (joueurActuel.getTypePion() != type) {
-            System.out.println("Ce n'est pas le bon joueur !");
-            return;
+            setFeedbackMessage("Ce n'est pas le pion de " + nomJoueurActuelPourAffichage() + ".");
+            return false;
         }
 
-        Fleur[] flowers = trouverFleursPourPion(pos);
-        if (flowers == null) {
-            System.out.println("Placement invalide : pas entre deux fleurs compatibles !");
-            return;
+        if (!cercleDeJeu.contientPoint(pos)) {
+            setFeedbackMessage("Placement invalide : le pion doit rester dans le cercle.");
+            return false;
+        }
+
+        if (!existeCoupConnecte()) {
+            return placerPionLibreSiAucunCoup(pos);
+        }
+
+        if (fleurSelectionnee1 == null || fleurSelectionnee2 == null) {
+            setFeedbackMessage("Placement invalide : sélectionnez d'abord deux fleurs avant de déposer le pion.");
+            return false;
+        }
+
+        if (fleurSelectionnee1.getType() != fleurSelectionnee2.getType()) {
+            setFeedbackMessage("Placement invalide : les deux fleurs sélectionnées ne sont pas de la même couleur.");
+            return false;
+        }
+
+        Coordonnees a = fleurSelectionnee1.getPosition();
+        Coordonnees b = fleurSelectionnee2.getPosition();
+
+        if (!segmentLibre(a, b)) {
+            setFeedbackMessage("Placement invalide : la ligne entre les deux fleurs est obstruée.");
+            return false;
+        }
+
+        if (!Coordonnees.surSegment(a, b, pos, TOLERANCE_DROP_SEGMENT)) {
+            setFeedbackMessage("Placement invalide : déposez le pion sur la ligne entre les deux fleurs sélectionnées.");
+            return false;
         }
 
         Pion pion = getPionLibre(type);
         if (pion == null) {
-            System.out.println("Aucun pion libre disponible pour ce joueur.");
-            return;
+            setFeedbackMessage("Aucun pion libre disponible pour " + nomJoueurActuelPourAffichage() + ".");
+            return false;
         }
 
-        Coordonnees positionSurSegment = positionSegmentLaPlusProcheDuClic(
-                flowers[0].getPosition(), flowers[1].getPosition(), pos);
+        Coordonnees positionSurSegment = positionSegmentLaPlusProcheDuClic(a, b, pos);
         if (positionSurSegment == null) {
             setFeedbackMessage("Placement invalide : aucune zone libre sur ce segment.");
-            return;
+            return false;
         }
 
-        jouerCoup(joueurActuel, pion, positionSurSegment, flowers[0], flowers[1]);
+        Fleur f1 = fleurSelectionnee1;
+        Fleur f2 = fleurSelectionnee2;
+        jouerCoup(joueurActuel, pion, positionSurSegment, f1, f2);
 
-        System.out.println("Pion placé via drag !");
-    }
-
-    private Fleur[] trouverFleursPourPion(Coordonnees pos) {
-        for (Fleur.TypeFleur typeFleur : Fleur.TypeFleur.values()) {
-            List<Fleur> deMemeType = new ArrayList<>();
-            for (Fleur f : fleurs) {
-                if (f.getType() == typeFleur) {
-                    deMemeType.add(f);
-                }
-            }
-
-            for (int i = 0; i < deMemeType.size(); i++) {
-                for (int j = i + 1; j < deMemeType.size(); j++) {
-                    Fleur f1 = deMemeType.get(i);
-                    Fleur f2 = deMemeType.get(j);
-
-                    if (fleursConnectées(f1, f2)) {
-                        Coordonnees candidate = positionSegmentLaPlusProcheDuClic(f1.getPosition(), f2.getPosition(), pos);
-                        if (candidate != null && Coordonnees.distance(candidate, pos) <= 22) {
-                            return new Fleur[] { f1, f2 };
-                        }
-                    }
-                }
-            }
+        if (pion.getPosition() != null) {
+            resetFleursSelectionnee1();
+            resetFleursSelectionnee2();
+            return true;
         }
-        return null;
+
+        return false;
     }
 
     // =========================================================
@@ -1287,17 +1327,18 @@ public class Jeu {
     }
 
     // L'AI joue un coup
-    public void jouerCoupIA(CoupIA coup) {
+    public boolean placerPionCoupIA(CoupIA coup) {
 
         if (coup == null) {
             if (!placerPionIADeSecours()) {
                 setFeedbackMessage("L'IA n'a trouvé aucun coup jouable.");
+                return false;
             }
-            return;
+            return true;
         }
 
         if (!estTourIA()) {
-            return;
+            return false;
         }
 
         Joueur joueur = getJoueurActuel();
@@ -1305,23 +1346,64 @@ public class Jeu {
 
         if (pionLibre == null) {
             setFeedbackMessage("L'IA n'a plus de pion disponible.");
-            return;
+            return false;
         }
 
         Fleur f1 = retrouverFleurDuPlateau(coup.fleur1);
         Fleur f2 = retrouverFleurDuPlateau(coup.fleur2);
 
-        if (f1 == null || f2 == null) {
+        if (f1 == null || f2 == null || !fleursConnectées(f1, f2)) {
             setFeedbackMessage("Le coup IA n'est plus valide : il a été ignoré.");
-            return;
+            return false;
         }
 
-        jouerCoup(joueur, pionLibre, coup.position, f1, f2);
+        if (!placePion(pionLibre, coup.position)) {
+            return false;
+        }
 
-        if (getJoueurActuel() instanceof JoueurIa) {
-            setFeedbackMessage("Le coup IA a échoué : aucun changement de tour.");
-        } else {
-            setFeedbackMessage("IA (" + joueur.getTypePion() + ") a joué. C'est à Humain (" + getJoueurActuel().getTypePion() + ") de jouer.");
+        setFeedbackMessage("IA (" + joueur.getTypePion() + ") place son pion.");
+        return true;
+    }
+
+    public boolean collecterFleursCoupIA(CoupIA coup) {
+
+        if (coup == null || !estTourIA()) {
+            return false;
+        }
+
+        Joueur joueur = getJoueurActuel();
+        Pion pionPlace = null;
+
+        for (Pion p : pions) {
+            if (p.getType() == joueur.getTypePion() && p.getPosition() != null
+                    && p.getPosition().equals(coup.position)) {
+                pionPlace = p;
+                break;
+            }
+        }
+
+        Fleur f1 = retrouverFleurDuPlateau(coup.fleur1);
+        Fleur f2 = retrouverFleurDuPlateau(coup.fleur2);
+
+        if (pionPlace == null || f1 == null || f2 == null) {
+            setFeedbackMessage("Le coup IA ne peut pas être finalisé.");
+            return false;
+        }
+
+        if (!mangerFleurs(joueur, f1, f2)) {
+            setFeedbackMessage("Le coup IA ne peut pas collecter les fleurs.");
+            return false;
+        }
+
+        historique.enregistrerAction(pionPlace, f1, f2, joueur);
+        joueurSuivant();
+        setFeedbackMessage("IA (" + joueur.getTypePion() + ") a joué. C'est à " + nomJoueurActuelPourAffichage() + " de jouer.");
+        return true;
+    }
+
+    public void jouerCoupIA(CoupIA coup) {
+        if (placerPionCoupIA(coup) && coup != null) {
+            collecterFleursCoupIA(coup);
         }
     }
 
@@ -1335,9 +1417,6 @@ public class Jeu {
     public String nomJoueurPourAffichage(Joueur joueur) {
         if (joueur instanceof JoueurIa) {
             return "IA (" + joueur.getTypePion() + ")";
-        }
-        if (againstIA) {
-            return "Humain (" + joueur.getTypePion() + ")";
         }
         return joueur.getNom() + " (" + joueur.getTypePion() + ")";
     }

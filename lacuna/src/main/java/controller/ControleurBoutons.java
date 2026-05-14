@@ -29,16 +29,34 @@ public class ControleurBoutons {
     }
 
     public void abandonner() {
+        if (vue.jeu.isPartieTerminee()) {
+            vue.jeu.abandonnerPartie();
+            vue.refreshScores();
+            vue.repaint();
+            return;
+        }
         vue.annulerAnimationsVisuelles();
         vue.jeu.abandonnerPartie();
-        vue.afficherGagnantSansAnimation();
+        if (vue.jeu.isPartieAbandonnee()) {
+            vue.afficherGagnantSansAnimation();
+        }
         vue.refreshScores();
         vue.repaint();
+    }
+
+    public JeuGraphique getvue() {
+        return vue;
     }
     
     //==== Affichage des coups ========
     public void toggleCoupsPossibles(Fleur.TypeFleur couleur, boolean masquer) {
         if (masquer) {
+            // Si on masque, on affiche les coups possibles de la fleur sélectionnée (si il y en a une)
+            if(vue.jeu.getFleurSelectionnee1() != null) {
+                couleur = vue.jeu.getFleurSelectionnee1().getType();
+            } else {
+                couleur = null; // Sinon on affiche les coups possibles de toutes les fleurs    
+            }
             vue.afficherCoupsPossibles(null, true);
         } else {
             vue.afficherCoupsPossibles(couleur, false);

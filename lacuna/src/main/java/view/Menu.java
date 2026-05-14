@@ -20,7 +20,7 @@ public class Menu extends JPanel {
     public Menu() {
 
         try {
-            backgroundImage = ImageIO.read(Configuration.ouvre("menu.png"));
+            backgroundImage = ImageIO.read(Configuration.ouvre("image.png"));
         } catch (Exception e) {
             System.err.println("Erreur lors du chargement de l'image de fond : " + e.getMessage());
         }
@@ -28,11 +28,11 @@ public class Menu extends JPanel {
         setBackground(Color.white);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        LacunaGradientLabel title = new LacunaGradientLabel("LACUNA");
-        title.setAlignmentX(Component.CENTER_ALIGNMENT);
-        title.setPreferredSize(new Dimension(800, 180));
-        title.setMaximumSize(new Dimension(800, 180));
-        title.setMinimumSize(new Dimension(800, 180));
+        ////LacunaGradientLabel title = new LacunaGradientLabel("LACUNA");
+        ////title.setAlignmentX(Component.CENTER_ALIGNMENT);
+        ////title.setPreferredSize(new Dimension(800, 180));
+        ////title.setMaximumSize(new Dimension(800, 180));
+        ////title.setMinimumSize(new Dimension(800, 180));
 
         // =========================
         //Styles
@@ -55,11 +55,11 @@ public class Menu extends JPanel {
             b.setAlignmentX(Component.CENTER_ALIGNMENT);
 
             // ===== TES STYLES CONSERVÉS =====
-            b.setBackground(Color.BLACK);
+            b.setBackground(Color.DARK_GRAY);
             b.setForeground(Color.WHITE);
             b.setMargin(new Insets(15, 30, 15, 30));
             b.setFont(new Font("Arial", Font.BOLD, 25));
-            b.setMaximumSize(new Dimension(400, 450));
+            b.setMaximumSize(new Dimension(300, 5));
 
             // ===== CORRECTION IMPORTANTE =====
             // ne PAS laisser Swing casser ton custom painting
@@ -82,18 +82,18 @@ public class Menu extends JPanel {
         // LAYOUT (IDENTIQUE)
         // =========================
         add(Box.createVerticalStrut(80));
-        add(title);
+        //add(title);
         add(Box.createVerticalStrut(80));
 
         add(Box.createVerticalGlue());
         add(nouvellePartie);
-        add(Box.createRigidArea(new Dimension(0, 30)));
+        add(Box.createRigidArea(new Dimension(0, 1)));
         add(chargerPartie);
-        add(Box.createRigidArea(new Dimension(0, 30)));
+        add(Box.createRigidArea(new Dimension(0, 1)));
         add(tutoriel);
-        add(Box.createRigidArea(new Dimension(0, 30)));
+        add(Box.createRigidArea(new Dimension(0, 1)));
         add(leaderBoard);
-        add(Box.createRigidArea(new Dimension(0, 30)));
+        add(Box.createRigidArea(new Dimension(0, 1)));
         add(regles);
         add(Box.createVerticalGlue());
     }

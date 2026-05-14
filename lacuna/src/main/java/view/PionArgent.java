@@ -36,7 +36,7 @@ public class PionArgent extends JComponent {
 
             @Override
             public void mousePressed(MouseEvent e) {
-                if (jeu.isPartieAbandonnee() || jeu.isIAEnCours() || jeu.estTourIA() || jeu.getJoueurActuel().getTypePion() != Pion.TypePion.ARGENT) {
+                if (jeu.isPartieTerminee() || jeu.isIAEnCours() || jeu.estTourIA() || jeu.getJoueurActuel().getTypePion() != Pion.TypePion.ARGENT) {
                     return;
                 }
 

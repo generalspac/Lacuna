@@ -316,7 +316,6 @@ public class InterfaceGraphique implements Runnable {
                 buttonPanel.setBackground(Color.BLACK);
 
                 ControleurBoutons controleurBoutons = new ControleurBoutons(aire);
-                aire.addKeyListener(new EcouteurDeClavier(controleurBoutons));
                 aire.setFocusable(true);
 
                 installerRaccourcisClavier(root, controleurBoutons);
@@ -333,7 +332,7 @@ public class InterfaceGraphique implements Runnable {
                 JButton abandonButton = new JButton("Abandonner");
                 abandonButton.addActionListener(e -> controleurBoutons.abandonner());
 
-                JButton gitButton = new JButton("Git");
+                JButton gitButton = new JButton("Guide");
                 gitButton.addActionListener(e -> {
                     Object[] options = new Object[Fleur.TypeFleur.values().length + 2];
                     options[0] = "Masquer";
@@ -596,7 +595,11 @@ public class InterfaceGraphique implements Runnable {
         actionMap.put("guides", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                controleur.toggleCoupsPossibles(null, false);
+                if(controleur.getvue().jeu.getFleurSelectionnee1() != null) {
+                    controleur.toggleCoupsPossibles(controleur.getvue().jeu.getFleurSelectionnee1().getType(), false);
+                } else {
+                    controleur.toggleCoupsPossibles(null, false);
+                }
             }
         });
 
