@@ -12,7 +12,7 @@ public class GenerateurCoup {
 
     private static final double DIST_MIN_FLEURS = 30;
     private static final double TOLERANCE_SEGMENT = 12;
-    private static final int NB_POINTS_SEGMENT = 3;
+    private static final int NB_POINTS_SEGMENT = 24;
     private static final int MAX_COUPS_GENERES = 80;
 
     public static List<CoupIA> genererCoups(EtatJeu etat) {

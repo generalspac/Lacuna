@@ -29,9 +29,17 @@ public class ControleurBoutons {
     }
 
     public void abandonner() {
+        if (vue.jeu.isPartieTerminee()) {
+            vue.jeu.abandonnerPartie();
+            vue.refreshScores();
+            vue.repaint();
+            return;
+        }
         vue.annulerAnimationsVisuelles();
         vue.jeu.abandonnerPartie();
-        vue.afficherGagnantSansAnimation();
+        if (vue.jeu.isPartieAbandonnee()) {
+            vue.afficherGagnantSansAnimation();
+        }
         vue.refreshScores();
         vue.repaint();
     }
