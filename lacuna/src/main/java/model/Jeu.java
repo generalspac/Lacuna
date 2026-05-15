@@ -11,52 +11,51 @@ import global.Configuration;
 import model.IA.IA;
 import model.IA.NiveauxIA;
 import model.IA.CoupIA;
-import model.IA.EtatJeu;
-import model.IA.ThreadIA;
 
 
 
-
-public class Jeu {
+// Classe principale du modèle: garde l'état de la partie
+// Elle délègue aussi les règles
+public class Jeu implements EtatPlateau {
 
     // =========================================================
     // ===================== ATTRIBUTS 
     // =====================================
-    private Cercle cercleDeJeu; // le cercle du jeu
-    private ArrayList<Pion> pions; // contient tous les pions actuel dans le cercle
-    private ArrayList<Fleur> fleurs;
-    private Fleur fleurSelectionnee1; // la fleur que le joueur a touché ( pour le moment on suppose que c'est la
+    Cercle cercleDeJeu; // le cercle du jeu
+    ArrayList<Pion> pions; // contient tous les pions actuel dans le cercle
+    ArrayList<Fleur> fleurs;
+    Fleur fleurSelectionnee1; // la fleur que le joueur a touché ( pour le moment on suppose que c'est la
                                       // fleur la plus proche du point de clic )
-    private Fleur fleurSelectionnee2; // la fleur que le joueur a touché ( pour le moment on suppose que c'est la
+    Fleur fleurSelectionnee2; // la fleur que le joueur a touché ( pour le moment on suppose que c'est la
                                       // fleur la plus proche du point de clic )
     int nbPions = 12; // nombre de pions
     int nbFleurs = 49; // nombre de fleurs
 
-    private static final double DIST_MIN_FLEURS = 30; // distance min entre les fleurs
-    private static final double DIAMETRE_FLEUR_MODELE = DIST_MIN_FLEURS;
-    private static final double DIAMETRE_PION_MODELE = 22;
-    private static final double MARGE_COLLISION = 2;
-    private static final int NB_JOUEURS = 2;
-    private static final int MAX_PIONS_PAR_JOUEUR = 6;
-    private static final int NB_COULEURS = 6;
+    private static final double DIST_MIN_FLEURS = ConstantesJeu.DIST_MIN_FLEURS; // distance min entre les fleurs
+    private static final double DIAMETRE_FLEUR_MODELE = ConstantesJeu.DIAMETRE_FLEUR_MODELE;
+    private static final double DIAMETRE_PION_MODELE = ConstantesJeu.DIAMETRE_PION_MODELE;
+    private static final double MARGE_COLLISION = ConstantesJeu.MARGE_COLLISION;
+    private static final int NB_JOUEURS = ConstantesJeu.NB_JOUEURS;
+    private static final int MAX_PIONS_PAR_JOUEUR = ConstantesJeu.MAX_PIONS_PAR_JOUEUR;
+    private static final int NB_COULEURS = ConstantesJeu.NB_COULEURS;
 
 
-    private static final int NB_POINTS_SEGMENT = 24; // le nombre de points
-    private static final double TOLERANCE_DROP_SEGMENT = 18;
-    private static final double MARGE_EXTREMITES_SEGMENT = MARGE_COLLISION;
+    private static final int NB_POINTS_SEGMENT = ConstantesJeu.NB_POINTS_SEGMENT; // le nombre de points
+    private static final double TOLERANCE_DROP_SEGMENT = ConstantesJeu.TOLERANCE_DROP_SEGMENT;
+    private static final double MARGE_EXTREMITES_SEGMENT = ConstantesJeu.MARGE_EXTREMITES_SEGMENT_JEU;
 
     //// Attributs pour les joueurs
-    private Joueur[] joueurs; // la liste des joueurs
+    Joueur[] joueurs; // la liste des joueurs
     public int currentPlayerIndex; // 0 pour le joueur 1
 
-    private Random random;
+    Random random;
 
     private int WIDTH = 30;
     private int HEIGHT = 30;
 
     public boolean againstIA = false;
 
-    ///////// pour la marge (afin que les fleurs ne sortent pas du cercle)//////////
+    ///////// pour la marge (afin que les fleurs ne sortent pas du cercle----centre du cerlce)//////////
     ////////// vu qu'on dessine les fleurs avec le format dans view (hauteur *
     ///////// largeur )
     ///////// avec hauteur == largeur, alors la view va nous envoyer la taille qu'on
@@ -64,24 +63,24 @@ public class Jeu {
     ///////// voir dans jeuGraphique, juste après rcalcul de la taille, on fera
     ///////// setMarge(taille/2)
 
-    private double marge;
+    double marge;
 
-    private Historique historique;
+    Historique historique;
 
     // Avantage du joueur qui commence
-    private boolean avantageInitialApplique = false;
-    private boolean enPhaseSelectionAvantage = false;
-    private String feedbackMessage = "";
+    boolean avantageInitialApplique = false;
+    boolean enPhaseSelectionAvantage = false;
+    String feedbackMessage = "";
 
     // Fin anticipée de partie (abandon)
-    private boolean partieAbandonnee = false;
-    private Joueur gagnantParAbandon = null;
+    boolean partieAbandonnee = false;
+    Joueur gagnantParAbandon = null;
 
 
     ///////////////// IA /////////////////
-    private IA ia;
-    private boolean iaEnCours = false;
-    private int generationIA = 0;
+    IA ia;
+    boolean iaEnCours = false;
+    int generationIA = 0;
 
     public String getFeedbackMessage() {
         return feedbackMessage;
@@ -100,7 +99,7 @@ public class Jeu {
     }
 
     public boolean estFinNormalePartie() {
-        return tousLesPionsPlaces() && fleurs.isEmpty();
+        return Phase2.tousLesPionsPlaces(pions) && fleurs.isEmpty();
     }
 
     // =========================================================
@@ -179,6 +178,21 @@ public class Jeu {
         return historique;
     }
 
+    @Override
+    public List<Fleur> fleursPlateau() {
+        return fleurs;
+    }
+
+    @Override
+    public List<Pion> pionsPlateau() {
+        return pions;
+    }
+
+    @Override
+    public Cercle cerclePlateau() {
+        return cercleDeJeu;
+    }
+
     public void setAvantageInitialApplique(boolean avantageInitialApplique) {
         this.avantageInitialApplique = avantageInitialApplique;
     }
@@ -218,7 +232,7 @@ public class Jeu {
 
     // Replace les noms par défaut si le champ est vide
     // En fait ici s'il y 'a pas de nom on laisse les noms parDefaut du jeu'
-    private String nomValide(String nom, String nomParDefaut) {
+    String nomValide(String nom, String nomParDefaut) {
         if (nom == null || nom.trim().isEmpty()) {
             return nomParDefaut;
         }
@@ -226,7 +240,7 @@ public class Jeu {
     }
 
     // Choix de l'index du joueur qui commence
-    private void choisirJoueurQuiCommence(Pion.TypePion type) {
+    void choisirJoueurQuiCommence(Pion.TypePion type) {
         if (type == null) {
             currentPlayerIndex = random.nextInt(getNbJoueurs());
             return;
@@ -389,28 +403,17 @@ public class Jeu {
 
     // Vérifie si deux objets dessinés se superposent
     private boolean objetsSeSuperposent(Coordonnees a, Coordonnees b, double distanceMin) {
-        return Coordonnees.distance(a, b) <= distanceMin;
+        return ReglesPlateau.objetsSeSuperposent(a, b, distanceMin);
     }
 
     // Vérifieddd si une fleur générée est trop proche d'une autre fleur
     private boolean fleurTropProcheDuneAutre(Coordonnees pos, ArrayList<Fleur> fleurs) {
-        for (Fleur f : fleurs) {
-            if (objetsSeSuperposent(pos, f.getPosition(), DIAMETRE_FLEUR_MODELE + MARGE_COLLISION)) {
-                return true;
-            }
-        }
-        return false;
+        return ReglesPlateau.fleurTropProcheDuneAutre(pos, fleurs, DIAMETRE_FLEUR_MODELE + MARGE_COLLISION);
     }
 
     // Vérifie si un pion placé est trop proche d'un autre pion
     private boolean pionTropProcheDunAutre(Coordonnees pos) {
-        for (Pion p : pions) {
-            if (p.getPosition() != null
-                    && objetsSeSuperposent(pos, p.getPosition(), DIAMETRE_PION_MODELE + MARGE_COLLISION)) {
-                return true;
-            }
-        }
-        return false;
+        return ReglesPlateau.pionTropProcheDunAutre(pos, pions, DIAMETRE_PION_MODELE + MARGE_COLLISION);
     }
 
     // =========================================================
@@ -510,84 +513,20 @@ public class Jeu {
 
 
     public boolean jouerCoupAvecFleursSelectionnees() {
-        Coordonnees posReference = null;
-        if (fleurSelectionnee1 != null && fleurSelectionnee2 != null) {
-            posReference = Coordonnees.milieu(fleurSelectionnee1.getPosition(), fleurSelectionnee2.getPosition());
-        }
-        return jouerCoupAvecFleursSelectionnees(posReference);
+        return ActionsJeu.jouerCoupAvecFleursSelectionnees(this);
     }
 
     public boolean jouerCoupAvecFleursSelectionnees(Coordonnees clic) {
-
-        if (partieAbandonnee) {
-            return false;
-        }
-
-        if (!fleursConnectées(fleurSelectionnee1, fleurSelectionnee2)) {
-            return false;
-        }
-
-        Coordonnees pos = positionSegmentLaPlusProcheDuClic(
-                fleurSelectionnee1.getPosition(),
-                fleurSelectionnee2.getPosition(),
-                clic);
-
-        if (pos == null) {
-            resetFleursSelectionnee1();
-            resetFleursSelectionnee2();
-            setFeedbackMessage("Aucune zone libre sur ce segment : choisissez une autre paire de fleurs.");
-            return false;
-        }
-
-        Joueur joueurActuel = getJoueurActuel();
-        Pion.TypePion pionType = joueurActuel.getTypePion();
-        Pion pionLibre = getPionLibre(pionType);
-
-        if (pionLibre == null) {
-            setFeedbackMessage("Aucun pion libre disponible pour " + nomJoueurActuelPourAffichage() + ".");
-            return false;
-        }
-
-        jouerCoup(joueurActuel, pionLibre, pos, fleurSelectionnee1, fleurSelectionnee2);
-
-        if (pionLibre.getPosition() != null) {
-            resetFleursSelectionnee1();
-            resetFleursSelectionnee2();
-            return true;
-         }
-
-        return false;
+        return ActionsJeu.jouerCoupAvecFleursSelectionnees(this, clic);
     }
 
     public Coordonnees positionSegmentLaPlusProcheDuClic(Coordonnees A, Coordonnees B, Coordonnees clic) {
-        List<Coordonnees> points = pointsDuSegment(A, B);
-        if (points.isEmpty()) {
-            return null;
-        }
-
-        Coordonnees reference = (clic != null) ? clic : Coordonnees.milieu(A, B);
-        Coordonnees meilleure = null;
-        double meilleureDistance = Double.MAX_VALUE;
-
-        for (Coordonnees point : points) {
-            double d = Coordonnees.distance(reference, point);
-            if (d < meilleureDistance) {
-                meilleureDistance = d;
-                meilleure = point;
-            }
-        }
-
-        return meilleure;
+        return ActionsJeu.positionSegmentLaPlusProcheDuClic(this, A, B, clic);
     }
 
     //fonction pour la seconde phase du jeu (controller appelle ça aussi )
     public boolean secondePhase(){
-
-        if (tousLesPionsPlaces()) {
-            attribuerFleursRestantes();// on attribue les fleurs restantes
-            return true; // fin du jeu
-        }
-        return false;
+        return Phase2.secondePhase(this);
     }
 
     /* ============= fonctions auxiliares ================= */
@@ -622,156 +561,31 @@ public class Jeu {
     // qui sont proche de lui, car des obstacles ont disparus sur le plateau, si on
     // peut dire comme ça )
     public void attribuerFleursRestantes() {
-
-        for (AttributionFleur attribution : calculerAttributionsFleursRestantes()) {
-            appliquerAttributionFleur(attribution);
-        }
+        Phase2.attribuerFleursRestantes(this);
     }
 
-    public static class AttributionFleur {
-        public final Fleur fleur;
-        public final Joueur joueur;
-        public final Pion pionLePlusProche;
-        public final Pion pionCompare;
-        public final boolean comparaisonNecessaire;
-
-        public AttributionFleur(Fleur fleur, Joueur joueur, Pion pionLePlusProche) {
-            this(fleur, joueur, pionLePlusProche, null, false);
-        }
-
-        public AttributionFleur(Fleur fleur, Joueur joueur, Pion pionLePlusProche, Pion pionCompare, boolean comparaisonNecessaire) {
-            this.fleur = fleur;
-            this.joueur = joueur;
-            this.pionLePlusProche = pionLePlusProche;
-            this.pionCompare = pionCompare;
-            this.comparaisonNecessaire = comparaisonNecessaire;
-        }
+    public ArrayList<Phase2.AttributionFleur> calculerAttributionsFleursRestantes() {
+        return Phase2.calculerAttributionsFleursRestantes(fleurs, pions, joueurs);
     }
 
-    public ArrayList<AttributionFleur> calculerAttributionsFleursRestantes() {
-        ArrayList<AttributionFleur> attributions = new ArrayList<>();
-        ArrayList<Fleur> copie = new ArrayList<>(fleurs);
-
-        for (Fleur f : copie) {
-            AttributionFleur attribution = calculerAttributionFleur(f);
-            if (attribution != null) {
-                attributions.add(attribution);
-            }
-        }
-        return attributions;
-    }
-
-    private AttributionFleur calculerAttributionFleur(Fleur fleur) {
-        Pion meilleur = null;
-        Pion secondAdverse = null;
-        double meilleureDistance = Double.MAX_VALUE;
-        double distanceSecondAdverse = Double.MAX_VALUE;
-
-        for (Pion p : pions) {
-            if (p.getPosition() == null) {
-                continue;
-            }
-
-            double d = Coordonnees.distance(fleur.getPosition(), p.getPosition());
-            if (d < meilleureDistance) {
-                if (meilleur != null && meilleur.getType() != p.getType()) {
-                    secondAdverse = meilleur;
-                    distanceSecondAdverse = meilleureDistance;
-                }
-                meilleureDistance = d;
-                meilleur = p;
-            } else if (meilleur != null && p.getType() != meilleur.getType() && d < distanceSecondAdverse) {
-                secondAdverse = p;
-                distanceSecondAdverse = d;
-            }
-        }
-
-        Joueur joueur = joueurPourPion(meilleur);
-        if (joueur == null) {
-            return null;
-        }
-
-        boolean comparaison = secondAdverse != null
-                && (Math.abs(distanceSecondAdverse - meilleureDistance) <= 35
-                    || distanceSecondAdverse <= meilleureDistance * 1.18);
-
-        return new AttributionFleur(fleur, joueur, meilleur, secondAdverse, comparaison);
-    }
-
-    public void appliquerAttributionFleur(AttributionFleur attribution) {
-        if (attribution == null || attribution.fleur == null || attribution.joueur == null) {
-            return;
-        }
-        if (fleurs.remove(attribution.fleur)) {
-            attribution.joueur.ajouterFleur(attribution.fleur);
-        }
+    public void appliquerAttributionFleur(Phase2.AttributionFleur attribution) {
+        Phase2.appliquerAttributionFleur(fleurs, attribution);
     }
 
     public boolean estSecondePhaseDisponible() {
-        return tousLesPionsPlaces() && !fleurs.isEmpty();
-    }
-
-    // le joueur le plus proche
-    private Joueur joueurLePlusProche(Fleur fleur) {
-        return joueurPourPion(pionLePlusProche(fleur));
+        return Phase2.estSecondePhaseDisponible(fleurs, pions);
     }
 
     public Pion pionLePlusProche(Fleur fleur) {
-        if (fleur == null || fleur.getPosition() == null) {
-            return null;
-        }
-
-        Pion meilleur = null;
-        double min = Double.MAX_VALUE;
-        for (Pion p : pions) {
-            if (p.getPosition() != null) {
-                double d = Coordonnees.distance(fleur.getPosition(), p.getPosition());
-                if (d < min) {
-                    min = d;
-                    meilleur = p;
-                }
-            }
-        }
-        return meilleur;
+        return ReglesPlateau.pionLePlusProche(this, fleur);
     }
 
     public Joueur joueurPourPion(Pion pion) {
-        if (pion == null) {
-            return null;
-        }
-        for (Joueur j : joueurs) {
-            if (j.getTypePion() == pion.getType()) {
-                return j;
-            }
-        }
-        return null;
+        return Phase2.joueurPourPion(joueurs, pion);
     }
 
     public Joueur getGagnant() {
-        if (gagnantParAbandon != null) {
-            return gagnantParAbandon;
-        }
-
-        int couleursJ0 = joueurs[0].nbCouleursGagnees();
-        int couleursJ1 = joueurs[1].nbCouleursGagnees();
-        if (couleursJ0 > couleursJ1) return joueurs[0];
-        if (couleursJ1 > couleursJ0) return joueurs[1];
-
-        int fleursJ0 = joueurs[0].getScoreTotal();
-        int fleursJ1 = joueurs[1].getScoreTotal();
-        if (fleursJ0 > fleursJ1) return joueurs[0];
-        if (fleursJ1 > fleursJ0) return joueurs[1];
-        return null;
-    }
-
-    // verifie si tous les pions sont placés (type argent et or )
-    private boolean tousLesPionsPlaces() {
-        for (Pion p : pions) {
-            // le pion n'a pas de coordonnée, donc il n'est pas placé dans le plateau de jeu
-            if (p.getPosition() == null)
-                return false;
-        }
-        return true;
+        return ScoreJeu.getGagnant(joueurs, gagnantParAbandon);
     }
 
     // =========================================================
@@ -779,96 +593,15 @@ public class Jeu {
     // =========================================================
 
     public boolean toucherFleur(Coordonnees pos) {
-        if (partieAbandonnee) {
-            return false;
-        }
-        for (Fleur f : fleurs) {
-
-            if (Coordonnees.distance(pos, f.getPosition()) < 10) {
-
-                // Phase de sélection d'avantage initial
-                if (enPhaseSelectionAvantage) {
-                    appliquerAvantageAvecFleur(f);
-                    setFeedbackMessage("Avantage initial : " + getJoueurActuel().getNom() + " a choisi une fleur " + f.getType() + ".");
-                    return true;
-                }
-
-                if (f == fleurSelectionnee1) {
-                    fleurSelectionnee1 = null;
-                    setFeedbackMessage("Sélection annulée pour la première fleur.");
-                    return true;
-                }
-
-                if (f == fleurSelectionnee2) {
-                    fleurSelectionnee2 = null;
-                    setFeedbackMessage("Sélection annulée pour la seconde fleur.");
-                    return true;
-                }
-
-                if (fleurSelectionnee1 == null) {
-                    fleurSelectionnee1 = f;
-                    setFeedbackMessage("Première fleur sélectionnée : " + f.getType() + ".");
-                    return true;
-                }
-
-                if (fleurSelectionnee2 == null) {
-                    fleurSelectionnee2 = f;
-                    setFeedbackMessage("Seconde fleur sélectionnée : " + f.getType() + ".");
-                    return true;
-                }
-
-                fleurSelectionnee1 = f;
-                fleurSelectionnee2 = null;
-                setFeedbackMessage("Nouvelle première fleur sélectionnée : " + f.getType() + ". Choisissez une seconde fleur.");
-                return true;
-            }
-        }
-        setFeedbackMessage("Aucune fleur touchée. Cliquez sur une fleur visible dans le cercle.");
-        return false;
+        return ActionsJeu.toucherFleur(this, pos);
     }
 
     private boolean segmentLibre(Coordonnees A, Coordonnees B) {
-
-        // Vérifier les fleurs comme obstacles
-        for (Fleur f : fleurs) {
-
-            Coordonnees C = f.getPosition();
-
-            // ignorer les extrémités (les fleurs sélectionnées)
-            if (C.equals(A) || C.equals(B))
-                continue;
-
-            if (Coordonnees.surSegment(A, B, C, 12)) {
-                return false; // obstacle trouvé
-            }
-        }
-
-        // Vérifier les pions comme obstacles
-        for (Pion p : pions) {
-            Coordonnees C = p.getPosition();
-            if (C == null)
-                continue;
-
-            if (Coordonnees.surSegment(A, B, C, 12)) {
-                return false; // un pion bloque le chemin
-            }
-        }
-
-        return true;
+        return ActionsJeu.segmentLibre(this, A, B);
     }
 
     public boolean fleursConnectées(Fleur f1, Fleur f2) {
-
-        if (f1 == null || f2 == null)
-            return false;
-
-        if (f1.getType() != f2.getType())
-            return false;
-
-        Coordonnees A = f1.getPosition();
-        Coordonnees B = f2.getPosition();
-
-        return segmentLibre(A, B);
+        return ActionsJeu.fleursConnectees(this, f1, f2);
     }
 
     public Coordonnees milieu(Coordonnees A, Coordonnees B) {
@@ -903,179 +636,40 @@ public class Jeu {
     // =========================================================
 
     public List<Coordonnees> pointsDuSegment(Coordonnees A, Coordonnees B) {
-
-        List<Coordonnees> points = new ArrayList<>();
-
-        for (Coordonnees pos : Coordonnees.pointsDuSegment(A, B, NB_POINTS_SEGMENT)) {
-
-            // Vérification:le pion peut être placé ici?
-            if (positionLibrePourPion(pos) && cercleDeJeu.contientPoint(pos)
-                    && horsZoneFleursExtremites(A, B, pos)) {
-                points.add(pos);
-            }
-        }
-
-        return points;
+        return ActionsJeu.pointsDuSegment(this, A, B);
     }
 
     private boolean horsZoneFleursExtremites(Coordonnees A, Coordonnees B, Coordonnees pos) {
-        return Coordonnees.distance(A, pos) >= MARGE_EXTREMITES_SEGMENT
-                && Coordonnees.distance(B, pos) >= MARGE_EXTREMITES_SEGMENT;
+        return ActionsJeu.horsZoneFleursExtremites(A, B, pos);
     }
 
     // Retourne toutes les positions possibles pour jouer
     public List<Coordonnees> coupsPossibles() {
-
-        List<Coordonnees> coups = new ArrayList<>();
-
-        for (int i = 0; i < fleurs.size(); i++) {
-
-            for (int j = i + 1; j < fleurs.size(); j++) {
-
-                Fleur f1 = fleurs.get(i);
-                Fleur f2 = fleurs.get(j);
-
-                //Même couleur + segment libre
-                if (fleursConnectées(f1, f2)) {
-
-                    List<Coordonnees> points = pointsDuSegment(f1.getPosition(),f2.getPosition());
-
-                    coups.addAll(points);
-                }
-            }
-        }
-
-        return coups;
+        return ActionsJeu.coupsPossibles(this);
     }
 
     public List<Coordonnees> coupsPossibles(Fleur.TypeFleur type) {
-        if (type == null) {
-            return coupsPossibles();
-        }
-
-        List<Coordonnees> coups = new ArrayList<>();
-
-        for (int i = 0; i < fleurs.size(); i++) {
-            Fleur f1 = fleurs.get(i);
-            if (f1.getType() != type) {
-                continue;
-            }
-            for (int j = i + 1; j < fleurs.size(); j++) {
-                Fleur f2 = fleurs.get(j);
-                if (f2.getType() != type) {
-                    continue;
-                }
-                if (fleursConnectées(f1, f2)) {
-                    coups.addAll(pointsDuSegment(f1.getPosition(), f2.getPosition()));
-                }
-            }
-        }
-
-        return coups;
+        return ActionsJeu.coupsPossibles(this, type);
     }
 
     public List<Fleur[]> pairesConnectees(Fleur.TypeFleur type) {
-        List<Fleur[]> paires = new ArrayList<>();
-        // Si type est null, on considère toutes les fleurs, donc on vérifie toutes les paires possibles
-        if (type == null) {
-            for (int i = 0; i < fleurs.size(); i++) {
-                for (int j = i + 1; j < fleurs.size(); j++) {
-                    Fleur f1 = fleurs.get(i);
-                    Fleur f2 = fleurs.get(j);
-                    if (fleursConnectées(f1, f2)) {
-                        paires.add(new Fleur[]{f1, f2});
-                    }
-                }
-            }
-        } else {// Sinon, on ne considère que les fleurs du type spécifié, donc on vérifie uniquement les paires de ce type
-            for (int i = 0; i < fleurs.size(); i++) {
-                Fleur f1 = fleurs.get(i);
-                if (f1.getType() != type) continue;
-                for (int j = i + 1; j < fleurs.size(); j++) {
-                    Fleur f2 = fleurs.get(j);
-                    if (f2.getType() != type) continue;
-                    if (fleursConnectées(f1, f2)) {
-                        paires.add(new Fleur[]{f1, f2});
-                    }
-                }
-            }
-        }
-        return paires;
+        return ActionsJeu.pairesConnectees(this, type);
     }
 
     public boolean existeCoupConnecte() {
-        return !coupsPossibles().isEmpty();
+        return ActionsJeu.existeCoupConnecte(this);
     }
 
     public boolean placerPionLibreSiAucunCoup(Coordonnees pos) {
-        if (partieAbandonnee || estFinNormalePartie()) {
-            setFeedbackMessage("La partie est terminée.");
-            return false;
-        }
-
-        if (existeCoupConnecte()) {
-            setFeedbackMessage("Il reste au moins une paire de fleurs connectée : il faut jouer une paire avant de placer librement.");
-            return false;
-        }
-
-        Joueur joueurActuel = getJoueurActuel();
-        Pion pionLibre = getPionLibre(joueurActuel.getTypePion());
-        if (pionLibre == null) {
-            setFeedbackMessage("Aucun pion libre disponible pour " + nomJoueurActuelPourAffichage() + ".");
-            return false;
-        }
-
-        if (!placePion(pionLibre, pos)) {
-            return false;
-        }
-
-        historique.enregistrerAction(pionLibre, null, null, joueurActuel);
-        joueurSuivant();
-        resetFleursSelectionnee1();
-        resetFleursSelectionnee2();
-        setFeedbackMessage(nomJoueurPourAffichage(joueurActuel) + " place un pion sans collecter : aucune paire connectée n'était disponible.");
-        return true;
+        return ActionsJeu.placerPionLibreSiAucunCoup(this, pos);
     }
 
     private Coordonnees positionLibreDeSecours(Pion.TypePion type) {
-        Coordonnees centre = cercleDeJeu.getCentre();
-        double rayonMax = cercleDeJeu.getRayon() - Math.max(10, marge);
-
-        for (int r = 0; r <= 12; r++) {
-            double rayon = rayonMax * r / 12.0;
-            int nbAngles = (r == 0) ? 1 : 24;
-            for (int a = 0; a < nbAngles; a++) {
-                double angle = (2 * Math.PI * a) / nbAngles;
-                Coordonnees pos = new Coordonnees(
-                        (int) Math.round(centre.getX() + rayon * Math.cos(angle)),
-                        (int) Math.round(centre.getY() + rayon * Math.sin(angle)));
-                if (cercleDeJeu.contientPoint(pos) && positionLibrePourPion(pos)) {
-                    return pos;
-                }
-            }
-        }
-        return null;
+        return ActionsJeu.positionLibreDeSecours(this, type);
     }
 
     private boolean placerPionIADeSecours() {
-        if (!estTourIA()) {
-            return false;
-        }
-        Joueur joueur = getJoueurActuel();
-        Pion pionLibre = getPionLibre(joueur.getTypePion());
-        if (pionLibre == null) {
-            setFeedbackMessage("L'IA n'a plus de pion disponible.");
-            return false;
-        }
-        Coordonnees pos = positionLibreDeSecours(joueur.getTypePion());
-        if (pos == null || !placePion(pionLibre, pos)) {
-            setFeedbackMessage("L'IA ne trouve aucune position libre pour avancer.");
-            return false;
-        }
-        historique.enregistrerAction(pionLibre, null, null, joueur);
-        joueurSuivant();
-        setFeedbackMessage("IA (" + joueur.getTypePion() + ") place un pion sans collecter : aucune paire connectée n'était disponible.");
-        return true;
+        return ActionsJeu.placerPionIADeSecours(this);
     }
 
     // =========================================================
@@ -1083,84 +677,7 @@ public class Jeu {
     // =========================================================
 
     public boolean placerPionDepuisDrag(Coordonnees pos, Object payload) {
-
-        if (payload == null) {
-            return false;
-        }
-
-        if (!(payload instanceof Pion.TypePion)) {
-            setFeedbackMessage("Placement invalide : pion non reconnu.");
-            return false;
-        }
-
-        if (partieAbandonnee || estFinNormalePartie()) {
-            setFeedbackMessage("La partie est terminée.");
-            return false;
-        }
-
-        Pion.TypePion type = (Pion.TypePion) payload;
-        Joueur joueurActuel = getJoueurActuel();
-
-        if (joueurActuel.getTypePion() != type) {
-            setFeedbackMessage("Ce n'est pas le pion de " + nomJoueurActuelPourAffichage() + ".");
-            return false;
-        }
-
-        if (!cercleDeJeu.contientPoint(pos)) {
-            setFeedbackMessage("Placement invalide : le pion doit rester dans le cercle.");
-            return false;
-        }
-
-        if (!existeCoupConnecte()) {
-            return placerPionLibreSiAucunCoup(pos);
-        }
-
-        if (fleurSelectionnee1 == null || fleurSelectionnee2 == null) {
-            setFeedbackMessage("Placement invalide : sélectionnez d'abord deux fleurs avant de déposer le pion.");
-            return false;
-        }
-
-        if (fleurSelectionnee1.getType() != fleurSelectionnee2.getType()) {
-            setFeedbackMessage("Placement invalide : les deux fleurs sélectionnées ne sont pas de la même couleur.");
-            return false;
-        }
-
-        Coordonnees a = fleurSelectionnee1.getPosition();
-        Coordonnees b = fleurSelectionnee2.getPosition();
-
-        if (!segmentLibre(a, b)) {
-            setFeedbackMessage("Placement invalide : la ligne entre les deux fleurs est obstruée.");
-            return false;
-        }
-
-        if (!Coordonnees.surSegment(a, b, pos, TOLERANCE_DROP_SEGMENT)) {
-            setFeedbackMessage("Placement invalide : déposez le pion sur la ligne entre les deux fleurs sélectionnées.");
-            return false;
-        }
-
-        Pion pion = getPionLibre(type);
-        if (pion == null) {
-            setFeedbackMessage("Aucun pion libre disponible pour " + nomJoueurActuelPourAffichage() + ".");
-            return false;
-        }
-
-        Coordonnees positionSurSegment = positionSegmentLaPlusProcheDuClic(a, b, pos);
-        if (positionSurSegment == null) {
-            setFeedbackMessage("Placement invalide : aucune zone libre sur ce segment.");
-            return false;
-        }
-
-        Fleur f1 = fleurSelectionnee1;
-        Fleur f2 = fleurSelectionnee2;
-        jouerCoup(joueurActuel, pion, positionSurSegment, f1, f2);
-
-        if (pion.getPosition() != null) {
-            resetFleursSelectionnee1();
-            resetFleursSelectionnee2();
-            return true;
-        }
-
-        return false;
+        return ActionsJeu.placerPionDepuisDrag(this, pos, payload);
     }
 
     // =========================================================
@@ -1212,18 +729,7 @@ public class Jeu {
 //////////////////////////////////////////////////////////////////////
 
     public Map<Fleur.TypeFleur, Integer> getScore(Joueur joueur) {
-
-        Map<Fleur.TypeFleur, Integer> map = new java.util.HashMap<>();
-
-        for (Fleur.TypeFleur t : Fleur.TypeFleur.values()) {
-            map.put(t, 0);
-        }
-
-        for (Fleur f : joueur.getFleursGagnees()) {
-            map.put(f.getType(), map.get(f.getType()) + 1);
-        }
-
-        return map;
+        return ScoreJeu.getScore(joueur);
     }
 
     // =========================================================
@@ -1281,22 +787,7 @@ public class Jeu {
 
     //Active le mode IA en laissant --- choisir celui qui commence
     public void activerIA(NiveauxIA niveau, String nomHumain, Pion.TypePion joueurQuiCommence) {
-
-        againstIA = true;
-        if (niveau == null) {
-            niveau = NiveauxIA.FACILE;
-        }
-        ia = niveau.creerIA(1);
-        partieAbandonnee = false;
-        gagnantParAbandon = null;
-
-        joueurs = new Joueur[] {
-                new JoueurHumain(nomValide(nomHumain, "Humain"), Pion.TypePion.OR),
-                new JoueurIa("IA", Pion.TypePion.ARGENT)
-        };
-        choisirJoueurQuiCommence(joueurQuiCommence);
-        iaEnCours = false;
-        setFeedbackMessage("Mode IA activé (" + niveau + "). " + nomJoueurActuelPourAffichage() + " commence.");
+        GestionIA.activerIA(this, niveau, nomHumain, joueurQuiCommence);
     }
 
     // Savoir si l'ia est en cours
@@ -1306,105 +797,24 @@ public class Jeu {
 
     // Savoir si c'est le tour de l'ia
     public boolean estTourIA() {
-        
-         if (!againstIA)
-            return false;
-        return getJoueurActuel() instanceof JoueurIa;
+        return GestionIA.estTourIA(this);
     }
 
     private Fleur retrouverFleurDuPlateau(Fleur recherchee) {
-        if (recherchee == null) {
-            return null;
-        }
-
-        for (Fleur f : fleurs) {
-            if (f.getType() == recherchee.getType() && f.getPosition().equals(recherchee.getPosition())) {
-                return f;
-            }
-        }
-
-        return null;
+        return GestionIA.retrouverFleurDuPlateau(this, recherchee);
     }
 
     // L'AI joue un coup
     public boolean placerPionCoupIA(CoupIA coup) {
-
-        if (coup == null) {
-            if (!placerPionIADeSecours()) {
-                setFeedbackMessage("L'IA n'a trouvé aucun coup jouable.");
-                return false;
-            }
-            return true;
-        }
-
-        if (!estTourIA()) {
-            return false;
-        }
-
-        Joueur joueur = getJoueurActuel();
-        Pion pionLibre = getPionLibre(joueur.getTypePion());
-
-        if (pionLibre == null) {
-            setFeedbackMessage("L'IA n'a plus de pion disponible.");
-            return false;
-        }
-
-        Fleur f1 = retrouverFleurDuPlateau(coup.fleur1);
-        Fleur f2 = retrouverFleurDuPlateau(coup.fleur2);
-
-        if (f1 == null || f2 == null || !fleursConnectées(f1, f2)) {
-            setFeedbackMessage("Le coup IA n'est plus valide : il a été ignoré.");
-            return false;
-        }
-
-        if (!placePion(pionLibre, coup.position)) {
-            return false;
-        }
-
-        setFeedbackMessage("IA (" + joueur.getTypePion() + ") place son pion.");
-        return true;
+        return GestionIA.placerPionCoupIA(this, coup);
     }
 
     public boolean collecterFleursCoupIA(CoupIA coup) {
-
-        if (coup == null || !estTourIA()) {
-            return false;
-        }
-
-        Joueur joueur = getJoueurActuel();
-        Pion pionPlace = null;
-
-        for (Pion p : pions) {
-            if (p.getType() == joueur.getTypePion() && p.getPosition() != null
-                    && p.getPosition().equals(coup.position)) {
-                pionPlace = p;
-                break;
-            }
-        }
-
-        Fleur f1 = retrouverFleurDuPlateau(coup.fleur1);
-        Fleur f2 = retrouverFleurDuPlateau(coup.fleur2);
-
-        if (pionPlace == null || f1 == null || f2 == null) {
-            setFeedbackMessage("Le coup IA ne peut pas être finalisé.");
-            return false;
-        }
-
-        if (!mangerFleurs(joueur, f1, f2)) {
-            setFeedbackMessage("Le coup IA ne peut pas collecter les fleurs.");
-            return false;
-        }
-
-        historique.enregistrerAction(pionPlace, f1, f2, joueur);
-        joueurSuivant();
-        setFeedbackMessage("IA (" + joueur.getTypePion() + ") a joué. C'est à " + nomJoueurActuelPourAffichage() + " de jouer.");
-        return true;
+        return GestionIA.collecterFleursCoupIA(this, coup);
     }
 
     public void jouerCoupIA(CoupIA coup) {
-        if (placerPionCoupIA(coup) && coup != null) {
-            collecterFleursCoupIA(coup);
-        }
+        GestionIA.jouerCoupIA(this, coup);
     }
 
 
@@ -1427,65 +837,17 @@ public class Jeu {
 
     // Lancement du thread pour l'ia
     public void lancerIA(Runnable callbackFin) {
-        lancerIA(coup -> jouerCoupIA(coup), callbackFin);
+        GestionIA.lancerIA(this, callbackFin);
     }
 
     public void lancerIA(Consumer<CoupIA> actionQuandCoupPret, Runnable callbackFin) {
-
-        if (!againstIA || ia == null || iaEnCours)
-            return;
-        
-        if (!estTourIA()) return;
-
-        iaEnCours = true;
-        final int generationLancee = ++generationIA;
-        setFeedbackMessage("Tour de l'IA (" + getJoueurActuel().getTypePion() + ") : elle réfléchit...");
-
-        EtatJeu etat = EtatJeu.depuisJeu(this, currentPlayerIndex);
-
-        ThreadIA thread = new ThreadIA(ia, etat, coup -> {
-            javax.swing.SwingUtilities.invokeLater(() -> {
-                if (generationLancee != generationIA) {
-                    return;
-                }
-
-                try {
-                    if (actionQuandCoupPret != null) {
-                        actionQuandCoupPret.accept(coup);
-                    } else {
-                        jouerCoupIA(coup);
-                    }
-                } finally {
-                    iaEnCours = false;
-                    if (callbackFin != null) {
-                        callbackFin.run();
-                    }
-                }
-            });
-        });
-
-        thread.start();
+        GestionIA.lancerIA(this, actionQuandCoupPret, callbackFin);
     }
 
     //=============================CONFIGURATION POUR TESTER IA VS IA =================//
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
    public void configurerIAContreIA(NiveauxIA niveauOr, NiveauxIA niveauArgent, Pion.TypePion joueurQuiCommence) {
-        againstIA = true;
-        ia = null;
-        iaEnCours = false;
-        partieAbandonnee = false;
-        gagnantParAbandon = null;
-        
-        joueurs = new Joueur[] {new JoueurIa("IA " + niveauOr, Pion.TypePion.OR),
-                new JoueurIa("IA " + niveauArgent, Pion.TypePion.ARGENT)};
-
-        choisirJoueurQuiCommence(joueurQuiCommence);
-        
-        setFeedbackMessage("Test IA contre IA : " + niveauOr + " (OR) contre "
-                + niveauArgent + " (ARGENT). "
-                + nomJoueurActuelPourAffichage() + " commence.");
+        GestionIA.configurerIAContreIA(this, niveauOr, niveauArgent, joueurQuiCommence);
     }
     
 }
-
-

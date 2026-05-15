@@ -5,17 +5,18 @@ import java.util.Collections;
 import java.util.List;
 
 import model.Coordonnees;
+import model.ConstantesJeu;
 import model.Fleur;
-import model.Pion;
+import model.ReglesPlateau;
 
 // Liste tous les coups de l'IA depuis un état
 public class GenerateurCoup {
 
-    private static final double DIST_MIN_FLEURS = 24;
-    private static final double TOLERANCE_SEGMENT = 12;
-    private static final double MARGE_EXTREMITES_SEGMENT = 26;
-    private static final int NB_POINTS_SEGMENT = 24;
-    private static final int MAX_COUPS_GENERES = 80;
+    private static final double DIST_MIN_FLEURS = ConstantesJeu.DIST_MIN_PION_IA;
+    private static final double TOLERANCE_SEGMENT = ConstantesJeu.TOLERANCE_SEGMENT;
+    private static final double MARGE_EXTREMITES_SEGMENT = ConstantesJeu.MARGE_EXTREMITES_SEGMENT_IA;
+    private static final int NB_POINTS_SEGMENT = ConstantesJeu.NB_POINTS_SEGMENT;
+    private static final int MAX_COUPS_GENERES = ConstantesJeu.MAX_COUPS_GENERES_IA;
 
     public static List<CoupIA> genererCoups(EtatJeu etat) {
 
@@ -28,8 +29,7 @@ public class GenerateurCoup {
                  Fleur f1 = etat.fleursRestantes.get(i);
                 Fleur f2 = etat.fleursRestantes.get(j);
 
-                if (f1.getType() == f2.getType()
-                        && segmentLibre(etat, f1.getPosition(), f2.getPosition())) {
+                if (f1.getType() == f2.getType() && segmentLibre(etat, f1.getPosition(), f2.getPosition())) {
 
                     List<Coordonnees> points = pointsDuSegment(etat,f1.getPosition(), f2.getPosition());
                     
@@ -51,61 +51,11 @@ public class GenerateurCoup {
     }
 
     private static List<Coordonnees> pointsDuSegment( EtatJeu etat,Coordonnees A, Coordonnees B) {
-
-        List<Coordonnees> points = new ArrayList<>();
-
-        for (Coordonnees pos : Coordonnees.pointsDuSegment(A, B, NB_POINTS_SEGMENT)) {
-
-            if (positionLibrePourPion(etat, pos) && horsZoneFleursExtremites(A, B, pos)) {
-                points.add(pos);
-            }
-        }
-
-        return points;
-    }
-
-    private static boolean horsZoneFleursExtremites(Coordonnees A, Coordonnees B, Coordonnees pos) {
-        return Coordonnees.distance(A, pos) >= MARGE_EXTREMITES_SEGMENT && Coordonnees.distance(B, pos) >= MARGE_EXTREMITES_SEGMENT;
+        return ReglesPlateau.pointsDuSegment(etat, A, B, NB_POINTS_SEGMENT,
+                DIST_MIN_FLEURS, MARGE_EXTREMITES_SEGMENT);
     }
 
     private static boolean segmentLibre(EtatJeu etat, Coordonnees A, Coordonnees B) {
-
-        for (Fleur f : etat.fleursRestantes) {
-
-            Coordonnees C = f.getPosition();
-
-            if (C.equals(A) || C.equals(B))
-                continue;
-
-            if (Coordonnees.surSegment(A, B, C, TOLERANCE_SEGMENT)) {
-                return false;
-            }
-              }
-
-        for (Pion p : etat.pions) {
-
-            Coordonnees C = p.getPosition();
-
-            if (C == null)
-                continue;
-
-            if (Coordonnees.surSegment(A, B, C, TOLERANCE_SEGMENT)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private static boolean positionLibrePourPion(EtatJeu etat, Coordonnees pos) {
-
-        for (Pion p : etat.pions) {
-
-            if (p.getPosition() != null && Coordonnees.distance(pos, p.getPosition()) < DIST_MIN_FLEURS) {
-                return false;
-            }
-        }
-
-        return true;
+        return ReglesPlateau.segmentLibre(etat, A, B, TOLERANCE_SEGMENT);
     }
 }

@@ -422,7 +422,7 @@ public class JeuGraphique extends JComponent {
             return false;
         }
 
-        ArrayList<Jeu.AttributionFleur> attributions = jeu.calculerAttributionsFleursRestantes();
+        ArrayList<Phase2.AttributionFleur> attributions = jeu.calculerAttributionsFleursRestantes();
         if (attributions.isEmpty()) {
             return false;
         }
@@ -437,7 +437,7 @@ public class JeuGraphique extends JComponent {
         return true;
     }
 
-    private void animerAttributionPhase2(ArrayList<Jeu.AttributionFleur> attributions, int index, int generation) {
+    private void animerAttributionPhase2(ArrayList<Phase2.AttributionFleur> attributions, int index, int generation) {
         if (generation != generationAnimation) return;
         if (index >= attributions.size()) {
             fleurPhase2Illustree = null;
@@ -448,7 +448,7 @@ public class JeuGraphique extends JComponent {
             return;
         }
 
-        Jeu.AttributionFleur attribution = attributions.get(index);
+        Phase2.AttributionFleur attribution = attributions.get(index);
         if (attribution == null || attribution.fleur == null || attribution.joueur == null
                 || !jeu.getFleurs().contains(attribution.fleur)) {
             animerAttributionPhase2(attributions, index + 1, generation);

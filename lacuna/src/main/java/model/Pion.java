@@ -4,6 +4,7 @@
  */
 package model;
 
+// Représente un pion OR ou ARGENT et sa position sur le plateau.
 public class Pion {
 
     public enum TypePion {

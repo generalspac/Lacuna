@@ -7,10 +7,7 @@ package model;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- * @author thsba
- */
+// Représente un joueur avec son nom, son type de pion et ses fleurs gagnées.
 public abstract class Joueur {
     protected String nom;
     protected Pion.TypePion typePion;

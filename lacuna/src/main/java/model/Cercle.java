@@ -2,6 +2,7 @@ package model;
 
 import global.Configuration;
 
+// Représente le cercle dans lequel les fleurs et les pions sont placés
 public class Cercle {
 
     private  Coordonnees centre;
@@ -67,8 +68,8 @@ public class Cercle {
         return (distanceAuCentre(p) <= (double)rayon);
     }
 
-    // Cette methode permet de copier le cercle actuel (je suppose qu'elle nous aidera peut être pour le future)
-    // je l'ai rajouté par intuition ( à l'équipe de voir)
+    // Cette methode permet de copier le cercle actuel (je suppose qu'elle nous aidera peut être pour le futur)
+    // je l'ai rajoutée par intuition ( à l'équipe de voir)
     public Cercle copie(){
         return new Cercle(centre , rayon );
     }

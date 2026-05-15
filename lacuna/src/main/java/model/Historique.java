@@ -6,6 +6,7 @@ import java.util.Stack;
 
 import global.Configuration;
 
+// Gère l'historique (undo, redo,charger, enregistrer )
 public class Historique {
 
     // pour l'undo redo

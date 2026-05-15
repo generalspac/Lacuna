@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import model.Coordonnees;
+import model.Cercle;
+import model.EtatPlateau;
 import model.Fleur;
 import model.Jeu;
 import model.Joueur;
@@ -12,7 +14,7 @@ import model.Pion;
 // Copie l'état du plateau pour l'algo minimax
 
 
-public class EtatJeu {
+public class EtatJeu implements EtatPlateau {
 
     // Fleurs encore sur le plateau
     public List<Fleur> fleursRestantes;
@@ -36,6 +38,21 @@ public class EtatJeu {
         fleursParJoueur[0] = new ArrayList<>();
         fleursParJoueur[1] = new ArrayList<>();
         typesPionsJoueurs = new Pion.TypePion[2];
+    }
+
+    @Override
+    public List<Fleur> fleursPlateau() {
+        return fleursRestantes;
+    }
+
+    @Override
+    public List<Pion> pionsPlateau() {
+        return pions;
+    }
+
+    @Override
+    public Cercle cerclePlateau() {
+        return null;
     }
 
     public static EtatJeu depuisJeu(Jeu jeu, int joueurCourant) {

@@ -7,6 +7,7 @@ package model;
 import java.util.ArrayList;
 import java.util.List;
 
+// Représente une position avec les coordonnées (x,y)
 public class Coordonnees implements Comparable<Coordonnees> {
     public int x;
     public int y;

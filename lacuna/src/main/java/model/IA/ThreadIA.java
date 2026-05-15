@@ -2,6 +2,7 @@ package model.IA;
 
 import java.util.function.Consumer;
 
+// Permet  d'Exécuter le calcul de l'IA dans un thread séparé
 public class ThreadIA extends Thread {
 
     private final IA ia;

@@ -2,7 +2,7 @@ package model.IA;
 
 import model.Fleur;
 import model.Pion;
-import model.Coordonnees;
+import model.ReglesPlateau;
 
 // Calcule le score heuristique d'un état
 public class EvaluateurJeu {
@@ -112,28 +112,6 @@ public class EvaluateurJeu {
 
 
     private Pion pionLePlusProche(EtatJeu etat, Fleur fleur) {
-
-        if (fleur == null || fleur.getPosition() == null) {
-            return null;
-        }
-
-        Pion meilleur = null;
-        double min = Double.MAX_VALUE;
-
-        for (Pion p : etat.pions) {
-
-            if (p.getPosition() == null) {
-                continue;
-            }
-
-            double d = Coordonnees.distance( fleur.getPosition(), p.getPosition());
-
-            if (d < min) {
-                min = d;
-                meilleur = p;
-            }
-        }
-
-        return meilleur;
+        return ReglesPlateau.pionLePlusProche(etat, fleur);
     }
 }

@@ -6,6 +6,7 @@ package model;
 
 
 
+// Représente une fleur du plateau
 public class Fleur {
     public enum TypeFleur {
         ROUGE, BLEUE, JAUNE, VERTE, ORANGE, VIOLETTE, ROSE
