@@ -29,3 +29,4 @@ replay_pid*
 out
 /res/ia.md
 .DS_Store
+!lib/sqlite-jdbc.jar
