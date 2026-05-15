@@ -1,6 +1,9 @@
 package view;
 
+import model.DatabaseManager;
 import model.Pion;
+import java.sql.SQLException;
+import java.util.List;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,6 +20,8 @@ public class InterfaceGraphique implements Runnable {
     JFrame frame;
     boolean maximized = false;
     private Menu menu;
+    // id de la partie à charger depuis la DB après lancerJeu(), -1 si nouvelle partie
+    private int idPartieACharger = -1;
 
     private static class ParametresPartie {
         String mode;
@@ -59,6 +64,26 @@ public class InterfaceGraphique implements Runnable {
             @Override
             public void actionPerformed(ActionEvent e) {
                 afficherTutoriel();
+            }
+        });
+
+        // Affiche la liste des parties en base
+        //  l'utilisateur choisit puis le jeu se lance
+        menu.chargerPartie.addActionListener(e -> {
+            DatabaseManager db = new DatabaseManager();
+            try {
+                db.ouvrirConnexion();
+                List<String> parties = db.listerParties();
+                db.fermerConnexion();
+                if (parties.isEmpty()) { JOptionPane.showMessageDialog(frame, "Aucune partie sauvegardée."); return; }
+                String[] options = parties.toArray(new String[0]);
+                String choisi = (String) JOptionPane.showInputDialog(frame, "Choisissez une partie :",
+                        "Charger une partie", JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+                if (choisi == null) return;
+                idPartieACharger = Integer.parseInt(choisi.split(" - ")[0]);
+                lancerJeu();
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(frame, "Erreur base de données : " + ex.getMessage());
             }
         });
 
@@ -126,9 +151,18 @@ public class InterfaceGraphique implements Runnable {
     }
 
     public void lancerJeu() {
-        ParametresPartie parametres = demanderParametresPartie();
-        if (parametres == null) {
-            return;
+        ParametresPartie parametres;
+        if (idPartieACharger >= 0) {
+            // chargement depuis la DB on baypasse la fenetre de configuration de jeu 
+            parametres = new ParametresPartie();
+            parametres.mode = "Humain vs Humain";
+            parametres.joueurQuiCommence = null;
+            parametres.nomOr = "";
+            parametres.nomArgent = "";
+            parametres.nomHumain = "";
+        } else {
+            parametres = demanderParametresPartie();
+            if (parametres == null) return;
         }
         String choix = parametres.mode;
 
@@ -367,19 +401,22 @@ public class InterfaceGraphique implements Runnable {
                 buttonPanel.add(abandonButton);
                 buttonPanel.add(gitButton);
 
-                // Bouton sauvegarder
+                // Bouton sauvegarder — sauvegarde dans la base SQLite via DatabaseManager
                 JButton sauvegarderButton = new JButton("Save");
-                sauvegarderButton.addActionListener(e -> aire.jeu.sauvegarderPartie("sauvegarde.txt"));
-
-                // Bouton charger
-                JButton chargerButton = new JButton("Load");
-                chargerButton.addActionListener(e -> {
-                    aire.jeu.chargerPartie("sauvegarde.txt");
-                    aire.refreshScores();
+                sauvegarderButton.addActionListener(e -> {
+                    String nom = JOptionPane.showInputDialog(frame, "Nom de la sauvegarde :", "Sauvegarder", JOptionPane.PLAIN_MESSAGE);
+                    if (nom == null) return;
+                    DatabaseManager db = new DatabaseManager();
+                    try {
+                        db.ouvrirConnexion();
+                        db.sauvegarderPartie(aire.jeu, nom.isEmpty() ? "sans nom" : nom);
+                        db.fermerConnexion();
+                    } catch (SQLException ex) {
+                        JOptionPane.showMessageDialog(frame, "Erreur sauvegarde : " + ex.getMessage());
+                    }
                 });
 
                 buttonPanel.add(sauvegarderButton);
-                buttonPanel.add(chargerButton);
 
                 // ================= CONTRÔLES PHASE 2 =================
                 FlexPanel phase2Panel = new FlexPanel();
@@ -475,6 +512,18 @@ public class InterfaceGraphique implements Runnable {
                     frame.revalidate();
                     frame.repaint();
                     aire.requestFocusInWindow();
+                    // restaurer l'état de la partie chargée depuis la DB
+                    if (idPartieACharger >= 0) {
+                        DatabaseManager db = new DatabaseManager();
+                        try {
+                            db.ouvrirConnexion();
+                            db.chargerPartie(aire.jeu, idPartieACharger);
+                            db.fermerConnexion();
+                        } catch (SQLException ex) {
+                            JOptionPane.showMessageDialog(frame, "Erreur chargement : " + ex.getMessage());
+                        }
+                        idPartieACharger = -1;
+                    }
                     aire.refreshScores();
                     if (aire.jeu.estTourIA()) {
                         aire.jeu.jouerAvantageIA();

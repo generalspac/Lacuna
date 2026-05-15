@@ -237,12 +237,12 @@ public class JeuGraphique extends JComponent {
         if (instructionLabel == null) return;
         
         if (animationEnCours) {
-            instructionLabel.setText("Animation en cours... Vous pouvez utiliser Undo, Redo, Reset ou Load.");
+            instructionLabel.setText("Animation en cours... Vous pouvez utiliser Undo, Redo ou Reset.");
             return;
         }
 
         if (jeu.isIAEnCours()) {
-            instructionLabel.setText("IA (" + jeu.getJoueurActuel().getTypePion() + ") réfléchit... Vous pouvez utiliser Undo, Redo, Reset ou Load.");
+            instructionLabel.setText("IA (" + jeu.getJoueurActuel().getTypePion() + ") réfléchit... Vous pouvez utiliser Undo, Redo ou Reset.");
             return;
         }
 
