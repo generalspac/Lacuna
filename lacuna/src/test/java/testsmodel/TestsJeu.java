@@ -388,7 +388,6 @@ public class TestsJeu {
     }
 
     // -------------------- SCORE / GAGNANT -------------------- //
-
     @Test
     void getGagnantParScore() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {

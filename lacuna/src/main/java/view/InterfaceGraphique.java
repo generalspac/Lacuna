@@ -458,11 +458,11 @@ public class InterfaceGraphique implements Runnable {
                 phase2Panel.add(skipButton);
 
                 // Piles latérales (maintenant en bas des colonnes)
-                PionArgent leftPile = new PionArgent(frame, aire.jeu);
+                PionGraphique leftPile = new PionGraphique(frame, aire.jeu, Pion.TypePion.ARGENT);
                 leftPile.setPreferredSize(new Dimension(250, 600));
                 leftPile.setBackground(Color.BLACK);
 
-                PionOr rightPile = new PionOr(frame, aire.jeu);
+                PionGraphique rightPile = new PionGraphique(frame, aire.jeu, Pion.TypePion.OR);
                 rightPile.setPreferredSize(new Dimension(250, 600));
                 rightPile.setBackground(Color.BLACK);
 

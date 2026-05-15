@@ -849,5 +849,4 @@ public class Jeu implements EtatPlateau {
    public void configurerIAContreIA(NiveauxIA niveauOr, NiveauxIA niveauArgent, Pion.TypePion joueurQuiCommence) {
         GestionIA.configurerIAContreIA(this, niveauOr, niveauArgent, joueurQuiCommence);
     }
-    
 }

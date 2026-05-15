@@ -38,8 +38,9 @@ public class JeuGraphique extends JComponent {
     private Image plateauImg;
 
     private EcouteurDeSouris mouse;
-    private PionArgent leftPile;
-    private PionOr rightPile;
+    private PionGraphique pileArgent, pileOr;
+    // private PionArgent leftPile;
+    // private PionOr rightPile;
     private boolean animationEnCours = false;
     private boolean phase2Animee = false;
     private int generationAnimation = 0;
@@ -81,9 +82,14 @@ public class JeuGraphique extends JComponent {
         initListeners();
     }
 
+    /*
     public void setSidePiles(PionArgent left, PionOr right) {
         this.leftPile = left;
         this.rightPile = right;
+    }*/
+   public void setSidePiles(PionGraphique left, PionGraphique right) {
+        this.pileArgent = left;
+        this.pileOr = right;
     }
 
     public boolean isAnimationEnCours() {
@@ -209,10 +215,10 @@ public class JeuGraphique extends JComponent {
         //        jeu.getJoueurs()[1].getScoreTotal() + " - " +
          //               jeu.getJoueurs()[0].getScoreTotal());
 
-        if (leftPile != null)
-            leftPile.repaint();
-        if (rightPile != null)
-            rightPile.repaint();
+        if (pileArgent != null)
+            pileArgent.repaint();
+        if (pileOr != null)
+            pileOr.repaint();
 
         updateInstructionText();
         updateStatusMessage();

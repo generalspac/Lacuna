@@ -35,7 +35,7 @@ public class Menu extends JPanel {
         ////title.setMinimumSize(new Dimension(800, 180));
 
         // =========================
-        //Styles
+        // Styles
         // =========================
         nouvellePartie = new RoundedButton("Nouvelle Partie");
         chargerPartie = new RoundedButton("Charger Partie");

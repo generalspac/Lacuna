@@ -1,9 +1,9 @@
 package view;
 
 import javax.swing.*;
+import java.awt.*;
 
 import model.*;
-import java.awt.*;
 
 public class JeuTutoriel extends JeuGraphique {
 
@@ -42,9 +42,9 @@ public class JeuTutoriel extends JeuGraphique {
         // =========================
         // PILES LATERALES
         // =========================
-        PionArgent leftPile = new PionArgent(frame, jeu);
+        PionGraphique leftPile = new PionGraphique(frame, jeu, Pion.TypePion.ARGENT);
 
-        PionOr rightPile = new PionOr(frame, jeu);
+        PionGraphique rightPile = new PionGraphique(frame, jeu, Pion.TypePion.OR);
 
         setSidePiles(leftPile, rightPile);
 
