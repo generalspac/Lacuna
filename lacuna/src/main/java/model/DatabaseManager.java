@@ -45,8 +45,11 @@ public class DatabaseManager {
             "date TEXT," +
             "joueur_actuel INTEGER," +
             "avantage_applique INTEGER," +
-            "en_phase_selection_avantage INTEGER)"
+            "en_phase_selection_avantage INTEGER," +
+            "against_ia INTEGER DEFAULT 0)"
         );
+        // migration pour les bases existantes créées avant l'ajout de cette colonne
+        try { stmt.execute("ALTER TABLE parties ADD COLUMN against_ia INTEGER DEFAULT 0"); } catch (SQLException ignored) {}
 
         // pions sur le plateau (position nullable si le pion n'est pas encore placé)
         stmt.execute(
@@ -98,8 +101,8 @@ public class DatabaseManager {
 
         // insertion dans parties et récupération de l'id généré
         PreparedStatement stmtPartie = connexion.prepareStatement(
-            "INSERT INTO parties (nom, date, joueur_actuel, avantage_applique, en_phase_selection_avantage)" +
-            " VALUES (?, ?, ?, ?, ?)",
+            "INSERT INTO parties (nom, date, joueur_actuel, avantage_applique, en_phase_selection_avantage, against_ia)" +
+            " VALUES (?, ?, ?, ?, ?, ?)",
             Statement.RETURN_GENERATED_KEYS
         );
         stmtPartie.setString(1, nom);
@@ -107,6 +110,7 @@ public class DatabaseManager {
         stmtPartie.setInt(3, jeu.currentPlayerIndex);
         stmtPartie.setInt(4, jeu.isAvantageInitialApplique() ? 1 : 0);
         stmtPartie.setInt(5, jeu.isEnPhaseSelectionAvantage() ? 1 : 0);
+        stmtPartie.setInt(6, jeu.isAgainstIA() ? 1 : 0);
         stmtPartie.executeUpdate();
 
         // next() positionne le curseur sur la première ligne avant toute lecture
@@ -175,11 +179,17 @@ public class DatabaseManager {
     public void chargerPartie(Jeu jeu, int idPartie) throws SQLException {
         // restauration des données principales de la partie
         PreparedStatement stmtPartie = connexion.prepareStatement(
-            "SELECT joueur_actuel, avantage_applique, en_phase_selection_avantage FROM parties WHERE id = ?"
+            "SELECT joueur_actuel, avantage_applique, en_phase_selection_avantage, against_ia FROM parties WHERE id = ?"
         );
         stmtPartie.setInt(1, idPartie);
         ResultSet rsPartie = stmtPartie.executeQuery();
         if (rsPartie.next()) {
+            // restaurer le mode de jeu en premier pour recréer les bons types de joueurs
+            if (rsPartie.getInt("against_ia") == 1) {
+                jeu.activerIA(null, "", null);
+            } else {
+                jeu.configurerHumainVsHumain("", "", null);
+            }
             jeu.currentPlayerIndex = rsPartie.getInt("joueur_actuel");
             boolean avantage = rsPartie.getInt("avantage_applique") == 1;
             boolean phaseSelection = rsPartie.getInt("en_phase_selection_avantage") == 1;
