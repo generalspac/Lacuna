@@ -9,14 +9,13 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
+import java.util.List;
 
 import global.Configuration;
 import model.*;
-import model.IA.CoupIA;
-import java.util.ArrayList;
-import java.util.List;
 import controller.EcouteurDeSouris;
+import view.animations.Animation;
+import view.animations.AnimationState;
 
 public class JeuGraphique extends JComponent {
 
@@ -41,15 +40,17 @@ public class JeuGraphique extends JComponent {
     private PionGraphique pileArgent, pileOr;
     // private PionArgent leftPile;
     // private PionOr rightPile;
-    private boolean animationEnCours = false;
-    private boolean phase2Animee = false;
-    private int generationAnimation = 0;
+    // private boolean animationEnCours = false;
+    // private boolean phase2Animee = false;
+    private Animation animationEnCours;
+
+    int generationAnimation = 0;
     private Fleur fleurPhase2Illustree = null;
     private Pion pionPhase2Illustre = null;
     private Pion pionPhase2Compare = null;
-    private int phase2ComparePulse = 0;
-    private Joueur gagnantAnime = null;
-    private int winnerPulse = 0;
+    int phase2ComparePulse = 0;
+    Joueur gagnantAnime = null;
+    int winnerPulse = 0;
     // facteur de vitesse phase 2 : <1.0 = plus rapide et >1.0 = plus lent
     private double facteurVitesse = 1.0;
     private boolean afficherCoupsPossibles = false;
@@ -68,6 +69,7 @@ public class JeuGraphique extends JComponent {
         //this.scoreLabel = scoreLabel;
         this.instructionLabel = instructionLabel;
         this.statusLabel = statusLabel;
+        animationEnCours = new Animation(this);
 
         // === CERCLE MODELE ====
         this.jeu = new Jeu(width, height,
@@ -82,24 +84,111 @@ public class JeuGraphique extends JComponent {
         initListeners();
     }
 
+    // Getters et Setters
+    public Jeu getJeu() {
+        return jeu;
+    }
+
+    public Animation getAnimation(){
+        return animationEnCours;
+    }
+
+    public AnimationState getAnimationState() {
+        return animationEnCours.getState();
+    }
+
+    public Fleur getFleurPhase2Illustree() {
+        return fleurPhase2Illustree;
+    }
+
+    public Pion getPionPhase2Illustre() {
+        return pionPhase2Illustre;
+    }
+
+    public Pion getPionPhase2Compare() {
+        return pionPhase2Compare;
+    }
+
+    public JFrame getFrame() {
+        return frame;
+    }
+
+    public double getFacteurVitesse() {
+        return facteurVitesse;
+    }
+
+    public int getPhase2ComparePulse() {
+        return phase2ComparePulse;
+    }
+
+    public void setAnimationState(AnimationState state) {
+        this.animationEnCours.setState(state);
+    }
+
+    public void setFleurPhase2Illustree(Fleur fleur){
+        fleurPhase2Illustree = fleur;
+    }
+
+    public void setPionPhase2Illustre(Pion pion){
+        pionPhase2Illustre = pion;
+    }
+    
+    public void setPionPhase2Compare(Pion pion){
+        pionPhase2Compare = pion;
+    }
+
+    public void setPhase2ComparePulse(int valeur){
+        phase2ComparePulse = valeur;
+    }
+
+    public void setWinnerPulse(int winnerPulse) {
+        this.winnerPulse = winnerPulse;
+    }
+
+    public void setGagnantAnime(Joueur gagnantAnime) {
+        this.gagnantAnime = gagnantAnime;
+    }
+
+    
+    // à supprimer plus tard
+    public int increaseGenerationAnimation() {
+        return ++generationAnimation;
+    }
+
+    public int getGenerationAnimation() {
+        return generationAnimation;
+    }
+
+    public int increaseWinnerPulse(){
+        return ++winnerPulse;
+    }
+
+    public int getWinnerPulse(){
+        return winnerPulse;
+    }
+
+    public int increasePhase2ComparePulse(){
+        return phase2ComparePulse++;
+    }
+
     /*
     public void setSidePiles(PionArgent left, PionOr right) {
         this.leftPile = left;
         this.rightPile = right;
-    }*/
+    }
+    */
    public void setSidePiles(PionGraphique left, PionGraphique right) {
         this.pileArgent = left;
         this.pileOr = right;
     }
 
     public boolean isAnimationEnCours() {
-        return animationEnCours;
+        return animationEnCours.getState() != AnimationState.AUCUNE;
     }
 
     public void annulerAnimationsVisuelles() {
         generationAnimation++;
-        animationEnCours = false;
-        phase2Animee = false;
+        animationEnCours.setState(AnimationState.AUCUNE);
         jeu.resetFleursSelectionnee1();
         jeu.resetFleursSelectionnee2();
         fleurPhase2Illustree = null;
@@ -119,7 +208,7 @@ public class JeuGraphique extends JComponent {
     public void skipAnimationPhase2() {
 
         // ne fait rien si on est pas dans la phase 2
-        if (!phase2Animee || !animationEnCours) return;
+        if (animationEnCours.getState() == AnimationState.PHASE2) return;
 
         // appliquer toutes les fleurs restantes 
         jeu.attribuerFleursRestantes();
@@ -138,7 +227,7 @@ public class JeuGraphique extends JComponent {
         repaint();
 
         // on passe directement à l'animation de gagnant
-        animerGagnant(generation);
+        animationEnCours.animerGagnant(generation);
     }
 
     /////////////// INIT ///////////////////////
@@ -188,7 +277,7 @@ public class JeuGraphique extends JComponent {
                     Coordonnees model = screenToModel(e.getX(), e.getY());
 
                     boolean coupJoue = false;
-                    if (!animationEnCours && !jeu.isIAEnCours() && !jeu.estTourIA() && !jeu.isPartieTerminee()) {
+                    if (animationEnCours.getState() == AnimationState.AUCUNE && !jeu.isIAEnCours() && !jeu.estTourIA() && !jeu.isPartieTerminee()) {
                         coupJoue = jeu.placerPionDepuisDrag(model, payload);
                     }
 
@@ -206,7 +295,6 @@ public class JeuGraphique extends JComponent {
     }
 
     // ====SCORE =======
-
     public void refreshScores() {
         if (scoreOr != null) scoreOr.updateFromGame(jeu.getJoueurs()[0]);
         if (scoreArgent != null) scoreArgent.updateFromGame(jeu.getJoueurs()[1]);
@@ -228,21 +316,21 @@ public class JeuGraphique extends JComponent {
         refreshScores();
         repaint();
 
-        if (lancerAnimationSecondePhase()) {
+        if (animationEnCours.lancerAnimationSecondePhase()) {
             return;
         }
 
-        jeu.lancerIA(coup -> animerPuisJouerCoupIA(coup), () -> {
+        jeu.lancerIA(coup -> animationEnCours.animerPuisJouerCoupIA(coup), () -> {
             refreshScores();
             repaint();
-            lancerAnimationSecondePhase();
+            animationEnCours.lancerAnimationSecondePhase();
         });
     }
 
     private void updateInstructionText() {
         if (instructionLabel == null) return;
         
-        if (animationEnCours) {
+        if (animationEnCours.getState() == AnimationState.AUCUNE) {
             instructionLabel.setText("Animation en cours... Vous pouvez utiliser Undo, Redo ou Reset.");
             return;
         }
@@ -342,77 +430,7 @@ public class JeuGraphique extends JComponent {
         }
     }
 
-    // ===== ANIMATIONS IA + PHASE 2 ======
-
-    private void animerPuisJouerCoupIA(CoupIA coup) {
-        if (coup == null) {
-            jeu.jouerCoupIA(null);
-            return;
-        }
-
-        Fleur f1 = retrouverFleurGraphique(coup.fleur1);
-        Fleur f2 = retrouverFleurGraphique(coup.fleur2);
-        Joueur joueurIA = jeu.getJoueurActuel();
-
-        if (f1 == null || f2 == null) {
-            jeu.jouerCoupIA(coup);
-            return;
-        }
-
-        Fleur f1Animee = Fleur.copieFleur(f1);
-        Fleur f2Animee = Fleur.copieFleur(f2);
-
-        animationEnCours = true;
-        selectionIAVisuelle = true;
-        final int generation = ++generationAnimation;
-        jeu.setFeedbackMessage("IA (" + joueurIA.getTypePion() + ") prépare son coup...");
-        refreshScores();
-        repaint();
-
-        new Timer(700, attente -> {
-            ((Timer) attente.getSource()).stop();
-            if (generation != generationAnimation) return;
-            jeu.selectionnerFleursPourAnimation(f1, f2);
-            jeu.setFeedbackMessage("IA (" + joueurIA.getTypePion() + ") sélectionne ses deux fleurs...");
-            refreshScores();
-            repaint();
-
-            new Timer(950, e -> {
-                ((Timer) e.getSource()).stop();
-                if (generation != generationAnimation) return;
-                jeu.setFeedbackMessage("IA (" + joueurIA.getTypePion() + ") place son pion...");
-                if (!jeu.placerPionCoupIA(coup)) {
-                    selectionIAVisuelle = false;
-                    jeu.resetFleursSelectionnee1();
-                    jeu.resetFleursSelectionnee2();
-                    animationEnCours = false;
-                    refreshScoresEtTourIA();
-                    return;
-                }
-                refreshScores();
-                repaint();
-
-                new Timer(900, e2 -> {
-                    ((Timer) e2.getSource()).stop();
-                    if (generation != generationAnimation) return;
-                    jeu.setFeedbackMessage("IA (" + joueurIA.getTypePion() + ") collecte ses fleurs...");
-                    animerFleursVersScore(new Fleur[] { f1Animee, f2Animee }, joueurIA, () -> {
-                        if (generation != generationAnimation) return;
-                        jeu.collecterFleursCoupIA(coup);
-                        selectionIAVisuelle = false;
-                        jeu.resetFleursSelectionnee1();
-                        jeu.resetFleursSelectionnee2();
-                        animationEnCours = false;
-                        refreshScores();
-                        repaint();
-                        lancerAnimationSecondePhase();
-                    });
-                }).start();
-            }).start();
-        }).start();
-    }
-
-    private Fleur retrouverFleurGraphique(Fleur recherchee) {
+    public Fleur retrouverFleurGraphique(Fleur recherchee) {
         if (recherchee == null) return null;
         for (Fleur f : jeu.getFleurs()) {
             if (f.getType() == recherchee.getType()
@@ -423,120 +441,9 @@ public class JeuGraphique extends JComponent {
         return null;
     }
 
-    public boolean lancerAnimationSecondePhase() {
-        if (phase2Animee || animationEnCours || !jeu.estSecondePhaseDisponible()) {
-            return false;
-        }
+    
 
-        ArrayList<Phase2.AttributionFleur> attributions = jeu.calculerAttributionsFleursRestantes();
-        if (attributions.isEmpty()) {
-            return false;
-        }
-
-        phase2Animee = true;
-        animationEnCours = true;
-        final int generation = ++generationAnimation;
-        jeu.setFeedbackMessage("Phase 2 : attribution animée des fleurs restantes.");
-        refreshScores();
-        repaint();
-        animerAttributionPhase2(attributions, 0, generation);
-        return true;
-    }
-
-    private void animerAttributionPhase2(ArrayList<Phase2.AttributionFleur> attributions, int index, int generation) {
-        if (generation != generationAnimation) return;
-        if (index >= attributions.size()) {
-            fleurPhase2Illustree = null;
-            pionPhase2Illustre = null;
-            pionPhase2Compare = null;
-            phase2ComparePulse = 0;
-            animerGagnant(generation);
-            return;
-        }
-
-        Phase2.AttributionFleur attribution = attributions.get(index);
-        if (attribution == null || attribution.fleur == null || attribution.joueur == null
-                || !jeu.getFleurs().contains(attribution.fleur)) {
-            animerAttributionPhase2(attributions, index + 1, generation);
-            return;
-        }
-
-        jeu.selectionnerFleursPourAnimation(attribution.fleur, null);
-        fleurPhase2Illustree = attribution.fleur;
-        pionPhase2Illustre = attribution.pionLePlusProche;
-        pionPhase2Compare = attribution.comparaisonNecessaire ? attribution.pionCompare : null;
-        phase2ComparePulse = 0;
-        if (attribution.comparaisonNecessaire && attribution.pionCompare != null) {
-            jeu.setFeedbackMessage("Phase 2 : comparaison des distances avant attribution de la fleur " + attribution.fleur.getType() + ".");
-            lancerPulseComparaisonPhase2(generation);
-        } else {
-            jeu.setFeedbackMessage("Phase 2 : mesure de la distance avant attribution de la fleur " + attribution.fleur.getType() + ".");
-        }
-        refreshScores();
-        repaint();
-
-        // Délai avant attribution ajusté selon le facteur de vitesse du slider
-        int delaiMesure = (int) ((attribution.comparaisonNecessaire && attribution.pionCompare != null) ? 1900 * facteurVitesse : 1150 * facteurVitesse);
-        new Timer(delaiMesure, e -> {
-            ((Timer) e.getSource()).stop();
-            if (generation != generationAnimation) return;
-            jeu.setFeedbackMessage("Phase 2 : la fleur " + attribution.fleur.getType()
-                    + " est attribuée à " + jeu.nomJoueurPourAffichage(attribution.joueur) + ".");
-            refreshScores();
-            repaint();
-            animerFleursVersScore(new Fleur[] { attribution.fleur }, attribution.joueur, () -> {
-                if (generation != generationAnimation) return;
-                jeu.appliquerAttributionFleur(attribution);
-                fleurPhase2Illustree = null;
-                pionPhase2Illustre = null;
-                pionPhase2Compare = null;
-                phase2ComparePulse = 0;
-                jeu.resetFleursSelectionnee1();
-                jeu.resetFleursSelectionnee2();
-                refreshScores();
-                repaint();
-                new Timer(280, e2 -> {
-                    ((Timer) e2.getSource()).stop();
-                    animerAttributionPhase2(attributions, index + 1, generation);
-                }).start();
-            });
-        }).start();
-    }
-
-    private void animerFleursVersScore(Fleur[] fleursAnimees, Joueur joueur, Runnable fin) {
-        if (fleursAnimees == null || fleursAnimees.length == 0) {
-            if (fin != null) fin.run();
-            return;
-        }
-
-        DragLayer layer = (DragLayer) frame.getGlassPane();
-        final int[] restantes = { 0 };
-
-        for (int i = 0; i < fleursAnimees.length; i++) {
-            Fleur f = fleursAnimees[i];
-            if (f == null || f.getPosition() == null) continue;
-
-            Image img = getFlowerImage(f.getType());
-            Coordonnees screen = modelToScreen(f.getPosition().x, f.getPosition().y);
-            Point start = SwingUtilities.convertPoint(this,
-                    new Point(screen.getX(), screen.getY()), layer);
-            Point end = pointScorePourJoueur(joueur, i, layer);
-
-            restantes[0]++;
-            layer.animateImage(img, start, end, 750, 34, () -> {
-                restantes[0]--;
-                if (restantes[0] <= 0 && fin != null) {
-                    fin.run();
-                }
-            });
-        }
-
-        if (restantes[0] == 0 && fin != null) {
-            fin.run();
-        }
-    }
-
-    private Point pointScorePourJoueur(Joueur joueur, int decalage, DragLayer layer) {
+    public Point pointScorePourJoueur(Joueur joueur, int decalage, DragLayer layer) {
         JComponent cible = (joueur.getTypePion() == Pion.TypePion.ARGENT) ? scoreArgent : scoreOr;
         int x = cible.getWidth() / 2 + (decalage * 22) - 11;
         int y = Math.max(55, cible.getHeight() / 2);
@@ -646,7 +553,7 @@ public class JeuGraphique extends JComponent {
         drawWinnerOverlay(g2);
     }
 
-    private Image getFlowerImage(Fleur.TypeFleur type) {
+    public Image getFlowerImage(Fleur.TypeFleur type) {
         switch (type) {
             case ROUGE:
                 return rougeImg;
@@ -709,21 +616,7 @@ public class JeuGraphique extends JComponent {
     }
 
 
-    private void lancerPulseComparaisonPhase2(int generation) {
-        Timer timer = new Timer(110, null);
-        timer.addActionListener(e -> {
-            if (generation != generationAnimation || pionPhase2Compare == null) {
-                ((Timer) e.getSource()).stop();
-                return;
-            }
-            phase2ComparePulse++;
-            repaint();
-            if (phase2ComparePulse >= 18) {
-                ((Timer) e.getSource()).stop();
-            }
-        });
-        timer.start();
-    }
+    
 
     private void drawPhase2Illustration(Graphics2D g2) {
         if (fleurPhase2Illustree == null || pionPhase2Illustre == null
@@ -772,39 +665,15 @@ public class JeuGraphique extends JComponent {
         g2.setColor(oldColor);
     }
 
-    private void animerGagnant(int generation) {
-        if (generation != generationAnimation) return;
-        gagnantAnime = jeu.getGagnant();
-        winnerPulse = 0;
-        String nom = (gagnantAnime == null) ? "égalité" : jeu.nomJoueurPourAffichage(gagnantAnime);
-        jeu.setFeedbackMessage("Partie terminée : " + nom + " gagne !");
-        refreshScores();
-        repaint();
-
-        Timer timer = new Timer(120, null);
-        timer.addActionListener(e -> {
-            if (generation != generationAnimation) {
-                ((Timer) e.getSource()).stop();
-                return;
-            }
-            winnerPulse++;
-            repaint();
-            if (winnerPulse >= 26) {
-                ((Timer) e.getSource()).stop();
-                animationEnCours = false;
-                refreshScores();
-                repaint();
-            }
-        });
-        timer.start();
-    }
+    
 
     public void afficherGagnantSansAnimation() {
         // Affiche directement le gagnant quand la partie finit sans animation
         ////A revoir si on veut changer 
         gagnantAnime = jeu.getGagnant();
         winnerPulse = 18;
-        animationEnCours = false;
+        // animationEnCours = false;
+        animationEnCours.setState(AnimationState.AUCUNE);
         repaint();
     }
 

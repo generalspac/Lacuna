@@ -35,6 +35,7 @@ run_game() {
     src/main/java/model/IA/*.java \
     src/main/java/view/*.java \
     src/main/java/controller/*.java \
+    src/main/java/view/animations/*.java \
     src/main/java/main/*.java
 
     cp -r src/main/resources/* target/classes/

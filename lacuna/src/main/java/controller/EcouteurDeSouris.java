@@ -40,7 +40,7 @@ public class EcouteurDeSouris extends MouseAdapter {
 
         Coordonnees modelPos = jeuGraphique.screenToModel(x, y);
 
-        if (jeuGraphique.lancerAnimationSecondePhase()) {
+        if (jeuGraphique.getAnimation().lancerAnimationSecondePhase()) {
             return;
         }
 
