@@ -22,5 +22,5 @@ public final class ConstantesJeu {
 
     public static final double DIST_MIN_PION_IA = 24;
     public static final double MARGE_EXTREMITES_SEGMENT_IA = 26;
-    public static final int MAX_COUPS_GENERES_IA = 80;
+    public static final int MAX_COUPS_GENERES_IA = 150;
 }

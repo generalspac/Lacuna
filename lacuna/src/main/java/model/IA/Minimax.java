@@ -65,8 +65,6 @@ public class Minimax {
             return evaluateur.evaluer(etat, indexIA);
         }
 
-        // Optimisation : On ne trie les coups que si on est assez haut dans l'arbre
-        // car le tri lui-même coûte cher (appliquerCoup + evaluer)
         if (profondeur > 2) {
             trierCoups(etat, coups);
         }

@@ -7,8 +7,7 @@ import model.IA.EtatJeu;
 import model.IA.NiveauxIA;
 import model.IA.ThreadIA;
 
-// Cette classe, Gère le mode IA:configuration,coups calculés et lancement du thread
-public final class GestionIA {
+// Cette classe, Gère le mode IA
 
     private GestionIA() {
     }
@@ -150,7 +149,7 @@ public final class GestionIA {
 
         jeu.iaEnCours = true;
         final int generationLancee = ++jeu.generationIA;
-        jeu.setFeedbackMessage("Tour de l'IA (" + jeu.getJoueurActuel().getTypePion() + ") : elle réfléchit...");
+        jeu.setFeedbackMessage("Tour de l'IA (" + jeu.getJoueurActuel().getTypePion() + ") : elle réfléchit hmmmm...");
 
         EtatJeu etat = EtatJeu.depuisJeu(jeu, jeu.currentPlayerIndex);
 
