@@ -11,6 +11,8 @@ import controller.EcouteurDeClavier;
 
 import model.IA.NiveauxIA;
 import model.Fleur;
+import model.reseau.ProtocoleReseau;
+import model.reseau.SessionReseau;
 
 public class InterfaceGraphique implements Runnable {
 
@@ -23,6 +25,8 @@ public class InterfaceGraphique implements Runnable {
         String nomOr;
         String nomArgent;
         String nomHumain;
+        String hoteReseau;
+        int portReseau;
         Pion.TypePion joueurQuiCommence;
     }
 
@@ -198,6 +202,7 @@ public class InterfaceGraphique implements Runnable {
         // Utiliser un SwingWorker pour ne pas bloquer l'EDT pendant l'initialisation
         SwingWorker<FlexPanel, Void> worker = new SwingWorker<>() {
             JeuGraphique aire;
+            SessionReseau sessionReseau;
 
             @Override
             protected FlexPanel doInBackground() throws Exception {
@@ -277,6 +282,35 @@ public class InterfaceGraphique implements Runnable {
                 aire.setBackground(Color.BLACK);
                 aire.setOpaque(true);
 
+                boolean modeHote = "Réseau - Héberger".equals(choix);
+                boolean modeInvite = "Réseau - Rejoindre".equals(choix);
+
+                if (modeHote || modeInvite) {
+                    aire.jeu.configurerHumainVsHumain("Hôte", "Invité", Pion.TypePion.OR);
+                    Pion.TypePion typeLocal = modeHote ? Pion.TypePion.OR : Pion.TypePion.ARGENT;
+
+                    if (modeHote) {
+                        sessionReseau = SessionReseau.attendreJoueur(parametres.portReseau,
+                                etat -> SwingUtilities.invokeLater(() -> aire.appliquerEtatDepuisReseau(etat)),
+                                message -> SwingUtilities.invokeLater(() -> {
+                                    aire.jeu.setFeedbackMessage(message);
+                                    aire.refreshScores();
+                                }));
+                    } else {
+                        sessionReseau = SessionReseau.rejoindre(parametres.hoteReseau, parametres.portReseau,
+                                etat -> SwingUtilities.invokeLater(() -> aire.appliquerEtatDepuisReseau(etat)),
+                                message -> SwingUtilities.invokeLater(() -> {
+                                    aire.jeu.setFeedbackMessage(message);
+                                    aire.refreshScores();
+                                }));
+                    }
+
+                    aire.installerSessionReseau(sessionReseau, typeLocal);
+                    if (modeHote) {
+                        aire.envoyerEtatReseauSiActif();
+                    }
+                }
+
                 // Appliquer les choix de départ faits dans le menu.
                 switch (choix) {
                     case "IA Facile":
@@ -287,6 +321,9 @@ public class InterfaceGraphique implements Runnable {
                         break;
                     case "IA Difficile":
                         aire.jeu.activerIA(NiveauxIA.DIFFICILE, parametres.nomHumain, parametres.joueurQuiCommence);
+                        break;
+                    case "Réseau - Héberger":
+                    case "Réseau - Rejoindre":
                         break;
                     default:
                         aire.jeu.configurerHumainVsHumain(parametres.nomOr, parametres.nomArgent,
@@ -486,12 +523,15 @@ public class InterfaceGraphique implements Runnable {
         panel.setBackground(Color.BLACK);
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        String[] modes = { "Humain vs Humain", "IA Facile", "IA Moyenne", "IA Difficile" };
+        String[] modes = { "Humain vs Humain", "IA Facile", "IA Moyenne", "IA Difficile",
+                "Réseau - Héberger", "Réseau - Rejoindre" };
         JComboBox<String> modeCombo = new JComboBox<>(modes);
 
         JTextField nomOrField = new JTextField();
         JTextField nomArgentField = new JTextField();
         JTextField nomHumainField = new JTextField();
+        JTextField hoteField = new JTextField("127.0.0.1");
+        JTextField portField = new JTextField(String.valueOf(ProtocoleReseau.PORT_DEFAUT));
 
         JComboBox<String> commenceHumain = new JComboBox<>(new String[] { "Aléatoire", "OR", "ARGENT" });
         JComboBox<String> commenceIA = new JComboBox<>(new String[] { "Aléatoire", "Humain", "IA" });
@@ -504,21 +544,34 @@ public class InterfaceGraphique implements Runnable {
         panel.add(nomArgentField);
         panel.add(labelBlanc("Nom humain vs IA (optionnel)"));
         panel.add(nomHumainField);
+        panel.add(labelBlanc("Adresse hôte réseau"));
+        panel.add(hoteField);
+        panel.add(labelBlanc("Port réseau"));
+        panel.add(portField);
         panel.add(labelBlanc("Qui commence ?"));
         panel.add(commenceHumain);
 
         modeCombo.addActionListener(e -> {
-            boolean ia = !"Humain vs Humain".equals(modeCombo.getSelectedItem());
+            String mode = (String) modeCombo.getSelectedItem();
+            boolean ia = mode != null && mode.startsWith("IA ");
+            boolean reseau = mode != null && mode.startsWith("Réseau");
+            boolean rejoindre = "Réseau - Rejoindre".equals(mode);
             nomOrField.setEnabled(!ia);
             nomArgentField.setEnabled(!ia);
             nomHumainField.setEnabled(ia);
-            panel.remove(9);
-            panel.add(ia ? commenceIA : commenceHumain, 9);
+            hoteField.setEnabled(rejoindre);
+            portField.setEnabled(reseau);
+            commenceHumain.setEnabled(!reseau);
+            commenceIA.setEnabled(ia);
+            panel.remove(13);
+            panel.add(ia ? commenceIA : commenceHumain, 13);
             panel.revalidate();
             panel.repaint();
         });
 
         nomHumainField.setEnabled(false);
+        hoteField.setEnabled(false);
+        portField.setEnabled(false);
 
         int result = JOptionPane.showConfirmDialog(frame, panel, "Nouvelle partie", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE);
@@ -531,10 +584,17 @@ public class InterfaceGraphique implements Runnable {
         p.nomOr = nomOrField.getText();
         p.nomArgent = nomArgentField.getText();
         p.nomHumain = nomHumainField.getText();
+        p.hoteReseau = hoteField.getText().trim().isEmpty() ? "127.0.0.1" : hoteField.getText().trim();
+        try {
+            p.portReseau = Integer.parseInt(portField.getText().trim());
+        } catch (NumberFormatException e) {
+            p.portReseau = ProtocoleReseau.PORT_DEFAUT;
+        }
 
-        boolean modeIA = !"Humain vs Humain".equals(p.mode);
+        boolean modeIA = p.mode != null && p.mode.startsWith("IA ");
+        boolean modeReseau = p.mode != null && p.mode.startsWith("Réseau");
         String choixDepart = (String) (modeIA ? commenceIA.getSelectedItem() : commenceHumain.getSelectedItem());
-        p.joueurQuiCommence = convertirChoixDepart(choixDepart, modeIA);
+        p.joueurQuiCommence = modeReseau ? Pion.TypePion.OR : convertirChoixDepart(choixDepart, modeIA);
         return p;
     }
 

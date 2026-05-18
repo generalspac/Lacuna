@@ -13,6 +13,7 @@ import model.IA.NiveauxIA;
 import model.IA.CoupIA;
 import model.IA.EtatJeu;
 import model.IA.ThreadIA;
+import model.reseau.EtatReseau;
 
 
 
@@ -82,6 +83,9 @@ public class Jeu {
     private IA ia;
     private boolean iaEnCours = false;
     private int generationIA = 0;
+
+    private boolean modeReseau = false;
+    private Pion.TypePion typePionLocalReseau = null;
 
     public String getFeedbackMessage() {
         return feedbackMessage;
@@ -206,6 +210,7 @@ public class Jeu {
         againstIA = false;
         ia = null;
         iaEnCours = false;
+        desactiverModeReseau();
         partieAbandonnee = false;
         gagnantParAbandon = null;
         joueurs = new Joueur[] {
@@ -214,6 +219,35 @@ public class Jeu {
         };
         choisirJoueurQuiCommence(joueurQuiCommence);
         setFeedbackMessage("Le joueur qui commence est : " + nomJoueurActuelPourAffichage() + ".");
+    }
+
+    public void activerModeReseau(Pion.TypePion typeLocal) {
+        modeReseau = true;
+        typePionLocalReseau = typeLocal;
+        againstIA = false;
+        ia = null;
+        iaEnCours = false;
+        setFeedbackMessage("Partie réseau : vous jouez " + typeLocal + ".");
+    }
+
+    public void desactiverModeReseau() {
+        modeReseau = false;
+        typePionLocalReseau = null;
+    }
+
+    public boolean isModeReseau() {
+        return modeReseau;
+    }
+
+    public Pion.TypePion getTypePionLocalReseau() {
+        return typePionLocalReseau;
+    }
+
+    public boolean estTourReseauDistant() {
+        return modeReseau
+                && typePionLocalReseau != null
+                && !isPartieTerminee()
+                && getJoueurActuel().getTypePion() != typePionLocalReseau;
     }
 
     // Replace les noms par défaut si le champ est vide
@@ -1255,6 +1289,104 @@ public class Jeu {
         setFeedbackMessage("Partie réinitialisée. Choisissez une fleur pour l'avantage initial.");
     }
 
+    public EtatReseau exporterEtatReseau() {
+        EtatReseau etat = new EtatReseau();
+        etat.joueurActuel = currentPlayerIndex;
+        etat.avantageApplique = avantageInitialApplique;
+        etat.phaseAvantage = enPhaseSelectionAvantage;
+        etat.partieAbandonnee = partieAbandonnee;
+        etat.message = feedbackMessage;
+
+        if (gagnantParAbandon != null) {
+            for (int i = 0; i < joueurs.length; i++) {
+                if (joueurs[i] == gagnantParAbandon) {
+                    etat.gagnantAbandonIndex = i;
+                    break;
+                }
+            }
+        }
+
+        for (Joueur joueur : joueurs) {
+            etat.joueurs.add(new EtatReseau.JoueurReseau(joueur.getNom(), joueur.getTypePion()));
+        }
+
+        for (Pion pion : pions) {
+            Coordonnees pos = pion.getPosition();
+            if (pos == null) {
+                etat.pions.add(new EtatReseau.PionReseau(pion.getType(), null, null));
+            } else {
+                etat.pions.add(new EtatReseau.PionReseau(pion.getType(), pos.getX(), pos.getY()));
+            }
+        }
+
+        for (Fleur fleur : fleurs) {
+            etat.fleursPlateau.add(new EtatReseau.FleurReseau(fleur.getType(),
+                    fleur.getPosition().getX(), fleur.getPosition().getY()));
+        }
+
+        for (int i = 0; i < joueurs.length; i++) {
+            for (Fleur fleur : joueurs[i].getFleursGagnees()) {
+                etat.fleursGagnees.add(new EtatReseau.FleurGagneeReseau(i, fleur.getType(),
+                        fleur.getPosition().getX(), fleur.getPosition().getY()));
+            }
+        }
+
+        return etat;
+    }
+
+    public void appliquerEtatReseau(EtatReseau etat) {
+        if (etat == null) {
+            return;
+        }
+
+        Joueur[] nouveauxJoueurs = new Joueur[Math.max(2, etat.joueurs.size())];
+        for (int i = 0; i < nouveauxJoueurs.length; i++) {
+            if (i < etat.joueurs.size()) {
+                EtatReseau.JoueurReseau joueur = etat.joueurs.get(i);
+                nouveauxJoueurs[i] = new JoueurHumain(joueur.nom, joueur.type);
+            } else {
+                Pion.TypePion type = i == 0 ? Pion.TypePion.OR : Pion.TypePion.ARGENT;
+                nouveauxJoueurs[i] = new JoueurHumain("Joueur " + (i + 1), type);
+            }
+        }
+        joueurs = nouveauxJoueurs;
+
+        pions.clear();
+        for (EtatReseau.PionReseau pion : etat.pions) {
+            Coordonnees pos = pion.x == null ? null : new Coordonnees(pion.x, pion.y);
+            pions.add(new Pion(pion.type, pos));
+        }
+
+        fleurs.clear();
+        for (EtatReseau.FleurReseau fleur : etat.fleursPlateau) {
+            fleurs.add(new Fleur(fleur.type, new Coordonnees(fleur.x, fleur.y)));
+        }
+
+        for (Joueur joueur : joueurs) {
+            joueur.getFleursGagnees().clear();
+        }
+        for (EtatReseau.FleurGagneeReseau fleur : etat.fleursGagnees) {
+            if (fleur.joueurIndex >= 0 && fleur.joueurIndex < joueurs.length) {
+                joueurs[fleur.joueurIndex].ajouterFleur(new Fleur(fleur.type, new Coordonnees(fleur.x, fleur.y)));
+            }
+        }
+
+        currentPlayerIndex = Math.max(0, Math.min(etat.joueurActuel, joueurs.length - 1));
+        avantageInitialApplique = etat.avantageApplique;
+        enPhaseSelectionAvantage = etat.phaseAvantage;
+        partieAbandonnee = etat.partieAbandonnee;
+        gagnantParAbandon = (etat.gagnantAbandonIndex >= 0 && etat.gagnantAbandonIndex < joueurs.length)
+                ? joueurs[etat.gagnantAbandonIndex]
+                : null;
+
+        historique.clear();
+        resetFleursSelectionnee1();
+        resetFleursSelectionnee2();
+        setFeedbackMessage(etat.message == null || etat.message.isEmpty()
+                ? "État reçu depuis le réseau."
+                : etat.message);
+    }
+
     // Sauvegarde l'état complet de la partie dans un fichier texte
     ///// FONCTION À REVOIR CAR L'HISTORIQUE EST CHANGÉ
     public void sauvegarderPartie(String cheminFichier) {
@@ -1283,6 +1415,7 @@ public class Jeu {
     public void activerIA(NiveauxIA niveau, String nomHumain, Pion.TypePion joueurQuiCommence) {
 
         againstIA = true;
+        desactiverModeReseau();
         if (niveau == null) {
             niveau = NiveauxIA.FACILE;
         }
@@ -1471,6 +1604,7 @@ public class Jeu {
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
    public void configurerIAContreIA(NiveauxIA niveauOr, NiveauxIA niveauArgent, Pion.TypePion joueurQuiCommence) {
         againstIA = true;
+        desactiverModeReseau();
         ia = null;
         iaEnCours = false;
         partieAbandonnee = false;
@@ -1487,5 +1621,3 @@ public class Jeu {
     }
     
 }
-
-

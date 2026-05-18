@@ -11,20 +11,29 @@ public class ControleurBoutons {
     }
 
     public void undo() {
+        if (vue.jeu.estTourReseauDistant()) {
+            return;
+        }
         vue.annulerAnimationsVisuelles();
         vue.jeu.undo();
+        vue.envoyerEtatReseauSiActif();
         vue.refreshScoresEtTourIA();
     }
 
     public void redo() {
+        if (vue.jeu.estTourReseauDistant()) {
+            return;
+        }
         vue.annulerAnimationsVisuelles();
         vue.jeu.redo();
+        vue.envoyerEtatReseauSiActif();
         vue.refreshScoresEtTourIA();
     }
 
     public void reset() {
         vue.annulerAnimationsVisuelles();
         vue.jeu.reset();
+        vue.envoyerEtatReseauSiActif();
         vue.refreshScoresEtTourIA();
     }
 
@@ -37,6 +46,7 @@ public class ControleurBoutons {
         }
         vue.annulerAnimationsVisuelles();
         vue.jeu.abandonnerPartie();
+        vue.envoyerEtatReseauSiActif();
         if (vue.jeu.isPartieAbandonnee()) {
             vue.afficherGagnantSansAnimation();
         }

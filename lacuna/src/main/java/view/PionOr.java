@@ -36,7 +36,9 @@ public class PionOr extends JComponent {
 
             @Override
             public void mousePressed(MouseEvent e) {
-                if (jeu.isPartieTerminee() || jeu.isIAEnCours() || jeu.estTourIA() || jeu.getJoueurActuel().getTypePion() != Pion.TypePion.OR) {
+                if (jeu.isPartieTerminee() || jeu.isIAEnCours() || jeu.estTourIA()
+                        || jeu.estTourReseauDistant()
+                        || jeu.getJoueurActuel().getTypePion() != Pion.TypePion.OR) {
                     return;
                 }
 
