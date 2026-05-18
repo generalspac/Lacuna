@@ -1,0 +1,19 @@
+package view.animations;
+
+import model.Joueur;
+import view.JeuGraphique;
+
+public class WinnerAnimator {
+
+    private final JeuGraphique view;
+    private final AnimationContext ctx;
+
+    public WinnerAnimator(JeuGraphique view, AnimationContext ctx) {
+        this.view = view;
+        this.ctx = ctx;
+    }
+
+    public void animerGagnant(int generation) {
+        ...
+    }
+}

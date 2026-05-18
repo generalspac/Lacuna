@@ -95,8 +95,8 @@ public class TestCercle {
         Coordonnees inside = new Coordonnees(6, 6);
         Coordonnees onBoundary = new Coordonnees(5, 15);
         Coordonnees outside = new Coordonnees(3, 0);
-        // assertTrue(c.contientPoint(inside));
-        // assertTrue(c.contientPoint(onBoundary)); // <= so boundary is included
+        assertTrue(c.contientPoint(inside));
+        assertTrue(c.contientPoint(onBoundary)); // <= so boundary is included
         assertFalse(c.contientPoint(outside));
     }
 
