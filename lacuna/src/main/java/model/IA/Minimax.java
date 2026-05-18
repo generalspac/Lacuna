@@ -105,7 +105,7 @@ public class Minimax {
         }
     }
 
-    // Fonction prise chez chatgpt pour m'aider à améliorer la complexité
+    // Trier les coups
     private void trierCoups(EtatJeu etat, List<CoupIA> coups) {
         List<CoupNote> coupsNotes = new ArrayList<>(coups.size());
 

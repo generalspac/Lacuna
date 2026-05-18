@@ -21,6 +21,7 @@ public final class ConstantesJeu {
     public static final double MARGE_EXTREMITES_SEGMENT_JEU = MARGE_COLLISION;
 
     public static final double DIST_MIN_PION_IA = 24;
-    public static final double MARGE_EXTREMITES_SEGMENT_IA = 26;
+    public static final double MARGE_EXTREMITES_SEGMENT_IA = 26;//marge pour eviter de placer
+                                                                //un pion trop proche des fleurs choisies
     public static final int MAX_COUPS_GENERES_IA = 150;
 }
