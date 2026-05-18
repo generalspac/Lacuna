@@ -35,6 +35,10 @@ public class EcouteurDeSouris extends MouseAdapter {
             return;
         }
 
+        if (game.estTourReseauDistant()) {
+            return;
+        }
+
         int x = e.getX();
         int y = e.getY();
 
@@ -52,6 +56,7 @@ public class EcouteurDeSouris extends MouseAdapter {
 
             if (game.jouerCoupAvecFleursSelectionnees(modelPos)) {
 
+                jeuGraphique.envoyerEtatReseauSiActif();
                 jeuGraphique.refreshScoresEtTourIA();
             } else {
                 jeuGraphique.refreshScores();
@@ -63,12 +68,14 @@ public class EcouteurDeSouris extends MouseAdapter {
 
         if (game.toucherFleur(modelPos)) {
 
+            jeuGraphique.envoyerEtatReseauSiActif();
             jeuGraphique.refreshScores();
             jeuGraphique.repaint();
             return;
         }
 
         if (!game.existeCoupConnecte() && game.placerPionLibreSiAucunCoup(modelPos)) {
+            jeuGraphique.envoyerEtatReseauSiActif();
             jeuGraphique.refreshScoresEtTourIA();
         }
 

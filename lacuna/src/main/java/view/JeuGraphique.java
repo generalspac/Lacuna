@@ -13,6 +13,8 @@ import java.util.List;
 
 import global.Configuration;
 import model.*;
+import model.reseau.EtatReseau;
+import model.reseau.SessionReseau;
 import controller.EcouteurDeSouris;
 import view.animations.Animation;
 import view.animations.AnimationContext;
@@ -49,6 +51,8 @@ public class JeuGraphique extends JComponent {
     private double facteurVitesse = 1.0;
     private boolean afficherCoupsPossibles = false;
     private Fleur.TypeFleur filtreCouleurCoups = null;
+    private SessionReseau sessionReseau;
+    private boolean applicationEtatReseau = false;
 
     // -------------------------- CONSTRUCTEURS --------------------------------- //
 
@@ -270,6 +274,43 @@ public class JeuGraphique extends JComponent {
         });
     }
 
+    public void installerSessionReseau(SessionReseau session, Pion.TypePion typeLocal) {
+        sessionReseau = session;
+        jeu.activerModeReseau(typeLocal);
+        refreshScores();
+        repaint();
+    }
+
+    public void appliquerEtatDepuisReseau(EtatReseau etat) {
+        applicationEtatReseau = true;
+        try {
+            jeu.appliquerEtatReseau(etat);
+            annulerAnimationsVisuelles();
+            refreshScores();
+            repaint();
+            if (jeu.isPartieAbandonnee()) {
+                afficherGagnantSansAnimation();
+            }
+        } finally {
+            applicationEtatReseau = false;
+        }
+    }
+
+    public void envoyerEtatReseauSiActif() {
+        if (applicationEtatReseau || sessionReseau == null || !sessionReseau.estActif()) {
+            return;
+        }
+        sessionReseau.envoyerEtat(jeu.exporterEtatReseau());
+    }
+
+    public void fermerSessionReseau() {
+        if (sessionReseau != null) {
+            sessionReseau.close();
+            sessionReseau = null;
+        }
+        jeu.desactiverModeReseau();
+    }
+
     private void updateInstructionText() {
         if (instructionLabel == null) return;
 
@@ -286,6 +327,11 @@ public class JeuGraphique extends JComponent {
 
         if (jeu.estTourIA()) {
             instructionLabel.setText("Tour de l'IA (" + jeu.getJoueurActuel().getTypePion() + ")…");
+            return;
+        }
+
+        if (jeu.estTourReseauDistant()) {
+            instructionLabel.setText("Tour du joueur distant (" + jeu.getJoueurActuel().getTypePion() + ")…");
             return;
         }
 
@@ -410,7 +456,8 @@ public class JeuGraphique extends JComponent {
 
                 boolean coupJoue = false;
                 if (!animCtx.isEnCours() && !jeu.isIAEnCours()
-                        && !jeu.estTourIA() && !jeu.isPartieTerminee()) {
+                        && !jeu.estTourIA() && !jeu.estTourReseauDistant()
+                        && !jeu.isPartieTerminee()) {
                     Coordonnees model = screenToModel(e.getX(), e.getY());
                     coupJoue = jeu.placerPionDepuisDrag(model, payload);
                 }
@@ -418,6 +465,7 @@ public class JeuGraphique extends JComponent {
                 layer.clear();
 
                 if (coupJoue) {
+                    envoyerEtatReseauSiActif();
                     refreshScoresEtTourIA();
                 } else {
                     refreshScores();

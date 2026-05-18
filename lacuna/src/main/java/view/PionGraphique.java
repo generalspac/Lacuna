@@ -53,6 +53,7 @@ public class PionGraphique extends JComponent {
                 if (jeu.isPartieTerminee()
                         || jeu.isIAEnCours()
                         || jeu.estTourIA()
+                        || jeu.estTourReseauDistant()
                         || jeu.getJoueurActuel().getTypePion() != typePion) {
                     return;
                 }

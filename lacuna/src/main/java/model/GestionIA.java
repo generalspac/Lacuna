@@ -8,6 +8,7 @@ import model.IA.NiveauxIA;
 import model.IA.ThreadIA;
 
 // Cette classe, Gère le mode IA
+public final class GestionIA {
 
     private GestionIA() {
     }
