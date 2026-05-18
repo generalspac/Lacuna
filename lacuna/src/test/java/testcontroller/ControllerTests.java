@@ -1,15 +1,12 @@
 package testcontroller;
 // import controller.EcouteurDeClavier;
 import controller.EcouteurDeSouris;
-import global.Configuration;
 import model.Jeu;
 import org.junit.jupiter.api.Test;
 import view.JeuGraphique;
 
 import javax.swing.JFrame;
 import java.awt.event.MouseEvent;
-import java.lang.reflect.Field;
-import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
 
