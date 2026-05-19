@@ -643,6 +643,14 @@ public class Jeu implements EtatPlateau {
         return fleurSelectionnee1;
     }
 
+    public void setFleurSelectionnee1(Fleur fleur) {
+        this.fleurSelectionnee1 = fleur;
+    }   
+
+    public void setFleurSelectionnee2(Fleur fleur) {
+        this.fleurSelectionnee2 = fleur;
+    }
+
     public Fleur getFleurSelectionnee2() {
         return fleurSelectionnee2;
     }

@@ -114,6 +114,22 @@ public class JeuTutoriel extends JeuGraphique {
         afficherMessageEtape();
     }
 
+    @Override
+    protected Fleur getHighlightedFlower() {
+
+        switch (etape) {
+
+            case ETAPE_SELECTION_1:
+                return jeu.getFleurs().get(0);
+
+            case ETAPE_SELECTION_2:
+                return jeu.getFleurs().get(3);
+
+            default:
+                return null;
+        }
+    }
+
     // =========================================================
     // AFFICHAGE DELAY
     // =========================================================
@@ -155,7 +171,7 @@ public class JeuTutoriel extends JeuGraphique {
 
                 overlay.showMessage(
                         "Étape 1 : Sélection",
-                        "Cliquez sur la <span style='color:#FF3C3C; font-weight:bold;'>première fleur rouge</span>.",
+                        "Cliquez sur la <span style='color:#FF3C3C; font-weight:bold;'> fleur rouge qui clignote </span>.",
                         null,
                         null,
                         () -> passerEtape(),
@@ -163,7 +179,7 @@ public class JeuTutoriel extends JeuGraphique {
 
                 overlay.setSkipButtonVisible(true);
 
-                overlay.setNextButtonText("Passer");
+                overlay.setNextButtonText("Suivant");
 
                 break;
 
@@ -279,8 +295,23 @@ public class JeuTutoriel extends JeuGraphique {
     // PASSAGE ETAPE
     // =========================================================
     private void passerEtape() {
+            switch (etape) {
+
+                case ETAPE_SELECTION_1:
+                    jeu.setFleurSelectionnee1(jeu.getFleurs().get(0));
+                    break;
+
+                case ETAPE_SELECTION_2:
+                    jeu.setFleurSelectionnee2(jeu.getFleurs().get(3));
+                    break;
+
+                case ETAPE_PLACEMENT:
+                    jeu.jouerCoupAvecFleursSelectionnees(); 
+                    break;
+            }
 
         etape++;
+
 
         afficherMessageAvecDelai(250);
     }

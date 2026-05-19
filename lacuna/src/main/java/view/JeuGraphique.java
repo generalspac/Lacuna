@@ -19,6 +19,7 @@ import controller.EcouteurDeSouris;
 import view.animations.Animation;
 import view.animations.AnimationContext;
 import view.animations.AnimationState;
+import javax.swing.Timer;
 
 public class JeuGraphique extends JComponent {
 
@@ -27,7 +28,7 @@ public class JeuGraphique extends JComponent {
     private final JFrame frame;
     public Jeu jeu;
 
-    private final int modelWidth  = 660;
+    private final int modelWidth = 660;
     private final int modelHeight = 440;
 
     private Score scoreArgent;
@@ -61,7 +62,7 @@ public class JeuGraphique extends JComponent {
     }
 
     public JeuGraphique(JFrame frame, Score scoreArgent, Score scoreOr,
-                        JLabel instructionLabel, JLabel statusLabel) {
+            JLabel instructionLabel, JLabel statusLabel) {
 
         this.frame = frame;
         this.scoreArgent = scoreArgent;
@@ -81,6 +82,7 @@ public class JeuGraphique extends JComponent {
         setFocusable(true);
 
         initImages();
+        new Timer(400, e -> repaint()).start();
         initListeners();
     }
 
@@ -225,7 +227,8 @@ public class JeuGraphique extends JComponent {
     }
 
     public void skipAnimationPhase2() {
-        if (animCtx.getState() == AnimationState.PHASE2) return;
+        if (animCtx.getState() == AnimationState.PHASE2)
+            return;
 
         jeu.attribuerFleursRestantes();
         final int gen = animCtx.nouvelleGeneration();
@@ -252,10 +255,14 @@ public class JeuGraphique extends JComponent {
     // -------------------------- SCORE / UI ------------------------------------ //
 
     public void refreshScores() {
-        if (scoreOr != null) scoreOr.updateFromGame(jeu.getJoueurs()[0]);
-        if (scoreArgent != null) scoreArgent.updateFromGame(jeu.getJoueurs()[1]);
-        if (pileArgent != null) pileArgent.repaint();
-        if (pileOr != null) pileOr.repaint();
+        if (scoreOr != null)
+            scoreOr.updateFromGame(jeu.getJoueurs()[0]);
+        if (scoreArgent != null)
+            scoreArgent.updateFromGame(jeu.getJoueurs()[1]);
+        if (pileArgent != null)
+            pileArgent.repaint();
+        if (pileOr != null)
+            pileOr.repaint();
 
         updateInstructionText();
         updateStatusMessage();
@@ -265,7 +272,8 @@ public class JeuGraphique extends JComponent {
         refreshScores();
         repaint();
 
-        if (animation.lancerAnimationSecondePhase()) return;
+        if (animation.lancerAnimationSecondePhase())
+            return;
 
         jeu.lancerIA(coup -> animation.animerPuisJouerCoupIA(coup), () -> {
             refreshScores();
@@ -312,7 +320,8 @@ public class JeuGraphique extends JComponent {
     }
 
     private void updateInstructionText() {
-        if (instructionLabel == null) return;
+        if (instructionLabel == null)
+            return;
 
         if (animCtx.isEnCours()) {
             instructionLabel.setText("Animation en cours… Vous pouvez utiliser Undo, Redo ou Reset.");
@@ -347,7 +356,8 @@ public class JeuGraphique extends JComponent {
         if (f1 == null) {
             instructionLabel.setText(jeu.nomJoueurActuelPourAffichage() + " : cliquez sur une fleur pour commencer.");
         } else if (f2 == null) {
-            instructionLabel.setText(jeu.nomJoueurActuelPourAffichage() + " : sélectionnez une seconde fleur du même type.");
+            instructionLabel
+                    .setText(jeu.nomJoueurActuelPourAffichage() + " : sélectionnez une seconde fleur du même type.");
         } else if (jeu.fleursConnectées(f1, f2)) {
             instructionLabel.setText("Fleurs connectées : un pion sera placé en cliquant.");
         } else {
@@ -356,10 +366,12 @@ public class JeuGraphique extends JComponent {
     }
 
     private void updateStatusMessage() {
-        if (statusLabel == null) return;
+        if (statusLabel == null)
+            return;
         String message = jeu.getFeedbackMessage();
         statusLabel.setText((message == null || message.trim().isEmpty())
-                ? "En attente d'une action…" : message);
+                ? "En attente d'une action…"
+                : message);
     }
 
     // ------------------ AFFICHAGE / MASQUAGE DES COUPS POSSIBLES -------------- //
@@ -388,7 +400,8 @@ public class JeuGraphique extends JComponent {
     // -------------------------- UTILITAIRES ----------------------------------- //
 
     public Fleur retrouverFleurGraphique(Fleur recherchee) {
-        if (recherchee == null) return null;
+        if (recherchee == null)
+            return null;
         for (Fleur f : jeu.getFleurs()) {
             if (f.getType() == recherchee.getType()
                     && f.getPosition().equals(recherchee.getPosition())) {
@@ -398,16 +411,28 @@ public class JeuGraphique extends JComponent {
         return null;
     }
 
+    protected Fleur getHighlightedFlower() {
+        return null;
+    }
+
     public Image getFlowerImage(Fleur.TypeFleur type) {
         switch (type) {
-            case ROUGE: return rougeImg;
-            case BLEUE: return bleueImg;
-            case JAUNE: return jauneImg;
-            case VERTE: return verteImg;
-            case ORANGE: return orangeImg;
-            case VIOLETTE: return violetteImg;
-            case ROSE: return roseImg;
-            default: return null;
+            case ROUGE:
+                return rougeImg;
+            case BLEUE:
+                return bleueImg;
+            case JAUNE:
+                return jauneImg;
+            case VERTE:
+                return verteImg;
+            case ORANGE:
+                return orangeImg;
+            case VIOLETTE:
+                return violetteImg;
+            case ROSE:
+                return roseImg;
+            default:
+                return null;
         }
     }
 
@@ -452,7 +477,8 @@ public class JeuGraphique extends JComponent {
             public void mouseReleased(MouseEvent e) {
                 DragLayer layer = (DragLayer) frame.getGlassPane();
                 Pion.TypePion payload = (Pion.TypePion) layer.getPayload();
-                if (payload == null) return;
+                if (payload == null)
+                    return;
 
                 boolean coupJoue = false;
                 if (!animCtx.isEnCours() && !jeu.isIAEnCours()
@@ -485,13 +511,13 @@ public class JeuGraphique extends JComponent {
         // Met à jour les dimensions du converter à chaque repaint
         converter.setDimensions(getWidth(), getHeight());
 
-        int size    = converter.size();
+        int size = converter.size();
         int offsetX = converter.offsetX();
         int offsetY = converter.offsetY();
         int centerX = converter.centerX();
         int centerY = converter.centerY();
-        double rayon    = converter.rayonScreen();
-        int    fleurSz  = converter.fleurSize();
+        double rayon = converter.rayonScreen();
+        int fleurSz = converter.fleurSize();
 
         jeu.setMarge(fleurSz / 2.0);
 
@@ -507,9 +533,11 @@ public class JeuGraphique extends JComponent {
 
         // Fleurs
         for (Fleur f : jeu.getFleurs()) {
-            if (f == null) continue;
+            if (f == null)
+                continue;
             Image img = getFlowerImage(f.getType());
-            if (img == null) continue;
+            if (img == null)
+                continue;
             Coordonnees p = modelToScreen(f.getPosition().x, f.getPosition().y);
             g2.drawImage(img, p.getX() - fleurSz / 2, p.getY() - fleurSz / 2,
                     fleurSz, fleurSz, null);
@@ -517,13 +545,14 @@ public class JeuGraphique extends JComponent {
 
         drawPossibleMoves(g2, fleurSz);
         drawSelection(g2);
+        drawAnimatedCercle(g2, getHighlightedFlower());
         drawPhase2Illustration(g2);
         drawPions(g2, fleurSz);
         drawWinnerOverlay(g2);
     }
 
     // -------------------------- SOUS-MÉTHODES DE DESSIN ----------------------- //
-    
+
     private void drawSelection(Graphics2D g2) {
         Fleur f1 = jeu.getFleurSelectionnee1();
         Fleur f2 = jeu.getFleurSelectionnee2();
@@ -531,7 +560,8 @@ public class JeuGraphique extends JComponent {
         boolean connectees = deuxFleurs && jeu.fleursConnectées(f1, f2);
 
         g2.setColor(connectees || !deuxFleurs || animCtx.isSelectionIAVisuelle()
-                ? Color.YELLOW : Color.RED);
+                ? Color.YELLOW
+                : Color.RED);
         g2.setStroke(new BasicStroke(3));
         drawSelectionMarker(g2, f1);
         drawSelectionMarker(g2, f2);
@@ -542,7 +572,7 @@ public class JeuGraphique extends JComponent {
             Stroke old = g2.getStroke();
             if (!connectees && !animCtx.isSelectionIAVisuelle()) {
                 g2.setStroke(new BasicStroke(4, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND,
-                        1f, new float[]{10f, 8f}, 0f));
+                        1f, new float[] { 10f, 8f }, 0f));
             }
             g2.drawLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
             g2.setStroke(old);
@@ -550,28 +580,71 @@ public class JeuGraphique extends JComponent {
     }
 
     private void drawSelectionMarker(Graphics2D g2, Fleur f) {
-        if (f == null || f.getPosition() == null) return;
+        if (f == null || f.getPosition() == null)
+            return;
         Coordonnees p = modelToScreen(f.getPosition().x, f.getPosition().y);
         int sz = Math.max(24, (int) (converter.size() * 0.065));
         g2.drawOval(p.getX() - sz / 2, p.getY() - sz / 2, sz, sz);
     }
 
+    protected void drawAnimatedCercle(Graphics2D g2, Fleur f) {
+
+        if (f == null || f.getPosition() == null)
+            return;
+
+        Coordonnees p = modelToScreen(
+                f.getPosition().x,
+                f.getPosition().y);
+
+        int maxSz = Math.max(30, (int) (converter.size() * 0.08));
+
+        // Taille fixe (pas de pulse)
+        int sz = maxSz;
+
+        // Clignotement ON/OFF basé sur le temps
+        boolean visible = (System.currentTimeMillis() / 300) % 2 == 0;
+
+        if (!visible)
+            return; // invisible = OFF
+
+        Stroke oldStroke = g2.getStroke();
+        Color oldColor = g2.getColor();
+
+        // Cercle blanc simple
+        g2.setStroke(new BasicStroke(
+                4,
+                BasicStroke.CAP_ROUND,
+                BasicStroke.JOIN_ROUND));
+
+        g2.setColor(Color.WHITE);
+
+        g2.drawOval(
+                p.getX() - sz / 2,
+                p.getY() - sz / 2,
+                sz,
+                sz);
+
+        g2.setStroke(oldStroke);
+        g2.setColor(oldColor);
+    }
+
     private void drawPhase2Illustration(Graphics2D g2) {
         Fleur fleurIllu = animCtx.getFleurPhase2Illustree();
-        Pion  pionIllu  = animCtx.getPionPhase2Illustre();
+        Pion pionIllu = animCtx.getPionPhase2Illustre();
         if (fleurIllu == null || pionIllu == null
-                || fleurIllu.getPosition() == null || pionIllu.getPosition() == null) return;
+                || fleurIllu.getPosition() == null || pionIllu.getPosition() == null)
+            return;
 
         Coordonnees fp = modelToScreen(fleurIllu.getPosition().x, fleurIllu.getPosition().y);
-        Coordonnees pp = modelToScreen(pionIllu.getPosition().x,  pionIllu.getPosition().y);
+        Coordonnees pp = modelToScreen(pionIllu.getPosition().x, pionIllu.getPosition().y);
         Stroke oldStroke = g2.getStroke();
-        Color  oldColor  = g2.getColor();
+        Color oldColor = g2.getColor();
 
         Pion pionCompare = animCtx.getPionPhase2Compare();
-        boolean compare  = pionCompare != null && pionCompare.getPosition() != null;
+        boolean compare = pionCompare != null && pionCompare.getPosition() != null;
 
         g2.setStroke(new BasicStroke(4, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND,
-                1f, new float[]{12f, 8f}, 0f));
+                1f, new float[] { 12f, 8f }, 0f));
 
         if (compare) {
             Coordonnees pc = modelToScreen(pionCompare.getPosition().x, pionCompare.getPosition().y);
@@ -602,7 +675,8 @@ public class JeuGraphique extends JComponent {
     }
 
     private void drawPossibleMoves(Graphics2D g2, int fleurSize) {
-        if (!afficherCoupsPossibles) return;
+        if (!afficherCoupsPossibles)
+            return;
 
         Fleur f1 = jeu.getFleurSelectionnee1();
         Fleur f2 = jeu.getFleurSelectionnee2();
@@ -619,8 +693,8 @@ public class JeuGraphique extends JComponent {
         if (f1 != null && f2 != null && jeu.fleursConnectées(f1, f2)) {
             Coordonnees p1 = modelToScreen(f1.getPosition().x, f1.getPosition().y);
             Coordonnees p2 = modelToScreen(f2.getPosition().x, f2.getPosition().y);
-            Stroke old   = g2.getStroke();
-            Color  oldC  = g2.getColor();
+            Stroke old = g2.getStroke();
+            Color oldC = g2.getColor();
             g2.setColor(new Color(255, 255, 255, 230));
             g2.setStroke(new BasicStroke(4));
             g2.drawLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
@@ -631,7 +705,8 @@ public class JeuGraphique extends JComponent {
 
     private void drawPions(Graphics2D g2, int size) {
         for (Pion p : jeu.getPions()) {
-            if (p.getPosition() == null) continue;
+            if (p.getPosition() == null)
+                continue;
             Image img = (p.getType() == Pion.TypePion.OR) ? orImg : argentImg;
             Coordonnees pos = modelToScreen(p.getPosition().x, p.getPosition().y);
             g2.drawImage(img, pos.getX() - size / 2, pos.getY() - size / 2,
@@ -641,8 +716,9 @@ public class JeuGraphique extends JComponent {
 
     private void drawWinnerOverlay(Graphics2D g2) {
         Joueur gagnant = animCtx.getGagnantAnime();
-        int    pulse   = animCtx.getWinnerPulse();
-        if (gagnant == null && pulse <= 0) return;
+        int pulse = animCtx.getWinnerPulse();
+        if (gagnant == null && pulse <= 0)
+            return;
 
         String texte = (gagnant == null)
                 ? "ÉGALITÉ !"
@@ -653,8 +729,8 @@ public class JeuGraphique extends JComponent {
         int x = (getWidth() - w) / 2;
         int y = 28;
 
-        Color  oldColor  = g2.getColor();
-        Font   oldFont   = g2.getFont();
+        Color oldColor = g2.getColor();
+        Font oldFont = g2.getFont();
         Stroke oldStroke = g2.getStroke();
 
         g2.setColor(new Color(0, 0, 0, alpha));

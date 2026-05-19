@@ -9,6 +9,7 @@ public class AnimationContext {
     // -------------------------- ÉTAT COURANT --------------------------------- //
     private AnimationState state = AnimationState.AUCUNE;
     private int generation = 0;
+    private double animationProgress = 1.0;
 
     // -------------------------- VISUELS PHASE 2 ------------------------------ //
     private Fleur fleurPhase2Illustree = null;
@@ -51,7 +52,13 @@ public class AnimationContext {
         pionPhase2Compare = null;
         phase2ComparePulse = 0;
     }
+    public double getAnimationProgress() {
+        return animationProgress;
+    }
 
+    public void setAnimationProgress(double progress) {
+        this.animationProgress = progress;
+    }
     // -------------------------- VISUELS FIN DE PARTIE ------------------------ //
 
     public Joueur getGagnantAnime() { return gagnantAnime; }
