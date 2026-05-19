@@ -44,7 +44,27 @@ ou lancer le fichier run.sh en lui donnant les droit d'execution
 -REfactorisation
 
 # Iyed
- --Gestion de load (historique)
+Instructions pour tester le réseau : 
+
+Sur Terminal 1 :
+1. Lancer run.sh
+2. Choisir le mode multi-joueurs
+3. Choisir le role Hote(attendre un joueur)
+4. Confirmer le port d'écoute 
+5. Choisir le joueur qui commence (hote ou invité)
+6. Attendre que l'adversaire connecte 
+
+Sur Terminal 2 :
+1. Lancer run.sh
+2. Choisir le mode multi-joueurs 
+3. Choisir le role invité(se connecté)
+4. Confirmer IP et port (Cliquer tout simplement sur OK )
+
+-----------------------------------------------------------------------
+
+Qlqs remarques : 
+1. On a pas undo, redo, save et restart en mode multi-joueurs réseau comme dans tout les jeux en ligne quoi !
+2. J'ai masqué le boutton skip et le slider de vitesse dans la phase 1 car c'est inutile 
 
 
 # BUGS
