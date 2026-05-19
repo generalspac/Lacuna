@@ -11,7 +11,7 @@ import global.Configuration;
 import model.IA.IA;
 import model.IA.NiveauxIA;
 import model.IA.CoupIA;
-import model.reseau.EtatReseau;
+import network.CoupReseau;
 
 
 
@@ -82,8 +82,12 @@ public class Jeu implements EtatPlateau {
     IA ia;
     boolean iaEnCours = false;
     int generationIA = 0;
-    private boolean modeReseau = false;
-    private Pion.TypePion typePionLocalReseau = null;
+
+    ///////////////// RÉSEAU /////////////////
+    private boolean enModeReseau = false;
+    private int indexJoueurLocal = 0; // 0 = OR (hôte), 1 = ARGENT (invité)
+    private Consumer<CoupReseau> ecouteurCoupEnvoye = null;
+    private boolean applicationCoupDistant = false; // évite la réémission en boucle
 
     public String getFeedbackMessage() {
         return feedbackMessage;
@@ -203,6 +207,30 @@ public class Jeu implements EtatPlateau {
         this.enPhaseSelectionAvantage = enPhaseSelectionAvantage;
     }
 
+    // =========================================================
+    // ================= GETTERS / SETTERS RÉSEAU ==============
+    // =========================================================
+
+    public boolean isEnModeReseau() {
+        return enModeReseau;
+    }
+
+    public void setEnModeReseau(boolean enModeReseau) {
+        this.enModeReseau = enModeReseau;
+    }
+
+    public int getIndexJoueurLocal() {
+        return indexJoueurLocal;
+    }
+
+    public void setIndexJoueurLocal(int indexJoueurLocal) {
+        this.indexJoueurLocal = indexJoueurLocal;
+    }
+
+    public void setEcouteurCoupEnvoye(Consumer<CoupReseau> ecouteur) {
+        this.ecouteurCoupEnvoye = ecouteur;
+    }
+
     // ====//////////////////////////////////////////////====
     // ================= GESTION DES JOUEURS ====================
     // =========================================================
@@ -222,7 +250,6 @@ public class Jeu implements EtatPlateau {
         againstIA = false;
         ia = null;
         iaEnCours = false;
-        desactiverModeReseau();
         partieAbandonnee = false;
         gagnantParAbandon = null;
         joueurs = new Joueur[] {
@@ -231,35 +258,6 @@ public class Jeu implements EtatPlateau {
         };
         choisirJoueurQuiCommence(joueurQuiCommence);
         setFeedbackMessage("Le joueur qui commence est : " + nomJoueurActuelPourAffichage() + ".");
-    }
-
-    public void activerModeReseau(Pion.TypePion typeLocal) {
-        modeReseau = true;
-        typePionLocalReseau = typeLocal;
-        againstIA = false;
-        ia = null;
-        iaEnCours = false;
-        setFeedbackMessage("Partie réseau : vous jouez " + typeLocal + ".");
-    }
-
-    public void desactiverModeReseau() {
-        modeReseau = false;
-        typePionLocalReseau = null;
-    }
-
-    public boolean isModeReseau() {
-        return modeReseau;
-    }
-
-    public Pion.TypePion getTypePionLocalReseau() {
-        return typePionLocalReseau;
-    }
-
-    public boolean estTourReseauDistant() {
-        return modeReseau
-                && typePionLocalReseau != null
-                && !isPartieTerminee()
-                && getJoueurActuel().getTypePion() != typePionLocalReseau;
     }
 
     // Replace les noms par défaut si le champ est vide
@@ -304,6 +302,13 @@ public class Jeu implements EtatPlateau {
         gagnantParAbandon = joueurs[(currentPlayerIndex + 1) % NB_JOUEURS];
         setFeedbackMessage(nomJoueurActuelPourAffichage() + " abandonne. "
                 + nomJoueurPourAffichage(gagnantParAbandon) + " gagne par abandon.");
+
+        // Signaler l'abandon à l'adversaire en mode réseau
+        if (enModeReseau && !applicationCoupDistant && ecouteurCoupEnvoye != null) {
+            CoupReseau coup = new CoupReseau();
+            coup.typeMessage = "ABANDON";
+            ecouteurCoupEnvoye.accept(coup);
+        }
     }
 
     // Avantage de l'ia
@@ -390,6 +395,12 @@ public class Jeu implements EtatPlateau {
         }
     }
 
+    // Réinitialise le plateau de fleurs avec une graine partagée (mode réseau)
+    public void reinitialiserFleurs(int graine) {
+        random = new Random(graine);
+        initFleurs();
+    }
+
     public void initPions() {
         pions.clear();
 
@@ -414,9 +425,9 @@ public class Jeu implements EtatPlateau {
         int tentatives = 0; // compteur de tentatives pour éviter une boucle infinie
 
         do {
-            double angle = Math.random() * 2 * Math.PI;
+            double angle = random.nextDouble() * 2 * Math.PI;
             double margeFleur = marge; // pour ne pas déborder
-            double r = Math.sqrt(Math.random()) * (cercleDeJeu.getRayon() - margeFleur);
+            double r = Math.sqrt(random.nextDouble()) * (cercleDeJeu.getRayon() - margeFleur);
 
             double x = cercleDeJeu.getCentre().getX() + r * Math.cos(angle);
             double y = cercleDeJeu.getCentre().getY() + r * Math.sin(angle);
@@ -460,6 +471,18 @@ public class Jeu implements EtatPlateau {
             historique.enregistrerActionAvantage(fleurChoisie, joueurCommence);
             avantageInitialApplique = true;
             enPhaseSelectionAvantage = false;
+
+            // Émettre l'avantage réseau si c'est le joueur local qui vient de jouer
+            if (enModeReseau && !applicationCoupDistant && currentPlayerIndex == indexJoueurLocal && ecouteurCoupEnvoye != null) {
+                CoupReseau coup = new CoupReseau();
+                coup.typeMessage = "AVANTAGE";
+                coup.pionNull = true;
+                coup.typeFleur1 = fleurChoisie.getType().name();
+                coup.fleur1X = fleurChoisie.getPosition().getX();
+                coup.fleur1Y = fleurChoisie.getPosition().getY();
+                coup.fleur2Null = true;
+                ecouteurCoupEnvoye.accept(coup);
+            }
 
             System.out.println(
                     "Avantage initial: " + joueurCommence.getNom() + " choisit une fleur " + fleurChoisie.getType());
@@ -535,8 +558,21 @@ public class Jeu implements EtatPlateau {
         // Gestion de la stack
         historique.enregistrerAction(pion, f1, f2, joueur);
 
-
-
+        // Émettre le coup réseau si c'est le joueur local qui vient de jouer
+        if (enModeReseau && !applicationCoupDistant && currentPlayerIndex == indexJoueurLocal && ecouteurCoupEnvoye != null) {
+            CoupReseau coup = new CoupReseau();
+            coup.typeMessage = "COUP";
+            coup.typePion = pion.getType().name();
+            coup.pionX = pos.getX();
+            coup.pionY = pos.getY();
+            coup.typeFleur1 = f1.getType().name();
+            coup.fleur1X = f1.getPosition().getX();
+            coup.fleur1Y = f1.getPosition().getY();
+            coup.typeFleur2 = f2.getType().name();
+            coup.fleur2X = f2.getPosition().getX();
+            coup.fleur2Y = f2.getPosition().getY();
+            ecouteurCoupEnvoye.accept(coup);
+        }
 
         joueurSuivant();// Passons au joueur suivant
 
@@ -800,102 +836,43 @@ public class Jeu implements EtatPlateau {
         setFeedbackMessage("Partie réinitialisée. Choisissez une fleur pour l'avantage initial.");
     }
 
-    public EtatReseau exporterEtatReseau() {
-        EtatReseau etat = new EtatReseau();
-        etat.joueurActuel = currentPlayerIndex;
-        etat.avantageApplique = avantageInitialApplique;
-        etat.phaseAvantage = enPhaseSelectionAvantage;
-        etat.partieAbandonnee = partieAbandonnee;
-        etat.message = feedbackMessage;
+    // =========================================================
+    // =================== LOGIQUE RÉSEAU ======================
+    // =========================================================
 
-        if (gagnantParAbandon != null) {
-            for (int i = 0; i < joueurs.length; i++) {
-                if (joueurs[i] == gagnantParAbandon) {
-                    etat.gagnantAbandonIndex = i;
-                    break;
+    // Applique un coup reçu depuis l'adversaire distant
+    public void appliquerCoupReseau(CoupReseau coup) {
+        applicationCoupDistant = true;
+        try {
+            if ("AVANTAGE".equals(coup.typeMessage)) {
+                Fleur f = trouverFleurSurPlateau(Fleur.TypeFleur.valueOf(coup.typeFleur1), coup.fleur1X, coup.fleur1Y);
+                if (f != null) appliquerAvantageAvecFleur(f);
+
+            } else if ("COUP".equals(coup.typeMessage)) {
+                Pion pion = getPionLibre(Pion.TypePion.valueOf(coup.typePion));
+                Coordonnees pos = new Coordonnees(coup.pionX, coup.pionY);
+                Fleur f1 = trouverFleurSurPlateau(Fleur.TypeFleur.valueOf(coup.typeFleur1), coup.fleur1X, coup.fleur1Y);
+                Fleur f2 = trouverFleurSurPlateau(Fleur.TypeFleur.valueOf(coup.typeFleur2), coup.fleur2X, coup.fleur2Y);
+                if (pion != null && f1 != null && f2 != null) {
+                    jouerCoup(getJoueurActuel(), pion, pos, f1, f2);
                 }
+
+            } else if ("ABANDON".equals(coup.typeMessage)) {
+                abandonnerPartie();
             }
+        } finally {
+            applicationCoupDistant = false;
         }
-
-        for (Joueur joueur : joueurs) {
-            etat.joueurs.add(new EtatReseau.JoueurReseau(joueur.getNom(), joueur.getTypePion()));
-        }
-
-        for (Pion pion : pions) {
-            Coordonnees pos = pion.getPosition();
-            if (pos == null) {
-                etat.pions.add(new EtatReseau.PionReseau(pion.getType(), null, null));
-            } else {
-                etat.pions.add(new EtatReseau.PionReseau(pion.getType(), pos.getX(), pos.getY()));
-            }
-        }
-
-        for (Fleur fleur : fleurs) {
-            etat.fleursPlateau.add(new EtatReseau.FleurReseau(fleur.getType(),
-                    fleur.getPosition().getX(), fleur.getPosition().getY()));
-        }
-
-        for (int i = 0; i < joueurs.length; i++) {
-            for (Fleur fleur : joueurs[i].getFleursGagnees()) {
-                etat.fleursGagnees.add(new EtatReseau.FleurGagneeReseau(i, fleur.getType(),
-                        fleur.getPosition().getX(), fleur.getPosition().getY()));
-            }
-        }
-
-        return etat;
     }
 
-    public void appliquerEtatReseau(EtatReseau etat) {
-        if (etat == null) {
-            return;
-        }
-
-        Joueur[] nouveauxJoueurs = new Joueur[Math.max(2, etat.joueurs.size())];
-        for (int i = 0; i < nouveauxJoueurs.length; i++) {
-            if (i < etat.joueurs.size()) {
-                EtatReseau.JoueurReseau joueur = etat.joueurs.get(i);
-                nouveauxJoueurs[i] = new JoueurHumain(joueur.nom, joueur.type);
-            } else {
-                Pion.TypePion type = i == 0 ? Pion.TypePion.OR : Pion.TypePion.ARGENT;
-                nouveauxJoueurs[i] = new JoueurHumain("Joueur " + (i + 1), type);
+    // Cherche une fleur sur le plateau par type et coordonnées exactes
+    private Fleur trouverFleurSurPlateau(Fleur.TypeFleur type, int x, int y) {
+        for (Fleur f : fleurs) {
+            if (f.getType() == type && f.getPosition().getX() == x && f.getPosition().getY() == y) {
+                return f;
             }
         }
-        joueurs = nouveauxJoueurs;
-
-        pions.clear();
-        for (EtatReseau.PionReseau pion : etat.pions) {
-            Coordonnees pos = pion.x == null ? null : new Coordonnees(pion.x, pion.y);
-            pions.add(new Pion(pion.type, pos));
-        }
-
-        fleurs.clear();
-        for (EtatReseau.FleurReseau fleur : etat.fleursPlateau) {
-            fleurs.add(new Fleur(fleur.type, new Coordonnees(fleur.x, fleur.y)));
-        }
-
-        for (Joueur joueur : joueurs) {
-            joueur.getFleursGagnees().clear();
-        }
-        for (EtatReseau.FleurGagneeReseau fleur : etat.fleursGagnees) {
-            if (fleur.joueurIndex >= 0 && fleur.joueurIndex < joueurs.length) {
-                joueurs[fleur.joueurIndex].ajouterFleur(new Fleur(fleur.type, new Coordonnees(fleur.x, fleur.y)));
-            }
-        }
-
-        currentPlayerIndex = Math.max(0, Math.min(etat.joueurActuel, joueurs.length - 1));
-        avantageInitialApplique = etat.avantageApplique;
-        enPhaseSelectionAvantage = etat.phaseAvantage;
-        partieAbandonnee = etat.partieAbandonnee;
-        gagnantParAbandon = (etat.gagnantAbandonIndex >= 0 && etat.gagnantAbandonIndex < joueurs.length)
-                ? joueurs[etat.gagnantAbandonIndex]
-                : null;
-
-        historique.clear();
-        resetFleursSelectionnee1();
-        resetFleursSelectionnee2();
-        setFeedbackMessage(etat.message == null || etat.message.isEmpty()
-                ? "État reçu depuis le réseau."
-                : etat.message);
+        return null;
     }
 
     // Sauvegarde l'état complet de la partie dans un fichier texte
@@ -924,7 +901,6 @@ public class Jeu implements EtatPlateau {
 
     //Active le mode IA en laissant --- choisir celui qui commence
     public void activerIA(NiveauxIA niveau, String nomHumain, Pion.TypePion joueurQuiCommence) {
-        desactiverModeReseau();
         GestionIA.activerIA(this, niveau, nomHumain, joueurQuiCommence);
     }
 
@@ -985,7 +961,6 @@ public class Jeu implements EtatPlateau {
     //=============================CONFIGURATION POUR TESTER IA VS IA =================//
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
    public void configurerIAContreIA(NiveauxIA niveauOr, NiveauxIA niveauArgent, Pion.TypePion joueurQuiCommence) {
-        desactiverModeReseau();
         GestionIA.configurerIAContreIA(this, niveauOr, niveauArgent, joueurQuiCommence);
     }
 }

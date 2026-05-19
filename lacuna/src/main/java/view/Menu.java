@@ -14,6 +14,7 @@ public class Menu extends JPanel {
     public RoundedButton leaderBoard;
     public RoundedButton regles;
     public RoundedButton tutoriel;
+    public RoundedButton multijoueurReseau;
 
     private Image backgroundImage;
 
@@ -42,13 +43,15 @@ public class Menu extends JPanel {
         leaderBoard = new RoundedButton("LeaderBoard");
         regles = new RoundedButton("Règles du jeu");
         tutoriel = new RoundedButton("Tutoriel");
+        multijoueurReseau = new RoundedButton("Multijoueur Réseau");
 
         RoundedButton[] buttons = {
                 nouvellePartie,
                 chargerPartie,
                 tutoriel,
                 leaderBoard,
-                regles
+                regles,
+                multijoueurReseau
         };
 
         for (RoundedButton b : buttons) {
@@ -77,6 +80,7 @@ public class Menu extends JPanel {
         leaderBoard.setActionCommand("leaderBoard");
         regles.setActionCommand("regles");
         tutoriel.setActionCommand("tutoriel");
+        multijoueurReseau.setActionCommand("multijoueurReseau");
 
         // =========================
         // LAYOUT (IDENTIQUE)
@@ -95,6 +99,8 @@ public class Menu extends JPanel {
         add(leaderBoard);
         add(Box.createRigidArea(new Dimension(0, 1)));
         add(regles);
+        add(Box.createRigidArea(new Dimension(0, 1)));
+        add(multijoueurReseau);
         add(Box.createVerticalGlue());
     }
 

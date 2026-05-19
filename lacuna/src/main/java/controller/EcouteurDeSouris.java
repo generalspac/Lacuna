@@ -27,15 +27,16 @@ public class EcouteurDeSouris extends MouseAdapter {
             return;
         }
 
+        // Bloquer les clics pendant qu'on attend le coup de l'adversaire
+        if (jeuGraphique.isEnAttenteAdversaire()) {
+            return;
+        }
+
         if (game.isIAEnCours()) {
             return;
         }
 
         if (game.estTourIA()) {
-            return;
-        }
-
-        if (game.estTourReseauDistant()) {
             return;
         }
 
@@ -56,7 +57,6 @@ public class EcouteurDeSouris extends MouseAdapter {
 
             if (game.jouerCoupAvecFleursSelectionnees(modelPos)) {
 
-                jeuGraphique.envoyerEtatReseauSiActif();
                 jeuGraphique.refreshScoresEtTourIA();
             } else {
                 jeuGraphique.refreshScores();
@@ -68,14 +68,12 @@ public class EcouteurDeSouris extends MouseAdapter {
 
         if (game.toucherFleur(modelPos)) {
 
-            jeuGraphique.envoyerEtatReseauSiActif();
             jeuGraphique.refreshScores();
             jeuGraphique.repaint();
             return;
         }
 
         if (!game.existeCoupConnecte() && game.placerPionLibreSiAucunCoup(modelPos)) {
-            jeuGraphique.envoyerEtatReseauSiActif();
             jeuGraphique.refreshScoresEtTourIA();
         }
 

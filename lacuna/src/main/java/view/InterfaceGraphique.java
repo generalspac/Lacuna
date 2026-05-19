@@ -14,9 +14,10 @@ import controller.EcouteurDeClavier;
 
 import model.IA.NiveauxIA;
 import model.Fleur;
-import model.reseau.ProtocoleReseau;
-import model.reseau.SessionReseau;
-
+import network.CoupReseau;
+import network.ServeurReseau;
+import network.ClientReseau;
+import java.util.concurrent.CountDownLatch;
 public class InterfaceGraphique implements Runnable {
 
     JFrame frame;
@@ -25,13 +26,18 @@ public class InterfaceGraphique implements Runnable {
     // id de la partie à charger depuis la DB après lancerJeu(), -1 si nouvelle partie
     private int idPartieACharger = -1;
 
+    // Réseau : stockés avant d'appeler lancerJeu() pour le mode réseau
+    private Object gestionnaireReseau = null;      // ServeurReseau ou ClientReseau
+    private Pion.TypePion typeLocalReseau = null;   // type du joueur local
+    private boolean hoteCommencea = false;          // true si OR (hôte) commence
+    private ParametresPartie parametresPresets = null; // bypass du dialogue de config
+    private int graineReseau = 0;                  // graine partagée pour synchroniser les plateaux
+
     private static class ParametresPartie {
         String mode;
         String nomOr;
         String nomArgent;
         String nomHumain;
-        String hoteReseau;
-        int portReseau;
         Pion.TypePion joueurQuiCommence;
     }
 
@@ -68,6 +74,13 @@ public class InterfaceGraphique implements Runnable {
             @Override
             public void actionPerformed(ActionEvent e) {
                 afficherTutoriel();
+            }
+        });
+
+        menu.multijoueurReseau.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                lancerJeuReseau();
             }
         });
 
@@ -156,8 +169,12 @@ public class InterfaceGraphique implements Runnable {
 
     public void lancerJeu() {
         ParametresPartie parametres;
-        if (idPartieACharger >= 0) {
-            // chargement depuis la DB on baypasse la fenetre de configuration de jeu 
+        if (parametresPresets != null) {
+            // mode réseau : paramètres préparés par lancerJeuReseau()
+            parametres = parametresPresets;
+            parametresPresets = null;
+        } else if (idPartieACharger >= 0) {
+            // chargement depuis la DB on baypasse la fenetre de configuration de jeu
             parametres = new ParametresPartie();
             parametres.mode = "Humain vs Humain";
             parametres.joueurQuiCommence = null;
@@ -245,7 +262,8 @@ public class InterfaceGraphique implements Runnable {
         // Utiliser un SwingWorker pour ne pas bloquer l'EDT pendant l'initialisation
         SwingWorker<FlexPanel, Void> worker = new SwingWorker<>() {
             JeuGraphique aire;
-            SessionReseau sessionReseau;
+            JButton undoButton, redoButton, resetButton, sauvegarderButton;
+            JComponent phase2PanelRef;
 
             @Override
             protected FlexPanel doInBackground() throws Exception {
@@ -325,35 +343,6 @@ public class InterfaceGraphique implements Runnable {
                 aire.setBackground(Color.BLACK);
                 aire.setOpaque(true);
 
-                boolean modeHote = "Réseau - Héberger".equals(choix);
-                boolean modeInvite = "Réseau - Rejoindre".equals(choix);
-
-                if (modeHote || modeInvite) {
-                    aire.jeu.configurerHumainVsHumain("Hôte", "Invité", Pion.TypePion.OR);
-                    Pion.TypePion typeLocal = modeHote ? Pion.TypePion.OR : Pion.TypePion.ARGENT;
-
-                    if (modeHote) {
-                        sessionReseau = SessionReseau.attendreJoueur(parametres.portReseau,
-                                etat -> SwingUtilities.invokeLater(() -> aire.appliquerEtatDepuisReseau(etat)),
-                                message -> SwingUtilities.invokeLater(() -> {
-                                    aire.jeu.setFeedbackMessage(message);
-                                    aire.refreshScores();
-                                }));
-                    } else {
-                        sessionReseau = SessionReseau.rejoindre(parametres.hoteReseau, parametres.portReseau,
-                                etat -> SwingUtilities.invokeLater(() -> aire.appliquerEtatDepuisReseau(etat)),
-                                message -> SwingUtilities.invokeLater(() -> {
-                                    aire.jeu.setFeedbackMessage(message);
-                                    aire.refreshScores();
-                                }));
-                    }
-
-                    aire.installerSessionReseau(sessionReseau, typeLocal);
-                    if (modeHote) {
-                        aire.envoyerEtatReseauSiActif();
-                    }
-                }
-
                 // Appliquer les choix de départ faits dans le menu.
                 switch (choix) {
                     case "IA Facile":
@@ -364,9 +353,6 @@ public class InterfaceGraphique implements Runnable {
                         break;
                     case "IA Difficile":
                         aire.jeu.activerIA(NiveauxIA.DIFFICILE, parametres.nomHumain, parametres.joueurQuiCommence);
-                        break;
-                    case "Réseau - Héberger":
-                    case "Réseau - Rejoindre":
                         break;
                     default:
                         aire.jeu.configurerHumainVsHumain(parametres.nomOr, parametres.nomArgent,
@@ -391,13 +377,13 @@ public class InterfaceGraphique implements Runnable {
 
                 installerRaccourcisClavier(root, controleurBoutons);
 
-                JButton undoButton = new JButton("Undo");
+                undoButton = new JButton("Undo");
                 undoButton.addActionListener(e -> controleurBoutons.undo());
 
-                JButton redoButton = new JButton("Redo");
+                redoButton = new JButton("Redo");
                 redoButton.addActionListener(e -> controleurBoutons.redo());
 
-                JButton resetButton = new JButton("Reset");
+                resetButton = new JButton("Reset");
                 resetButton.addActionListener(e -> controleurBoutons.reset());
 
                 JButton abandonButton = new JButton("Abandonner");
@@ -439,7 +425,7 @@ public class InterfaceGraphique implements Runnable {
                 buttonPanel.add(gitButton);
 
                 // Bouton sauvegarder — sauvegarde dans la base SQLite via DatabaseManager
-                JButton sauvegarderButton = new JButton("Save");
+                sauvegarderButton = new JButton("Save");
                 sauvegarderButton.addActionListener(e -> {
                     String nom = JOptionPane.showInputDialog(frame, "Nom de la sauvegarde :", "Sauvegarder", JOptionPane.PLAIN_MESSAGE);
                     if (nom == null) return;
@@ -457,6 +443,7 @@ public class InterfaceGraphique implements Runnable {
 
                 // ================= CONTRÔLES PHASE 2 =================
                 FlexPanel phase2Panel = new FlexPanel();
+                phase2PanelRef = phase2Panel;
                 phase2Panel.setDirection(FlexPanel.Direction.ROW);
                 phase2Panel.setJustify(FlexPanel.Justify.CENTER);
                 phase2Panel.setAlign(FlexPanel.Align.CENTER);
@@ -561,10 +548,32 @@ public class InterfaceGraphique implements Runnable {
                         }
                         idPartieACharger = -1;
                     }
-                    aire.refreshScores();
-                    if (aire.jeu.estTourIA()) {
-                        aire.jeu.jouerAvantageIA();
-                        aire.refreshScoresEtTourIA();
+                    // Phase 2 : cachée en phase 1, affichée quand elle devient disponible
+                    phase2PanelRef.setVisible(false);
+                    aire.setPhase2Panel(phase2PanelRef);
+
+                    // Configuration réseau si une connexion est en attente
+                    if (gestionnaireReseau != null) {
+                        Object gestionnaire = gestionnaireReseau;
+                        Pion.TypePion typeLocal = typeLocalReseau;
+                        gestionnaireReseau = null;
+                        typeLocalReseau = null;
+                        // Cacher les boutons non applicables en mode réseau
+                        undoButton.setVisible(false);
+                        redoButton.setVisible(false);
+                        resetButton.setVisible(false);
+                        sauvegarderButton.setVisible(false);
+                        // Synchroniser le plateau avec la graine partagée pour que les deux
+                        // machines aient exactement les mêmes positions de fleurs
+                        aire.jeu.reinitialiserFleurs(graineReseau);
+                        aire.jeu.currentPlayerIndex = hoteCommencea ? 0 : 1;
+                        aire.installerReseau(gestionnaire, typeLocal);
+                    } else {
+                        aire.refreshScores();
+                        if (aire.jeu.estTourIA()) {
+                            aire.jeu.jouerAvantageIA();
+                            aire.refreshScoresEtTourIA();
+                        }
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -575,20 +584,169 @@ public class InterfaceGraphique implements Runnable {
         worker.execute();
     }
 
+    // Lance la connexion réseau (hôte ou invité) puis démarre le jeu
+    private void lancerJeuReseau() {
+        String[] roles = { "Hôte (attendre un joueur)", "Invité (se connecter)" };
+        int roleChoisi = JOptionPane.showOptionDialog(frame, "Choisissez votre rôle :",
+                "Multijoueur Réseau", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE,
+                null, roles, roles[0]);
+        if (roleChoisi < 0) return;
+
+        boolean estHote = (roleChoisi == 0);
+
+        if (estHote) {
+            // --- Côté hôte ---
+            String portStr = JOptionPane.showInputDialog(frame, "Port d'écoute :", "12345");
+            if (portStr == null) return;
+            int port;
+            try { port = Integer.parseInt(portStr.trim()); } catch (NumberFormatException e) { port = 12345; }
+
+            String[] departs = { "OR (toi)", "ARGENT (l'invité)" };
+            int departChoisi = JOptionPane.showOptionDialog(frame, "Qui commence ?",
+                    "Départ", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE,
+                    null, departs, departs[0]);
+            if (departChoisi < 0) return;
+            final boolean hoteCommence = (departChoisi == 0);
+            final int portFinal = port;
+            final int graineFinal = new java.util.Random().nextInt();
+
+            // Écran d'attente
+            afficherEcranAttente("En attente d'un joueur sur le port " + port + "…");
+
+            ServeurReseau serveur = new ServeurReseau();
+
+            SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>() {
+                @Override
+                protected Void doInBackground() throws Exception {
+                    // Attendre que l'invité envoie PRET avant d'envoyer INIT
+                    CountDownLatch latch = new CountDownLatch(1);
+                    serveur.setEcouteur(coup -> {
+                        if ("PRET".equals(coup.typeMessage)) latch.countDown();
+                    });
+                    serveur.demarrer(portFinal);
+                    latch.await();
+
+                    // Envoyer le message INIT à l'invité (avec la graine partagée)
+                    CoupReseau init = new CoupReseau();
+                    init.typeMessage = "INIT";
+                    init.hoteCommence = hoteCommence;
+                    init.fleur1X = graineFinal;
+                    serveur.envoyerCoup(init);
+                    return null;
+                }
+
+                @Override
+                protected void done() {
+                    try {
+                        get();
+                        // Préparer le lancement du jeu en mode réseau
+                        gestionnaireReseau = serveur;
+                        typeLocalReseau = Pion.TypePion.OR;
+                        hoteCommencea = hoteCommence;
+                        graineReseau = graineFinal;
+                        parametresPresets = new ParametresPartie();
+                        parametresPresets.mode = "Réseau";
+                        parametresPresets.nomOr = "Hôte";
+                        parametresPresets.nomArgent = "Invité";
+                        parametresPresets.nomHumain = "";
+                        parametresPresets.joueurQuiCommence = null;
+                        lancerJeu();
+                    } catch (Exception e) {
+                        JOptionPane.showMessageDialog(frame, "Erreur réseau : " + e.getMessage());
+                        afficherMenu();
+                    }
+                }
+            };
+            worker.execute();
+
+        } else {
+            // --- Côté invité ---
+            String ip = JOptionPane.showInputDialog(frame, "Adresse IP de l'hôte :", "127.0.0.1");
+            if (ip == null) return;
+            String portStr = JOptionPane.showInputDialog(frame, "Port :", "12345");
+            if (portStr == null) return;
+            int port;
+            try { port = Integer.parseInt(portStr.trim()); } catch (NumberFormatException e) { port = 12345; }
+            final String ipFinal = ip.trim().isEmpty() ? "127.0.0.1" : ip.trim();
+            final int portFinal = port;
+
+            afficherEcranAttente("Connexion à " + ipFinal + ":" + portFinal + "…");
+
+            ClientReseau client = new ClientReseau();
+
+            SwingWorker<CoupReseau, Void> worker = new SwingWorker<CoupReseau, Void>() {
+                @Override
+                protected CoupReseau doInBackground() throws Exception {
+                    client.connecter(ipFinal, portFinal);
+
+                    // Configurer l'écouteur avant d'envoyer PRET pour ne pas rater INIT
+                    CountDownLatch latch = new CountDownLatch(1);
+                    CoupReseau[] initHolder = new CoupReseau[1];
+                    client.setEcouteur(coup -> {
+                        if ("INIT".equals(coup.typeMessage)) {
+                            initHolder[0] = coup;
+                            latch.countDown();
+                        }
+                    });
+
+                    // Signaler à l'hôte qu'on est prêt
+                    CoupReseau pret = new CoupReseau();
+                    pret.typeMessage = "PRET";
+                    client.envoyerCoup(pret);
+
+                    latch.await();
+                    return initHolder[0];
+                }
+
+                @Override
+                protected void done() {
+                    try {
+                        CoupReseau init = get();
+                        gestionnaireReseau = client;
+                        typeLocalReseau = Pion.TypePion.ARGENT;
+                        hoteCommencea = init.hoteCommence;
+                        graineReseau = init.fleur1X;
+                        parametresPresets = new ParametresPartie();
+                        parametresPresets.mode = "Réseau";
+                        parametresPresets.nomOr = "Hôte";
+                        parametresPresets.nomArgent = "Invité";
+                        parametresPresets.nomHumain = "";
+                        parametresPresets.joueurQuiCommence = null;
+                        lancerJeu();
+                    } catch (Exception e) {
+                        JOptionPane.showMessageDialog(frame, "Erreur réseau : " + e.getMessage());
+                        afficherMenu();
+                    }
+                }
+            };
+            worker.execute();
+        }
+    }
+
+    // Affiche un écran d'attente simple avec un message
+    private void afficherEcranAttente(String message) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(Color.BLACK);
+        JLabel label = new JLabel(message, SwingConstants.CENTER);
+        label.setForeground(Color.WHITE);
+        label.setFont(new Font("Arial", Font.BOLD, 22));
+        panel.add(label, BorderLayout.CENTER);
+        frame.setContentPane(panel);
+        frame.revalidate();
+        frame.repaint();
+    }
+
     private ParametresPartie demanderParametresPartie() {
         JPanel panel = new JPanel(new GridLayout(0, 2, 12, 12));
         panel.setBackground(Color.BLACK);
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        String[] modes = { "Humain vs Humain", "IA Facile", "IA Moyenne", "IA Difficile",
-                "Réseau - Héberger", "Réseau - Rejoindre" };
+        String[] modes = { "Humain vs Humain", "IA Facile", "IA Moyenne", "IA Difficile" };
         JComboBox<String> modeCombo = new JComboBox<>(modes);
 
         JTextField nomOrField = new JTextField();
         JTextField nomArgentField = new JTextField();
         JTextField nomHumainField = new JTextField();
-        JTextField hoteField = new JTextField("127.0.0.1");
-        JTextField portField = new JTextField(String.valueOf(ProtocoleReseau.PORT_DEFAUT));
 
         JComboBox<String> commenceHumain = new JComboBox<>(new String[] { "Aléatoire", "OR", "ARGENT" });
         JComboBox<String> commenceIA = new JComboBox<>(new String[] { "Aléatoire", "Humain", "IA" });
@@ -601,34 +759,24 @@ public class InterfaceGraphique implements Runnable {
         panel.add(nomArgentField);
         panel.add(labelBlanc("Nom humain vs IA (optionnel)"));
         panel.add(nomHumainField);
-        panel.add(labelBlanc("Adresse hôte réseau"));
-        panel.add(hoteField);
-        panel.add(labelBlanc("Port réseau"));
-        panel.add(portField);
         panel.add(labelBlanc("Qui commence ?"));
         panel.add(commenceHumain);
 
         modeCombo.addActionListener(e -> {
             String mode = (String) modeCombo.getSelectedItem();
             boolean ia = mode != null && mode.startsWith("IA ");
-            boolean reseau = mode != null && mode.startsWith("Réseau");
-            boolean rejoindre = "Réseau - Rejoindre".equals(mode);
             nomOrField.setEnabled(!ia);
             nomArgentField.setEnabled(!ia);
             nomHumainField.setEnabled(ia);
-            hoteField.setEnabled(rejoindre);
-            portField.setEnabled(reseau);
-            commenceHumain.setEnabled(!reseau);
+            commenceHumain.setEnabled(true);
             commenceIA.setEnabled(ia);
-            panel.remove(13);
-            panel.add(ia ? commenceIA : commenceHumain, 13);
+            panel.remove(9);
+            panel.add(ia ? commenceIA : commenceHumain, 9);
             panel.revalidate();
             panel.repaint();
         });
 
         nomHumainField.setEnabled(false);
-        hoteField.setEnabled(false);
-        portField.setEnabled(false);
 
         int result = JOptionPane.showConfirmDialog(frame, panel, "Nouvelle partie", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE);
@@ -641,17 +789,10 @@ public class InterfaceGraphique implements Runnable {
         p.nomOr = nomOrField.getText();
         p.nomArgent = nomArgentField.getText();
         p.nomHumain = nomHumainField.getText();
-        p.hoteReseau = hoteField.getText().trim().isEmpty() ? "127.0.0.1" : hoteField.getText().trim();
-        try {
-            p.portReseau = Integer.parseInt(portField.getText().trim());
-        } catch (NumberFormatException e) {
-            p.portReseau = ProtocoleReseau.PORT_DEFAUT;
-        }
 
         boolean modeIA = p.mode != null && p.mode.startsWith("IA ");
-        boolean modeReseau = p.mode != null && p.mode.startsWith("Réseau");
         String choixDepart = (String) (modeIA ? commenceIA.getSelectedItem() : commenceHumain.getSelectedItem());
-        p.joueurQuiCommence = modeReseau ? Pion.TypePion.OR : convertirChoixDepart(choixDepart, modeIA);
+        p.joueurQuiCommence = convertirChoixDepart(choixDepart, modeIA);
         return p;
     }
 

@@ -13,8 +13,9 @@ import java.util.List;
 
 import global.Configuration;
 import model.*;
-import model.reseau.EtatReseau;
-import model.reseau.SessionReseau;
+import network.CoupReseau;
+import network.ServeurReseau;
+import network.ClientReseau;
 import controller.EcouteurDeSouris;
 import view.animations.Animation;
 import view.animations.AnimationContext;
@@ -52,8 +53,19 @@ public class JeuGraphique extends JComponent {
     private double facteurVitesse = 1.0;
     private boolean afficherCoupsPossibles = false;
     private Fleur.TypeFleur filtreCouleurCoups = null;
-    private SessionReseau sessionReseau;
-    private boolean applicationEtatReseau = false;
+
+    // Mode réseau
+    private Object gestionnaireReseau = null; // ServeurReseau ou ClientReseau
+    private boolean enAttenteAdversaire = false;
+
+    // Panneau phase 2 (slider + skip) — caché en phase 1, affiché quand phase 2 disponible
+    private javax.swing.JComponent phase2Panel = null;
+    private boolean phase2Affichee = false;
+
+    public void setPhase2Panel(javax.swing.JComponent panel) {
+        this.phase2Panel = panel;
+        this.phase2Affichee = false;
+    }
 
     // -------------------------- CONSTRUCTEURS --------------------------------- //
 
@@ -264,6 +276,13 @@ public class JeuGraphique extends JComponent {
         if (pileOr != null)
             pileOr.repaint();
 
+        // Afficher le panneau phase 2 dès qu'elle devient disponible
+        if (phase2Panel != null && !phase2Affichee && jeu.estSecondePhaseDisponible()) {
+            phase2Affichee = true;
+            phase2Panel.setVisible(true);
+            phase2Panel.revalidate();
+        }
+
         updateInstructionText();
         updateStatusMessage();
     }
@@ -282,41 +301,60 @@ public class JeuGraphique extends JComponent {
         });
     }
 
-    public void installerSessionReseau(SessionReseau session, Pion.TypePion typeLocal) {
-        sessionReseau = session;
-        jeu.activerModeReseau(typeLocal);
-        refreshScores();
-        repaint();
+    public boolean isEnAttenteAdversaire() {
+        return enAttenteAdversaire;
     }
 
-    public void appliquerEtatDepuisReseau(EtatReseau etat) {
-        applicationEtatReseau = true;
-        try {
-            jeu.appliquerEtatReseau(etat);
-            annulerAnimationsVisuelles();
-            refreshScores();
+    // Configure le mode réseau : relie le gestionnaire (ServeurReseau ou ClientReseau) au jeu
+    public void installerReseau(Object gestionnaire, Pion.TypePion typeLocal) {
+        this.gestionnaireReseau = gestionnaire;
+        int indexLocal = (typeLocal == Pion.TypePion.OR) ? 0 : 1;
+
+        jeu.setEnModeReseau(true);
+        jeu.setIndexJoueurLocal(indexLocal);
+
+        // Callback d'envoi : appelé par Jeu quand le joueur local joue un coup
+        jeu.setEcouteurCoupEnvoye(coup -> {
+            try {
+                if (gestionnaire instanceof ServeurReseau) {
+                    ((ServeurReseau) gestionnaire).envoyerCoup(coup);
+                } else if (gestionnaire instanceof ClientReseau) {
+                    ((ClientReseau) gestionnaire).envoyerCoup(coup);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            // On attend uniquement après un COUP (l'AVANTAGE ne change pas le tour)
+            enAttenteAdversaire = "COUP".equals(coup.typeMessage);
+            refreshScores(); // met à jour les grilles de fleurs collectées
             repaint();
+        });
+
+        // Callback de réception : appelé quand l'adversaire joue un coup
+        java.util.function.Consumer<CoupReseau> reception = coup -> SwingUtilities.invokeLater(() -> {
+            jeu.appliquerCoupReseau(coup);
+            // Après AVANTAGE, l'adversaire joue encore (son COUP) : on reste en attente
+            if (!"AVANTAGE".equals(coup.typeMessage)) {
+                enAttenteAdversaire = false;
+            }
+            refreshScores();
             if (jeu.isPartieAbandonnee()) {
                 afficherGagnantSansAnimation();
             }
-        } finally {
-            applicationEtatReseau = false;
-        }
-    }
+            repaint();
+        });
 
-    public void envoyerEtatReseauSiActif() {
-        if (applicationEtatReseau || sessionReseau == null || !sessionReseau.estActif()) {
-            return;
+        if (gestionnaire instanceof ServeurReseau) {
+            ((ServeurReseau) gestionnaire).setEcouteur(reception);
+        } else if (gestionnaire instanceof ClientReseau) {
+            ((ClientReseau) gestionnaire).setEcouteur(reception);
         }
-        sessionReseau.envoyerEtat(jeu.exporterEtatReseau());
-    }
 
-    public void fermerSessionReseau() {
-        if (sessionReseau != null) {
-            sessionReseau.close();
-            sessionReseau = null;
-        }
-        jeu.desactiverModeReseau();
+        // Si l'adversaire commence, on attend son coup d'entrée de jeu
+        enAttenteAdversaire = (jeu.currentPlayerIndex != indexLocal);
+
+        refreshScores();
+        repaint();
     }
 
     private void updateInstructionText() {
@@ -339,7 +377,7 @@ public class JeuGraphique extends JComponent {
             return;
         }
 
-        if (jeu.estTourReseauDistant()) {
+        if (jeu.isEnModeReseau() && enAttenteAdversaire) {
             instructionLabel.setText("Tour du joueur distant (" + jeu.getJoueurActuel().getTypePion() + ")…");
             return;
         }
@@ -482,7 +520,7 @@ public class JeuGraphique extends JComponent {
 
                 boolean coupJoue = false;
                 if (!animCtx.isEnCours() && !jeu.isIAEnCours()
-                        && !jeu.estTourIA() && !jeu.estTourReseauDistant()
+                        && !jeu.estTourIA() && !enAttenteAdversaire
                         && !jeu.isPartieTerminee()) {
                     Coordonnees model = screenToModel(e.getX(), e.getY());
                     coupJoue = jeu.placerPionDepuisDrag(model, payload);
@@ -491,7 +529,6 @@ public class JeuGraphique extends JComponent {
                 layer.clear();
 
                 if (coupJoue) {
-                    envoyerEtatReseauSiActif();
                     refreshScoresEtTourIA();
                 } else {
                     refreshScores();
@@ -548,6 +585,7 @@ public class JeuGraphique extends JComponent {
         drawAnimatedCercle(g2, getHighlightedFlower());
         drawPhase2Illustration(g2);
         drawPions(g2, fleurSz);
+        if (enAttenteAdversaire) drawAttenteAdversaireOverlay(g2);
         drawWinnerOverlay(g2);
     }
 
@@ -712,6 +750,24 @@ public class JeuGraphique extends JComponent {
             g2.drawImage(img, pos.getX() - size / 2, pos.getY() - size / 2,
                     size, size, null);
         }
+    }
+
+    // Overlay semi-transparent affiché pendant qu'on attend le coup de l'adversaire
+    private void drawAttenteAdversaireOverlay(Graphics2D g2) {
+        Color oldColor = g2.getColor();
+        Font  oldFont  = g2.getFont();
+
+        g2.setColor(new Color(0, 0, 0, 130));
+        g2.fillRect(0, 0, getWidth(), getHeight());
+
+        String texte = "En attente de l'adversaire…";
+        g2.setFont(oldFont.deriveFont(Font.BOLD, 26f));
+        g2.setColor(Color.WHITE);
+        FontMetrics fm = g2.getFontMetrics();
+        g2.drawString(texte, (getWidth() - fm.stringWidth(texte)) / 2, getHeight() / 2);
+
+        g2.setColor(oldColor);
+        g2.setFont(oldFont);
     }
 
     private void drawWinnerOverlay(Graphics2D g2) {
