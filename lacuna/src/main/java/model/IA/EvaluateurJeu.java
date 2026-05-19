@@ -27,12 +27,56 @@ public class EvaluateurJeu {
         score += (scoreCouleursProchesMajorite(etat, indexIA)
                 - scoreCouleursProchesMajorite(etat, indexJoueur)) * 10;
 
+        score += scoreMenaces(etat, indexIA);
+
       if (utiliserBonus) {
         score += bonus(etat, indexIA) - bonus(etat, indexJoueur);
         score += scorePhase2(etat, indexIA) - scorePhase2(etat, indexJoueur);
-    }
+          score += scoreMobilite(etat, indexIA) - scoreMobilite(etat, indexJoueur);
+      }
 
         return score;
+    }
+
+    // Ajuste le score si l'adversaire est à 1 coup d'une majorité
+    public int scoreMenaces(EtatJeu etat, int indexIA) {
+        int indexJoueur = 1 - indexIA;
+        int score = 0;
+
+        for (Fleur.TypeFleur type : Fleur.TypeFleur.values()) {
+            int nbAdversaire = nombreFleursDeCouleur(etat, indexJoueur, type);
+            int nbIA  = nombreFleursDeCouleur(etat, indexIA,type);
+
+
+            if (nbAdversaire == 3) {
+                score -= 500;
+            }
+
+
+            if (nbIA == 3) {
+                score += 300;
+            }
+        }
+
+        return score;
+    }
+
+    // Compte le nombre de pairs accesibles pour un joueur donné
+    public int scoreMobilite(EtatJeu etat, int indexJoueur) {
+        int nombre = 0;
+        int taille = etat.fleursRestantes.size();
+
+        for (int i = 0; i < taille; i++) {
+            for (int j = i + 1; j < taille; j++) {
+                Fleur f1 = etat.fleursRestantes.get(i);
+                Fleur f2 = etat.fleursRestantes.get(j);
+
+                if (f1.getType() == f2.getType()) {
+                    nombre++;
+                }
+            }
+        }
+        return nombre * 3;
     }
 
     public int compterCouleursMajoritaires(EtatJeu etat, int index){
