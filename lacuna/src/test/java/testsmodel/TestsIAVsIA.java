@@ -2,6 +2,7 @@ package testsmodel;
 
 import java.sql.SQLException;
 
+import global.Configuration;
 import model.Cercle;
 import model.Coordonnees;
 import model.DatabaseManager;
@@ -59,13 +60,13 @@ public class TestsIAVsIA {
         return jeu.getGagnant().getTypePion();
     }
 
-    private void tester(NiveauxIA niveauOr, NiveauxIA niveauArgent) {
+    private void tester(NiveauxIA niveauOr, NiveauxIA niveauArgent, int nbParties) {
         int victoiresOr = 0;
         int victoiresArgent = 0;
         int egalites = 0;
 
         // alternance du joueur qui commence pour etre juste :)
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < nbParties; i++) {
             Pion.TypePion joueurQuiCommence = (i % 2 == 0) ? Pion.TypePion.OR : Pion.TypePion.ARGENT;
             Pion.TypePion gagnant = jouerUnePartie(niveauOr, niveauArgent, joueurQuiCommence);
 
@@ -78,11 +79,11 @@ public class TestsIAVsIA {
             }
         }
 
-        // sauvegarde des résultats en DB
         DatabaseManager db = new DatabaseManager();
         try {
             db.ouvrirConnexion();
-            db.sauvegarderResultatsIA(niveauOr.name(), niveauArgent.name(), victoiresOr, victoiresArgent, egalites);
+            db.sauvegarderResultatsIA(niveauOr.name(), niveauArgent.name(), nbParties,
+                    victoiresOr, victoiresArgent, egalites);
         } catch (SQLException e) {
             System.out.println("Erreur lors de la sauvegarde des résultats : " + e.getMessage());
         } finally {
@@ -95,15 +96,27 @@ public class TestsIAVsIA {
 
         // afficher un résumé
         System.out.println("=== Résultats " + niveauOr.name() + " (OR) vs " + niveauArgent.name() + " (ARGENT) ===");
+        System.out.println("Parties          : " + nbParties);
         System.out.println("Victoires OR     : " + victoiresOr);
         System.out.println("Victoires ARGENT : " + victoiresArgent);
         System.out.println("Égalités         : " + egalites);
     }
 
     public static void main(String[] args) {
+        Configuration.setModeAffichage(0);
+
+        int nbParties = 100;
+        if (args.length > 0) {
+            nbParties = Integer.parseInt(args[0]);
+        }
+
         TestsIAVsIA tests = new TestsIAVsIA();
-        tests.tester(NiveauxIA.FACILE, NiveauxIA.MOYEN);
-        //tests.tester(NiveauxIA.MOYEN, NiveauxIA.DIFFICILE);
-        //tests.tester(NiveauxIA.FACILE, NiveauxIA.DIFFICILE);
+        for(int i=0; i<5; i++){
+            //on fait ces tests 5fois de suite
+            tests.tester(NiveauxIA.FACILE, NiveauxIA.MOYEN, nbParties);
+            tests.tester(NiveauxIA.MOYEN, NiveauxIA.DIFFICILE, nbParties);
+            tests.tester(NiveauxIA.FACILE, NiveauxIA.DIFFICILE, nbParties);
+        }
+       
     }
 }

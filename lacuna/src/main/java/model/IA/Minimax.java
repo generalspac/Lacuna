@@ -5,6 +5,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
+import model.ConstantesJeu;
+
 // Algo Minimax
 public class Minimax {
 
@@ -28,7 +30,7 @@ public class Minimax {
         }
 
         // Trions pour maximiser l'elagage alpha____beta
-        trierCoups(etat, coups);
+        trierCoups(etat, coups, true);
 
         List<CoupIA> meilleursCoups = new ArrayList<>();
         int meilleurScore = Integer.MIN_VALUE;
@@ -66,8 +68,9 @@ public class Minimax {
         }
 
         if (profondeur > 2) {
-            trierCoups(etat, coups);
+            trierCoups(etat, coups, etat.joueurCourant == indexIA);
         }
+        limiterCoups(coups, profondeur);
 
         if (etat.joueurCourant == indexIA) {
             int meilleurScore = Integer.MIN_VALUE;
@@ -106,7 +109,7 @@ public class Minimax {
     }
 
     // Trier les coups
-    private void trierCoups(EtatJeu etat, List<CoupIA> coups) {
+    private void trierCoups(EtatJeu etat, List<CoupIA> coups, boolean maximiser) {
         List<CoupNote> coupsNotes = new ArrayList<>(coups.size());
 
         for (CoupIA coup : coups) {
@@ -115,11 +118,22 @@ public class Minimax {
             coupsNotes.add(new CoupNote(coup, score));
         }
 
-        coupsNotes.sort(Comparator.comparingInt((CoupNote coupNote) -> coupNote.score).reversed());
+        Comparator<CoupNote> comparateur = Comparator.comparingInt(coupNote -> coupNote.score);
+        coupsNotes.sort(maximiser ? comparateur.reversed() : comparateur);
 
         coups.clear();
         for (CoupNote coupNote : coupsNotes) {
             coups.add(coupNote.coup);
+        }
+    }
+
+    private void limiterCoups(List<CoupIA> coups, int profondeur) {
+        int limite = profondeur > 2
+                ? ConstantesJeu.MAX_COUPS_MINIMAX_PROFONDEUR_HAUTE
+                : ConstantesJeu.MAX_COUPS_MINIMAX_PROFONDEUR_BASSE;
+
+        if (coups.size() > limite) {
+            coups.subList(limite, coups.size()).clear();
         }
     }
 

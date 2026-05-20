@@ -85,12 +85,16 @@ public class DatabaseManager {
         stmt.execute(
             "CREATE TABLE IF NOT EXISTS resultats_ia (" +
             "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+            "date TEXT," +
             "niveauOr TEXT," +
             "niveauArgent TEXT," +
+            "nbParties INTEGER," +
             "victoiresOr INTEGER," +
             "victoiresArgent INTEGER," +
             "egalites INTEGER)"
         );
+        try { stmt.execute("ALTER TABLE resultats_ia ADD COLUMN date TEXT"); } catch (SQLException ignored) {}
+        try { stmt.execute("ALTER TABLE resultats_ia ADD COLUMN nbParties INTEGER"); } catch (SQLException ignored) {}
 
         stmt.close();
     }
@@ -290,21 +294,27 @@ public class DatabaseManager {
     }
 
     // sauvegarde les résultat d'un duel ai vs ai dans la table resultats_ia de la DB 
-    public void sauvegarderResultatsIA(String niveauOr, String niveauArgent, int victoiresOr, int victoiresArgent, int egalites) throws SQLException {
-        
+    public void sauvegarderResultatsIA(String niveauOr, String niveauArgent, int victoiresOr,
+            int victoiresArgent, int egalites) throws SQLException {
+        sauvegarderResultatsIA(niveauOr, niveauArgent, victoiresOr + victoiresArgent + egalites,
+                victoiresOr, victoiresArgent, egalites);
+    }
+
+    public void sauvegarderResultatsIA(String niveauOr, String niveauArgent, int nbParties,
+            int victoiresOr, int victoiresArgent, int egalites) throws SQLException {
+
         PreparedStatement stmt = connexion.prepareStatement(
-            "INSERT INTO resultats_ia (niveauOr, niveauArgent, victoiresOr, victoiresArgent, egalites)" +
-            " VALUES (?, ?, ?, ?, ?)"
+            "INSERT INTO resultats_ia (date, niveauOr, niveauArgent, nbParties, victoiresOr, victoiresArgent, egalites)" +
+            " VALUES (?, ?, ?, ?, ?, ?, ?)"
         );
 
-        stmt.setString(1, niveauOr);
-
-        stmt.setString(2, niveauArgent);
-
-        stmt.setInt(3, victoiresOr);
-        stmt.setInt(4, victoiresArgent);
-
-        stmt.setInt(5, egalites);
+        stmt.setString(1, new java.util.Date().toString());
+        stmt.setString(2, niveauOr);
+        stmt.setString(3, niveauArgent);
+        stmt.setInt(4, nbParties);
+        stmt.setInt(5, victoiresOr);
+        stmt.setInt(6, victoiresArgent);
+        stmt.setInt(7, egalites);
 
         stmt.executeUpdate();
         stmt.close();

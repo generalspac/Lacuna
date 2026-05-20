@@ -23,5 +23,12 @@ public final class ConstantesJeu {
     public static final double DIST_MIN_PION_IA = 24;
     public static final double MARGE_EXTREMITES_SEGMENT_IA = 26;//marge pour eviter de placer
                                                                 //un pion trop proche des fleurs choisies
-    public static final int MAX_COUPS_GENERES_IA = 150;
+    public static final int MIN_POINTS_SEGMENT_IA = 6;
+    public static final int MAX_POINTS_SEGMENT_IA = 24;
+    public static final double ESPACEMENT_POINTS_SEGMENT_IA = 18;
+    public static final int MAX_PAIRES_CANDIDATES_IA = 14;
+    public static final int MAX_POINTS_PAR_PAIRE_IA = 3;
+    public static final int MAX_COUPS_GENERES_IA = 42;
+    public static final int MAX_COUPS_MINIMAX_PROFONDEUR_HAUTE = 14;
+    public static final int MAX_COUPS_MINIMAX_PROFONDEUR_BASSE = 8;
 }
