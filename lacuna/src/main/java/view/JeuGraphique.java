@@ -397,9 +397,9 @@ public class JeuGraphique extends JComponent {
             instructionLabel
                     .setText(jeu.nomJoueurActuelPourAffichage() + " : sélectionnez une seconde fleur du même type.");
         } else if (jeu.fleursConnectees(f1, f2)) {
-            instructionLabel.setText("Fleurs connectées : un pion sera placé en cliquant.");
+            instructionLabel.setText("Fleurs connectees : un pion sera place en cliquant.");
         } else {
-            instructionLabel.setText("Fleurs non connectées : choisissez une autre seconde fleur.");
+            instructionLabel.setText("Fleurs non Connectee : choisissez une autre seconde fleur.");
         }
     }
 
