@@ -404,7 +404,7 @@ public class JeuTutoriel extends JeuGraphique {
                     }
 
                     // Ligne bloquée
-                    if (!jeu.fleursConnectées(f1, f2)) {
+                    if (!jeu.fleursConnectees(f1, f2)) {
 
                         etape = ETAPE_ERREUR_BLOQUE;
 

@@ -53,23 +53,20 @@ public class EcouteurDeSouris extends MouseAdapter {
             return;
         }
 
-        if (game.fleursConnectées(game.getFleurSelectionnee1(), game.getFleurSelectionnee2())) {
+        // First, allow clicks on flowers to select/deselect even when a pair is already selected.
+        if (game.toucherFleur(modelPos)) {
+            jeuGraphique.refreshScores();
+            jeuGraphique.repaint();
+            return;
+        }
 
+        if (game.fleursConnectees(game.getFleurSelectionnee1(), game.getFleurSelectionnee2())) {
             if (game.jouerCoupAvecFleursSelectionnees(modelPos)) {
-
                 jeuGraphique.refreshScoresEtTourIA();
             } else {
                 jeuGraphique.refreshScores();
                 jeuGraphique.repaint();
             }
-
-            return;
-        }
-
-        if (game.toucherFleur(modelPos)) {
-
-            jeuGraphique.refreshScores();
-            jeuGraphique.repaint();
             return;
         }
 

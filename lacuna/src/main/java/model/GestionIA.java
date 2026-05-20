@@ -81,7 +81,7 @@ public final class GestionIA {
         Fleur f1 = retrouverFleurDuPlateau(jeu, coup.fleur1);
         Fleur f2 = retrouverFleurDuPlateau(jeu, coup.fleur2);
 
-        if (f1 == null || f2 == null || !jeu.fleursConnectées(f1, f2)) {
+        if (f1 == null || f2 == null || !jeu.fleursConnectees(f1, f2)) {
             jeu.setFeedbackMessage("Le coup IA n'est plus valide : il a été ignoré.");
             return false;
         }

@@ -396,7 +396,7 @@ public class JeuGraphique extends JComponent {
         } else if (f2 == null) {
             instructionLabel
                     .setText(jeu.nomJoueurActuelPourAffichage() + " : sélectionnez une seconde fleur du même type.");
-        } else if (jeu.fleursConnectées(f1, f2)) {
+        } else if (jeu.fleursConnectees(f1, f2)) {
             instructionLabel.setText("Fleurs connectées : un pion sera placé en cliquant.");
         } else {
             instructionLabel.setText("Fleurs non connectées : choisissez une autre seconde fleur.");
@@ -595,7 +595,7 @@ public class JeuGraphique extends JComponent {
         Fleur f1 = jeu.getFleurSelectionnee1();
         Fleur f2 = jeu.getFleurSelectionnee2();
         boolean deuxFleurs = f1 != null && f2 != null;
-        boolean connectees = deuxFleurs && jeu.fleursConnectées(f1, f2);
+        boolean connectees = deuxFleurs && jeu.fleursConnectees(f1, f2);
 
         g2.setColor(connectees || !deuxFleurs || animCtx.isSelectionIAVisuelle()
                 ? Color.YELLOW
@@ -728,7 +728,7 @@ public class JeuGraphique extends JComponent {
             g2.drawLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
         }
 
-        if (f1 != null && f2 != null && jeu.fleursConnectées(f1, f2)) {
+        if (f1 != null && f2 != null && jeu.fleursConnectees(f1, f2)) {
             Coordonnees p1 = modelToScreen(f1.getPosition().x, f1.getPosition().y);
             Coordonnees p2 = modelToScreen(f2.getPosition().x, f2.getPosition().y);
             Stroke old = g2.getStroke();

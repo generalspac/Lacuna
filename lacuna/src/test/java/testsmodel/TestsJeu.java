@@ -323,7 +323,7 @@ public class TestsJeu {
             jeu.getFleurs().add(f1);
             jeu.getFleurs().add(f2);
 
-            assertTrue(jeu.fleursConnectées(f1, f2));
+            assertTrue(jeu.fleursConnectees(f1, f2));
         });
     }
 
@@ -339,7 +339,7 @@ public class TestsJeu {
             jeu.getFleurs().add(f1);
             jeu.getFleurs().add(f2);
 
-            assertFalse(jeu.fleursConnectées(f1, f2));
+            assertFalse(jeu.fleursConnectees(f1, f2));
         });
     }
 
@@ -347,8 +347,8 @@ public class TestsJeu {
     void fleursConnecteesNullRetourneFaux() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
             Jeu jeu = jeuStandard();
-            assertFalse(jeu.fleursConnectées(null, null));
-            assertFalse(jeu.fleursConnectées(new Fleur(Fleur.TypeFleur.ROUGE, new Coordonnees(100, 100)), null));
+            assertFalse(jeu.fleursConnectees(null, null));
+            assertFalse(jeu.fleursConnectees(new Fleur(Fleur.TypeFleur.ROUGE, new Coordonnees(100, 100)), null));
         });
     }
 

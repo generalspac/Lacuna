@@ -667,7 +667,7 @@ public class Jeu implements EtatPlateau {
         return ActionsJeu.segmentLibre(this, A, B);
     }
 
-    public boolean fleursConnectées(Fleur f1, Fleur f2) {
+    public boolean fleursConnectees(Fleur f1, Fleur f2) {
         return ActionsJeu.fleursConnectees(this, f1, f2);
     }
 
