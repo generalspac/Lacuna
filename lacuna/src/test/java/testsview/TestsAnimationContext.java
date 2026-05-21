@@ -15,10 +15,8 @@ import view.animations.AnimationContext;
 import view.animations.AnimationState;
 
 /**
- * Tests unitaires pour AnimationContext.
  *
- * AnimationContext est un POJO pur (zéro Swing, zéro modèle de jeu complet) :
- * tous les tests sont synchrones, déterministes et s'exécutent en < 50 ms.
+ * @author thsba
  */
 public class TestsAnimationContext {
 

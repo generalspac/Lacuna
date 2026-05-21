@@ -30,7 +30,7 @@ public class Jeu implements EtatPlateau {
     Fleur fleurSelectionnee2; // la fleur que le joueur a touché ( pour le moment on suppose que c'est la
                                       // fleur la plus proche du point de clic )
     int nbPions = 12; // nombre de pions
-    int nbFleurs = 49; // nombre de fleurs
+    int nbFleurs = ConstantesJeu.NB_FLEURS; // nombre de fleurs
 
     private static final double DIST_MIN_FLEURS = ConstantesJeu.DIST_MIN_FLEURS; // distance min entre les fleurs
     private static final double DIAMETRE_FLEUR_MODELE = ConstantesJeu.DIAMETRE_FLEUR_MODELE;
@@ -39,6 +39,7 @@ public class Jeu implements EtatPlateau {
     private static final int NB_JOUEURS = ConstantesJeu.NB_JOUEURS;
     private static final int MAX_PIONS_PAR_JOUEUR = ConstantesJeu.MAX_PIONS_PAR_JOUEUR;
     private static final int NB_COULEURS = ConstantesJeu.NB_COULEURS;
+    private static final int NB_FLEURS_PAR_COULEUR = ConstantesJeu.NB_FLEURS_PAR_COULEUR;
 
 
     private static final int NB_POINTS_SEGMENT = ConstantesJeu.NB_POINTS_SEGMENT; // le nombre de points
@@ -400,7 +401,7 @@ public class Jeu implements EtatPlateau {
         fleurs.clear();
 
         for (Fleur.TypeFleur type : Fleur.TypeFleur.values()) {
-            for (int i = 0; i < 7; i++) { //CHAQUE COULEUR À 6 PIONS    
+            for (int i = 0; i < NB_FLEURS_PAR_COULEUR; i++) {
                 Coordonnees pos = genererPositionAleatoire(fleurs);
                 fleurs.add(new Fleur(type, pos));
             }
@@ -812,6 +813,151 @@ public class Jeu implements EtatPlateau {
      */
     public List<Coordonnees> coupsPossibles(Fleur.TypeFleur type) {
         return ActionsJeu.coupsPossibles(this, type);
+    }
+
+    // fonction pour recuperer une fleur en donnant juste ses coordonnees
+    private Fleur recupererFleur(Coordonnees position){
+        if (position == null) {
+            return null;
+        }
+
+        for (Fleur fleur : fleurs) {
+            Coordonnees positionFleur = fleur.getPosition();
+            if (positionFleur != null && positionFleur.equals(position)) {
+                return fleur;
+            }
+        }
+
+        return null;
+    }
+
+
+    // Permet de choisir la 2nd meilleure fleur, pour mieux avantager
+    // le joueur
+    public Fleur choisirDeuxiemeMeilleurFleur(Fleur fleurSelectionnee1){
+        if (fleurSelectionnee1 == null || fleurSelectionnee1.getPosition() == null) {
+            return null;
+        }
+
+        Fleur premiereFleur = recupererFleur(fleurSelectionnee1.getPosition());
+        if (premiereFleur == null) {
+            return null;
+        }
+
+        Fleur meilleureFleur = null;
+        int meilleurScore = Integer.MIN_VALUE;
+
+        for (Fleur[] paire : pairesConnectees(premiereFleur.getType())) {
+            Fleur candidate = autreFleurDeLaPaire(paire, premiereFleur);
+            if (candidate == null) {
+                continue;
+            }
+
+            int score = scoreDeuxiemeFleur(premiereFleur, candidate);
+            if (score > meilleurScore) {
+                meilleurScore = score;
+                meilleureFleur = candidate;
+            }
+        }
+
+        return meilleureFleur;
+    }
+
+    private Fleur autreFleurDeLaPaire(Fleur[] paire, Fleur fleur) {
+        if (paire == null || paire.length < 2) {
+            return null;
+        }
+        if (memeFleur(paire[0], fleur)) {
+            return paire[1];
+        }
+        if (memeFleur(paire[1], fleur)) {
+            return paire[0];
+        }
+        return null;
+    }
+
+    private int scoreDeuxiemeFleur(Fleur premiereFleur, Fleur deuxiemeFleur) {
+        int joueur = currentPlayerIndex;
+        int adversaire = (currentPlayerIndex + 1) % NB_JOUEURS;
+        Fleur.TypeFleur type = premiereFleur.getType();
+
+        int score = 0;
+        score += progressionMajorite(joueurs[joueur].nbFleursDeCouleur(type)) * 90;
+        score += progressionMajorite(joueurs[adversaire].nbFleursDeCouleur(type)) * 70;
+        score += (int) Math.max(0, 180 - Coordonnees.distance(premiereFleur.getPosition(), deuxiemeFleur.getPosition()));
+        score += scorePhase2Fleur(joueur, premiereFleur);
+        score += scorePhase2Fleur(joueur, deuxiemeFleur);
+        score += meilleurePositionSurPaire(premiereFleur, deuxiemeFleur);
+
+        return score;
+    }
+
+    private int progressionMajorite(int fleursDejaGagnees) {
+        int apresCoup = fleursDejaGagnees + 2;
+        if (apresCoup >= 4) {
+            return 8;
+        }
+        if (apresCoup == 3) {
+            return 4;
+        }
+        if (apresCoup == 2) {
+            return 1;
+        }
+        return 0;
+    }
+
+    private int scorePhase2Fleur(int indexJoueur, Fleur fleur) {
+        Pion pionProche = ReglesPlateau.pionLePlusProche(this, fleur);
+        if (pionProche == null) {
+            return 0;
+        }
+        if (pionProche.getType() == joueurs[indexJoueur].getTypePion()) {
+            return -25;
+        }
+        return 35;
+    }
+
+    private int meilleurePositionSurPaire(Fleur premiereFleur, Fleur deuxiemeFleur) {
+        List<Coordonnees> positions = pointsDuSegment(premiereFleur.getPosition(), deuxiemeFleur.getPosition());
+        if (positions.isEmpty()) {
+            return 0;
+        }
+
+        int meilleurScore = Integer.MIN_VALUE;
+        for (Coordonnees position : positions) {
+            meilleurScore = Math.max(meilleurScore, scorePositionPion(position, premiereFleur, deuxiemeFleur));
+        }
+        return meilleurScore;
+    }
+
+    private int scorePositionPion(Coordonnees position, Fleur premiereFleur, Fleur deuxiemeFleur) {
+        int score = 0;
+        Coordonnees milieu = Coordonnees.milieu(premiereFleur.getPosition(), deuxiemeFleur.getPosition());
+        score -= (int) Coordonnees.distance(position, milieu);
+
+        Pion.TypePion typeJoueur = getJoueurActuel().getTypePion();
+        for (Fleur fleur : fleurs) {
+            if (memeFleur(fleur, premiereFleur) || memeFleur(fleur, deuxiemeFleur)) {
+                continue;
+            }
+
+            double distanceNouveauPion = Coordonnees.distance(position, fleur.getPosition());
+            Pion pionProche = ReglesPlateau.pionLePlusProche(this, fleur);
+            if (pionProche == null || distanceNouveauPion < Coordonnees.distance(pionProche.getPosition(), fleur.getPosition())) {
+                score += 12;
+            } else if (pionProche.getType() == typeJoueur) {
+                score += 3;
+            }
+        }
+
+        return score;
+    }
+
+    private boolean memeFleur(Fleur a, Fleur b) {
+        return a != null && b != null
+                && a.getType() == b.getType()
+                && a.getPosition() != null
+                && a.getPosition().equals(b.getPosition());
     }
 
     /**
