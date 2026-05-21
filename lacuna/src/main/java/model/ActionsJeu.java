@@ -8,8 +8,7 @@ import java.util.List;
  *
  * Cette classe contient surtout le parcours d'un tour humain : sélectionner les
  * fleurs, vérifier la ligne jouable, placer le pion et donner les fleurs au
- * joueur. Elle reste statique pour ne pas dupliquer l'état déjà porté par
- * {@link Jeu}.
+ * joueur.
  */
 public final class ActionsJeu {
 
@@ -82,7 +81,7 @@ public final class ActionsJeu {
     }
 
     /**
-     * Trouve la meilleure position libre sur le segment pour un dépôt humain.
+     * Trouve la meilleure position libre sur le segment.
      *
      * @param jeu partie courante.
      * @param A première extrémité du segment.
@@ -335,7 +334,8 @@ public final class ActionsJeu {
     }
 
     /**
-     * Autorise un placement libre quand aucune paire de fleurs n'est jouable.
+     * Autorise un placement libre quand aucune paire de fleurs n'est jouable
+     *  dans la phase1.
      *
      * @param jeu partie courante.
      * @param pos position visée par le joueur.

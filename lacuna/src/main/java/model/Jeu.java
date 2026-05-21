@@ -504,9 +504,6 @@ public class Jeu implements EtatPlateau {
 
     /**
      * Donne une fleur aléatoire au joueur qui commence.
-     *
-     * Cette méthode sert surtout aux anciens scénarios sans sélection graphique
-     * d'avantage initial.
      */
     public void avantagePremierJoueur() {
         Joueur joueur = getJoueurActuel();
@@ -776,7 +773,7 @@ public class Jeu implements EtatPlateau {
     }
 
     /**
-     * Force la sélection visuelle de deux fleurs pour une animation.
+     * Sélection visuelle de deux fleurs pour une animation.
      *
      * @param f1 première fleur à afficher comme sélectionnée.
      * @param f2 seconde fleur à afficher comme sélectionnée.
@@ -1106,7 +1103,7 @@ public class Jeu implements EtatPlateau {
     }
 
     /**
-     * Produit un libellé court et clair pour un joueur.
+     * Produit un libellé  pour un joueur.
      *
      * @param joueur joueur à afficher.
      * @return nom lisible dans l'interface.

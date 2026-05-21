@@ -9,14 +9,14 @@ public class IAMoyen implements IA {
     /**
      * Prépare une IA moyenne pour un joueur donné.
      *
-     * @param indexIA index du joueur contrôlé par cette IA.
+     * @param indexIA index du joueur  IA.
      */
     public IAMoyen(int indexIA) {
         minimax = new Minimax(new EvaluateurJeu(true), 4, indexIA);
     }
 
     /**
-     * Choisit un coup avec une recherche de profondeur moyenne.
+     * Choisit un coup.
      *
      * @param etat état courant copié pour l'IA.
      * @return meilleur coup trouvé, ou {@code null} si aucun coup n'est possible.

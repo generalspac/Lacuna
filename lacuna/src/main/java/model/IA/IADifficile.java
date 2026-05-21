@@ -1,7 +1,7 @@
 package model.IA;
 
 /**
- * IA la plus exigeante : profondeur élevée et heuristiques complètes.
+ * IA la plus exigeante (IA DIFFICILE) : profondeur élevée et heuristiques complètes.
  */
 public class IADifficile implements IA {
     private final Minimax minimax;

@@ -32,8 +32,8 @@ public class GenerateurCoup {
     /**
      * Construit une liste de coups candidats pour le joueur courant de l'état.
      *
-     * @param etat copie légère du jeu utilisée par l'IA.
-     * @return coups jouables, triés implicitement par intérêt décroissant.
+     * @param etat copie du jeu utilisée par l'IA.
+     * @return coups jouables, triés implicitement de manière  décroissante.
      */
     public static List<CoupIA> genererCoups(EtatJeu etat) {
 
@@ -201,7 +201,10 @@ public class GenerateurCoup {
         if (pionProche == null) {
             return 0;
         }
-        return pionProche.getType() == etat.typePionDuJoueur(indexJoueur) ? -25 : 35;
+        if(pionProche.getType() == etat.typePionDuJoueur(indexJoueur))
+            return -25
+        return 35
+       
     }
 
     /**
@@ -223,7 +226,7 @@ public class GenerateurCoup {
     }
 
     /**
-     * Compare deux fleurs sans dépendre de leur identité objet.
+     * Compare deux fleurs.
      *
      * @param a première fleur.
      * @param b seconde fleur.

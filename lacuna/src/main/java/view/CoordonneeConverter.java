@@ -6,13 +6,6 @@ import model.Coordonnees;
 /**
  * Convertit des coordonnées entre l'espace modèle et l'espace écran.
  *
- * La logique est entièrement mathématique, sans aucune dépendance Swing,
- * ce qui la rend testable unitairement de façon déterministe.
- *
- * Projection utilisée :
- *  - Le cercle du modèle est inscrit dans le composant carré (côté = min(width, height))
- *    centré dans la zone d'affichage.
- *  - Le rayon du modèle occupe 40 % du côté du composant (rayonScreen = size * 0.4).
  */
 public class CoordonneeConverter {
 

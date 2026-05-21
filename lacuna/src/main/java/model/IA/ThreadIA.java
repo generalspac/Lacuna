@@ -12,7 +12,7 @@ public class ThreadIA extends Thread {
     private final Consumer<CoupIA> actionQuandCoupTrouve;
 
     /**
-     * Prépare le calcul asynchrone d'un coup.
+     * Prépare le calcul d'un coup.
      *
      * @param ia IA qui choisira le coup.
      * @param etat copie de l'état du jeu.

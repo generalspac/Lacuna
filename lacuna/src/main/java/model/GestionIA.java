@@ -180,7 +180,7 @@ public final class GestionIA {
     }
 
     /**
-     * Joue un coup IA complet sans animation.
+     * Joue un coup IA  sans animation.
      *
      * @param jeu partie courante.
      * @param coup coup choisi par l'IA, ou {@code null} pour utiliser le secours.
@@ -192,7 +192,7 @@ public final class GestionIA {
     }
 
     /**
-     * Lance un tour IA avec l'application standard du coup.
+     * Lance un tour IA après le coup du joueur adverse.
      *
      * @param jeu partie courante.
      * @param callbackFin action appelée après le calcul.

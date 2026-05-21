@@ -15,14 +15,6 @@ import view.JeuGraphique;
 
 /**
  * Orchestre toutes les animations visuelles du jeu.
- *
- * Cette classe ne stocke plus aucun état mutable d'animation : tout est
- * délégué à {@link AnimationContext}. Elle ne fait que lire/écrire ce contexte
- * et programmer des Timers Swing.
- *
- * Le mécanisme d'annulation repose sur la « génération » :
- * chaque nouveau Timer capture la génération courante au démarrage et
- * s'arrête immédiatement si la génération a changé (annulation ou reset).
  */
 public class Animation {
 
@@ -37,7 +29,7 @@ public class Animation {
     // -------------------------- ACCESSEURS ----------------------------------- //
 
     public AnimationState getState()                  { return ctx.getState(); }
-    public void           setState(AnimationState s)  { ctx.setState(s); }
+    public void  setState(AnimationState s)  { ctx.setState(s); }
 
     // -------------------------- PHASE 2 : ATTRIBUTION ------------------------ //
 

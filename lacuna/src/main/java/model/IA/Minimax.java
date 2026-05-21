@@ -18,7 +18,7 @@ public class Minimax {
     private final Random random = new Random();
 
     /**
-     * Crée un moteur minimax pour un niveau d'IA.
+     * Constructeur minimax pour un niveau IA.
      *
      * @param eval évaluateur qui note les états.
      * @param profondeur profondeur maximale de recherche.
@@ -69,7 +69,8 @@ public class Minimax {
     }
 
     /**
-     * Évalue récursivement les états suivants.
+     * Algorithme Minimax qui permet d'evaluer les etats 
+     * jusqu'à une certaine profondeur.
      *
      * @param etat état à évaluer.
      * @param profondeur profondeur restante.
@@ -161,10 +162,14 @@ public class Minimax {
      * @param profondeur profondeur restante.
      */
     private void limiterCoups(List<CoupIA> coups, int profondeur) {
-        int limite = profondeur > 2
-                ? ConstantesJeu.MAX_COUPS_MINIMAX_PROFONDEUR_HAUTE
-                : ConstantesJeu.MAX_COUPS_MINIMAX_PROFONDEUR_BASSE;
-
+        int limite;
+        if(profondeur > 2){
+            limite = ConstantesJeu.MAX_COUPS_MINIMAX_PROFONDEUR_HAUTE;
+        }
+        else{
+            limite = ConstantesJeu.MAX_COUPS_MINIMAX_PROFONDEUR_BASSE;
+        }
+        
         if (coups.size() > limite) {
             coups.subList(limite, coups.size()).clear();
         }

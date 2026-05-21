@@ -1,7 +1,7 @@
 package model.IA;
 
 /**
- * IA légère : profondeur faible, utile pour une partie rapide ou pédagogique.
+ * IA légère : profondeur faible.
  */
 public class IAFacile implements IA {
 
@@ -10,7 +10,7 @@ public class IAFacile implements IA {
     /**
      * Prépare une IA facile pour un joueur donné.
      *
-     * @param indexIA index du joueur contrôlé par cette IA.
+     * @param indexIA index du joueur qui correspond à L'IA.
      */
     public IAFacile(int indexIA) {
         minimax = new Minimax(new EvaluateurJeu(false), 1, indexIA);
@@ -18,7 +18,7 @@ public class IAFacile implements IA {
     }
 
     /**
-     * Choisit un coup avec une recherche courte.
+     * Choisit un coup .
      *
      * @param etat état courant copié pour l'IA.
      * @return meilleur coup trouvé, ou {@code null} si aucun coup n'est possible.

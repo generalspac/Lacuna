@@ -180,9 +180,7 @@ public class PionGraphique extends JComponent {
                 (height - totalHeight) / 2;
 
         // OR à gauche / ARGENT à droite 
-        int startX = (typePion == Pion.TypePion.OR)
-                ? 10
-                : width - size - 10; // pourrait être optimisé en les rendant moins rigides et plus flexible.
+        int startX = (typePion == Pion.TypePion.OR) ? 10: width - size - 10; // pourrait être optimisé en les rendant moins rigides et plus flexible.
 
         zonesPions.clear();
 

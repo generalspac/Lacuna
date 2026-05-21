@@ -11,7 +11,7 @@ public enum NiveauxIA {
     /**
      * Crée l'implémentation d'IA associée au niveau.
      *
-     * @param indexIA index du joueur que l'IA défend dans l'état de jeu.
+     * @param indexIA index du joueur IA.
      * @return instance d'IA prête à choisir des coups.
      */
     public IA creerIA(int indexIA) {

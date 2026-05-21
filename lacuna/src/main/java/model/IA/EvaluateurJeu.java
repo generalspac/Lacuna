@@ -12,9 +12,9 @@ public class EvaluateurJeu {
     private final boolean utiliserBonus;
 
     /**
-     * Crée un évaluateur plus ou moins complet selon le niveau d'IA.
+     * Crée un évaluateur selon le niveau d'IA.
      *
-     * @param utiliserBonus active les bonus d'anticipation et de mobilité.
+     * @param utiliserBonus active les bonus d'anticipation et de mobilité. 
      */
     public EvaluateurJeu(boolean utiliserBonus) {
         this.utiliserBonus = utiliserBonus;
@@ -63,7 +63,7 @@ public class EvaluateurJeu {
      *
      * @param etat état analysé.
      * @param indexIA index du joueur IA.
-     * @return bonus ou malus de menace.
+     * @return un entier score qui est bonus ou malus de menace.
      */
     public int scoreMenaces(EtatJeu etat, int indexIA) {
         int indexJoueur = 1 - indexIA;
@@ -172,7 +172,7 @@ public class EvaluateurJeu {
      * Augmente le poids de la phase 2 quand la fin de partie approche.
      *
      * @param etat état analysé.
-     * @return multiplicateur appliqué à l'anticipation de phase 2.
+     * @return multiplicateur (poids) appliqué à l'anticipation de phase 2.
      */
     private int poidsPhase2(EtatJeu etat) {
         int pionsPlaces = 0;

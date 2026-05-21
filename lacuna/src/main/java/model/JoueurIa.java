@@ -6,9 +6,9 @@ package model;
 public class JoueurIa extends Joueur {
 
     /**
-     * Crée un joueur IA avec le nom affiché dans l'interface.
+     * Crée un joueur IA.
      *
-     * @param nom nom lisible de l'IA, par exemple "IA Facile".
+     * @param nom nom lisible de l'IA.
      * @param typePion couleur jouée par cette IA.
      */
     public JoueurIa(String nom, Pion.TypePion typePion) {
