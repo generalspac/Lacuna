@@ -202,8 +202,8 @@ public class GenerateurCoup {
             return 0;
         }
         if(pionProche.getType() == etat.typePionDuJoueur(indexJoueur))
-            return -25
-        return 35
+            return -25;
+        return 35;
        
     }
 

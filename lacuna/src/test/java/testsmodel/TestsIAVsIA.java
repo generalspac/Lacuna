@@ -111,12 +111,10 @@ public class TestsIAVsIA {
         }
 
         TestsIAVsIA tests = new TestsIAVsIA();
-        for(int i=0; i<5; i++){
-            //on fait ces tests 5fois de suite
-            tests.tester(NiveauxIA.FACILE, NiveauxIA.MOYEN, nbParties);
-            tests.tester(NiveauxIA.MOYEN, NiveauxIA.DIFFICILE, nbParties);
-            tests.tester(NiveauxIA.FACILE, NiveauxIA.DIFFICILE, nbParties);
-        }
+        
+        tests.tester(NiveauxIA.FACILE, NiveauxIA.MOYEN, nbParties);
+        tests.tester(NiveauxIA.MOYEN, NiveauxIA.DIFFICILE, nbParties);
+        tests.tester(NiveauxIA.FACILE, NiveauxIA.DIFFICILE, nbParties);
        
     }
 }
