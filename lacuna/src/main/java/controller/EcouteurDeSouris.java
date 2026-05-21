@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package controller;
 
 import java.awt.event.MouseAdapter;
@@ -11,15 +7,29 @@ import view.JeuGraphique;
 import model.Coordonnees;
 import model.Jeu;
 
+/**
+ * Traduit les clics du plateau graphique en actions de jeu humain.
+ */
 public class EcouteurDeSouris extends MouseAdapter {
     private Jeu game;
     private JeuGraphique jeuGraphique;
 
+    /**
+     * Branche l'écouteur sur la vue de jeu.
+     *
+     * @param jeuGraphique vue qui reçoit les clics du joueur.
+     */
     public EcouteurDeSouris(JeuGraphique jeuGraphique) {
         this.game = jeuGraphique.jeu;
         this.jeuGraphique = jeuGraphique;
     }
 
+    /**
+     * Gère le clic principal d'un tour humain.
+     * 
+     *
+     * @param e événement souris reçu par Swing.
+     */
     @Override
     public void mousePressed(MouseEvent e) {
 
@@ -27,7 +37,6 @@ public class EcouteurDeSouris extends MouseAdapter {
             return;
         }
 
-        // Bloquer les clics pendant qu'on attend le coup de l'adversaire
         if (jeuGraphique.isEnAttenteAdversaire()) {
             return;
         }

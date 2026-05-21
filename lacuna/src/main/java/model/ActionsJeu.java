@@ -3,12 +3,25 @@ package model;
 import java.util.ArrayList;
 import java.util.List;
 
-// Regroupe les actions de plateau: sélection, coups possibles et placement
+/**
+ * Regroupe les actions concrètes du plateau.
+ *
+ * Cette classe contient surtout le parcours d'un tour humain : sélectionner les
+ * fleurs, vérifier la ligne jouable, placer le pion et donner les fleurs au
+ * joueur. Elle reste statique pour ne pas dupliquer l'état déjà porté par
+ * {@link Jeu}.
+ */
 public final class ActionsJeu {
 
     private ActionsJeu() {
     }
 
+    /**
+     * Joue automatiquement au milieu de la paire de fleurs déjà sélectionnée.
+     *
+     * @param jeu partie courante.
+     * @return {@code true} si le coup a été joué.
+     */
     public static boolean jouerCoupAvecFleursSelectionnees(Jeu jeu) {
         Coordonnees posReference = null;
         if (jeu.fleurSelectionnee1 != null && jeu.fleurSelectionnee2 != null) {
@@ -17,6 +30,14 @@ public final class ActionsJeu {
         return jouerCoupAvecFleursSelectionnees(jeu, posReference);
     }
 
+    /**
+     * Joue avec les deux fleurs sélectionnées en plaçant le pion au point libre
+     * le plus proche du clic.
+     *
+     * @param jeu partie courante.
+     * @param clic position modèle du clic joueur.
+     * @return {@code true} si le pion est placé et les fleurs collectées.
+     */
     public static boolean jouerCoupAvecFleursSelectionnees(Jeu jeu, Coordonnees clic) {
 
         if (jeu.partieAbandonnee) {
@@ -60,6 +81,15 @@ public final class ActionsJeu {
         return false;
     }
 
+    /**
+     * Trouve la meilleure position libre sur le segment pour un dépôt humain.
+     *
+     * @param jeu partie courante.
+     * @param A première extrémité du segment.
+     * @param B seconde extrémité du segment.
+     * @param clic point visé par le joueur.
+     * @return position jouable la plus proche, ou {@code null} si le segment est plein.
+     */
     public static Coordonnees positionSegmentLaPlusProcheDuClic(Jeu jeu, Coordonnees A, Coordonnees B, Coordonnees clic) {
         List<Coordonnees> points = pointsDuSegment(jeu, A, B);
         if (points.isEmpty()) {
@@ -81,6 +111,13 @@ public final class ActionsJeu {
         return meilleure;
     }
 
+    /**
+     * Gère le clic d'un joueur humain sur une fleur.
+     *
+     * @param jeu partie courante.
+     * @param pos position du clic dans le repère du modèle.
+     * @return {@code true} si une fleur a été touchée ou désélectionnée.
+     */
     public static boolean toucherFleur(Jeu jeu, Coordonnees pos) {
         if (jeu.partieAbandonnee) {
             return false;
@@ -130,10 +167,26 @@ public final class ActionsJeu {
         return false;
     }
 
+    /**
+     * Vérifie que le segment entre deux points n'est pas bloqué.
+     *
+     * @param jeu partie courante.
+     * @param A première extrémité.
+     * @param B seconde extrémité.
+     * @return {@code true} si la ligne peut servir pour un coup.
+     */
     public static boolean segmentLibre(Jeu jeu, Coordonnees A, Coordonnees B) {
         return ReglesPlateau.segmentLibre(jeu, A, B, ConstantesJeu.TOLERANCE_SEGMENT);
     }
 
+    /**
+     * Vérifie que deux fleurs forment une paire jouable.
+     *
+     * @param jeu partie courante.
+     * @param f1 première fleur.
+     * @param f2 seconde fleur.
+     * @return {@code true} si les fleurs ont la même couleur et un segment libre.
+     */
     public static boolean fleursConnectees(Jeu jeu, Fleur f1, Fleur f2) {
 
         if (f1 == null || f2 == null)
@@ -148,17 +201,38 @@ public final class ActionsJeu {
         return segmentLibre(jeu, A, B);
     }
 
+    /**
+     * Calcule les emplacements où un pion peut être posé sur un segment.
+     *
+     * @param jeu partie courante.
+     * @param A première extrémité.
+     * @param B seconde extrémité.
+     * @return positions disponibles entre les deux fleurs.
+     */
     public static List<Coordonnees> pointsDuSegment(Jeu jeu, Coordonnees A, Coordonnees B) {
         return ReglesPlateau.pointsDuSegment(jeu, A, B, ConstantesJeu.NB_POINTS_SEGMENT,
                 ConstantesJeu.DIAMETRE_PION_MODELE + ConstantesJeu.MARGE_COLLISION,
                 ConstantesJeu.MARGE_EXTREMITES_SEGMENT_JEU);
     }
 
+    /**
+     * Indique si une position évite les zones réservées autour des fleurs.
+     *
+     * @param A première fleur du segment.
+     * @param B seconde fleur du segment.
+     * @param pos position testée.
+     * @return {@code true} si la position n'est pas trop proche des fleurs.
+     */
     public static boolean horsZoneFleursExtremites(Coordonnees A, Coordonnees B, Coordonnees pos) {
         return ReglesPlateau.horsZoneFleursExtremites(A, B, pos, ConstantesJeu.MARGE_EXTREMITES_SEGMENT_JEU);
     }
 
-    // Retourne toutes les positions possibles pour jouer
+    /**
+     * Liste toutes les positions jouables pour les fleurs encore présentes.
+     *
+     * @param jeu partie courante.
+     * @return positions disponibles pour un coup humain.
+     */
     public static List<Coordonnees> coupsPossibles(Jeu jeu) {
 
         List<Coordonnees> coups = new ArrayList<>();
@@ -170,7 +244,6 @@ public final class ActionsJeu {
                 Fleur f1 = jeu.fleurs.get(i);
                 Fleur f2 = jeu.fleurs.get(j);
 
-                //Même couleur + segment libre
                 if (fleursConnectees(jeu, f1, f2)) {
 
                     List<Coordonnees> points = pointsDuSegment(jeu, f1.getPosition(),f2.getPosition());
@@ -183,6 +256,13 @@ public final class ActionsJeu {
         return coups;
     }
 
+    /**
+     * Liste les positions jouables pour une couleur donnée.
+     *
+     * @param jeu partie courante.
+     * @param type couleur filtrée, ou {@code null} pour toutes les couleurs.
+     * @return positions disponibles.
+     */
     public static List<Coordonnees> coupsPossibles(Jeu jeu, Fleur.TypeFleur type) {
         if (type == null) {
             return coupsPossibles(jeu);
@@ -209,9 +289,15 @@ public final class ActionsJeu {
         return coups;
     }
 
+    /**
+     * Liste les paires de fleurs qui peuvent encore être jouées.
+     *
+     * @param jeu partie courante.
+     * @param type couleur filtrée, ou {@code null} pour toutes les couleurs.
+     * @return paires connectées restantes.
+     */
     public static List<Fleur[]> pairesConnectees(Jeu jeu, Fleur.TypeFleur type) {
         List<Fleur[]> paires = new ArrayList<>();
-        // Si type est null, on considère toutes les fleurs, donc on vérifie toutes les paires possibles
         if (type == null) {
             for (int i = 0; i < jeu.fleurs.size(); i++) {
                 for (int j = i + 1; j < jeu.fleurs.size(); j++) {
@@ -222,7 +308,7 @@ public final class ActionsJeu {
                     }
                 }
             }
-        } else {// Sinon, on ne considère que les fleurs du type spécifié, donc on vérifie uniquement les paires de ce type
+        } else {
             for (int i = 0; i < jeu.fleurs.size(); i++) {
                 Fleur f1 = jeu.fleurs.get(i);
                 if (f1.getType() != type) continue;
@@ -238,10 +324,23 @@ public final class ActionsJeu {
         return paires;
     }
 
+    /**
+     * Indique s'il reste au moins une paire de fleurs jouable.
+     *
+     * @param jeu partie courante.
+     * @return {@code true} si le joueur doit encore jouer une paire.
+     */
     public static boolean existeCoupConnecte(Jeu jeu) {
         return !coupsPossibles(jeu).isEmpty();
     }
 
+    /**
+     * Autorise un placement libre quand aucune paire de fleurs n'est jouable.
+     *
+     * @param jeu partie courante.
+     * @param pos position visée par le joueur.
+     * @return {@code true} si le pion libre a été placé.
+     */
     public static boolean placerPionLibreSiAucunCoup(Jeu jeu, Coordonnees pos) {
         if (jeu.partieAbandonnee || jeu.estFinNormalePartie()) {
             jeu.setFeedbackMessage("La partie est terminée.");
@@ -272,6 +371,13 @@ public final class ActionsJeu {
         return true;
     }
 
+    /**
+     * Trouve une position libre utilisable en secours.
+     *
+     * @param jeu partie courante.
+     * @param type couleur du pion à placer.
+     * @return position libre, ou {@code null} si le plateau est saturé.
+     */
     public static Coordonnees positionLibreDeSecours(Jeu jeu, Pion.TypePion type) {
         Coordonnees centre = jeu.cercleDeJeu.getCentre();
         double rayonMax = jeu.cercleDeJeu.getRayon() - Math.max(10, jeu.marge);
@@ -310,10 +416,19 @@ public final class ActionsJeu {
         }
         jeu.historique.enregistrerAction(pionLibre, null, null, joueur);
         jeu.joueurSuivant();
-        jeu.setFeedbackMessage("IA (" + joueur.getTypePion() + ") place un pion sans collecter : aucune paire connectée n'était disponible.");
+        jeu.setFeedbackMessage(jeu.nomJoueurPourAffichage(joueur)
+                + " place un pion sans collecter : aucune paire connectée n'était disponible.");
         return true;
     }
 
+    /**
+     * Valide et applique le dépôt d'un pion par glisser-déposer.
+     *
+     * @param jeu partie courante.
+     * @param pos position modèle où le pion a été relâché.
+     * @param payload type de pion transporté par le drag.
+     * @return {@code true} si le dépôt a joué un coup.
+     */
     public static boolean placerPionDepuisDrag(Jeu jeu, Coordonnees pos, Object payload) {
 
         if (payload == null) {

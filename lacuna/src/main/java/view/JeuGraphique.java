@@ -13,6 +13,9 @@ import java.util.List;
 
 import global.Configuration;
 import model.*;
+import model.IA.CoupIA;
+import model.IA.EtatJeu;
+import model.IA.GenerateurCoup;
 import network.CoupReseau;
 import network.ServeurReseau;
 import network.ClientReseau;
@@ -198,10 +201,18 @@ public class JeuGraphique extends JComponent {
 
     // -------------------------- ÉTAT ANIMATION -------------------------------- //
 
+    /**
+     * Indique si une animation bloque les interactions humaines.
+     *
+     * @return {@code true} pendant une animation de coup, phase 2 ou victoire.
+     */
     public boolean isAnimationEnCours() {
         return animCtx.isEnCours();
     }
 
+    /**
+     * Arrête les animations visuelles et nettoie la sélection en cours.
+     */
     public void annulerAnimationsVisuelles() {
         animCtx.reset();
         jeu.resetFleursSelectionnee1();
@@ -238,6 +249,9 @@ public class JeuGraphique extends JComponent {
         repaint();
     }
 
+    /**
+     * Termine immédiatement la phase 2 animée.
+     */
     public void skipAnimationPhase2() {
         if (animCtx.getState() == AnimationState.PHASE2)
             return;
@@ -256,16 +270,33 @@ public class JeuGraphique extends JComponent {
 
     // -------------------------- COORDONNÉES ----------------------------------- //
 
+    /**
+     * Convertit une position écran en coordonnées du modèle de jeu.
+     *
+     * @param x abscisse dans le composant Swing.
+     * @param y ordonnée dans le composant Swing.
+     * @return position dans le repère logique du plateau.
+     */
     public Coordonnees screenToModel(int x, int y) {
         return converter.screenToModel(x, y);
     }
 
+    /**
+     * Convertit une position modèle en coordonnées écran.
+     *
+     * @param x abscisse logique.
+     * @param y ordonnée logique.
+     * @return position dessinable dans le composant Swing.
+     */
     public Coordonnees modelToScreen(int x, int y) {
         return converter.modelToScreen(x, y);
     }
 
     // -------------------------- SCORE / UI ------------------------------------ //
 
+    /**
+     * Met à jour les scores, piles de pions et messages de la partie.
+     */
     public void refreshScores() {
         if (scoreOr != null)
             scoreOr.updateFromGame(jeu.getJoueurs()[0]);
@@ -276,7 +307,6 @@ public class JeuGraphique extends JComponent {
         if (pileOr != null)
             pileOr.repaint();
 
-        // Afficher le panneau phase 2 dès qu'elle devient disponible
         if (phase2Panel != null && !phase2Affichee && jeu.estSecondePhaseDisponible()) {
             phase2Affichee = true;
             phase2Panel.setVisible(true);
@@ -287,17 +317,32 @@ public class JeuGraphique extends JComponent {
         updateStatusMessage();
     }
 
+    /**
+     * Met l'interface à jour puis lance le tour IA si le joueur courant en a besoin.
+     */
     public void refreshScoresEtTourIA() {
         refreshScores();
         repaint();
 
+        if (animCtx.isEnCours() || jeu.isPartieTerminee()) {
+            return;
+        }
+
         if (animation.lancerAnimationSecondePhase())
             return;
+
+        if (jeu.estTourIA() && jeu.isEnPhaseSelectionAvantage()) {
+            jeu.jouerAvantageIA();
+            refreshScores();
+            repaint();
+        }
 
         jeu.lancerIA(coup -> animation.animerPuisJouerCoupIA(coup), () -> {
             refreshScores();
             repaint();
-            animation.lancerAnimationSecondePhase();
+            if (!jeu.estTourIA()) {
+                animation.lancerAnimationSecondePhase();
+            }
         });
     }
 
@@ -367,13 +412,13 @@ public class JeuGraphique extends JComponent {
         }
 
         if (jeu.isIAEnCours()) {
-            instructionLabel.setText("IA (" + jeu.getJoueurActuel().getTypePion()
-                    + ") réfléchit… Vous pouvez utiliser Undo, Redo ou Reset.");
+            instructionLabel.setText(jeu.nomJoueurActuelPourAffichage()
+                    + " réfléchit… Vous pouvez utiliser Undo, Redo ou Reset.");
             return;
         }
 
         if (jeu.estTourIA()) {
-            instructionLabel.setText("Tour de l'IA (" + jeu.getJoueurActuel().getTypePion() + ")…");
+            instructionLabel.setText("Tour de " + jeu.nomJoueurActuelPourAffichage() + "…");
             return;
         }
 
@@ -414,6 +459,12 @@ public class JeuGraphique extends JComponent {
 
     // ------------------ AFFICHAGE / MASQUAGE DES COUPS POSSIBLES -------------- //
 
+    /**
+     * Active ou masque l'affichage des coups possibles pour guider le joueur.
+     *
+     * @param couleur couleur filtrée, ou {@code null} pour toutes les couleurs.
+     * @param masquer {@code true} pour cacher l'aide.
+     */
     public void afficherCoupsPossibles(Fleur.TypeFleur couleur, boolean masquer) {
         if (masquer) {
             afficherCoupsPossibles = false;
@@ -437,6 +488,12 @@ public class JeuGraphique extends JComponent {
 
     // -------------------------- UTILITAIRES ----------------------------------- //
 
+    /**
+     * Retrouve dans le plateau réel une fleur issue d'une copie.
+     *
+     * @param recherchee fleur recherchée.
+     * @return fleur du plateau, ou {@code null} si elle a déjà été collectée.
+     */
     public Fleur retrouverFleurGraphique(Fleur recherchee) {
         if (recherchee == null)
             return null;
@@ -591,6 +648,11 @@ public class JeuGraphique extends JComponent {
 
     // -------------------------- SOUS-MÉTHODES DE DESSIN ----------------------- //
 
+    /**
+     * Dessine la sélection courante du joueur humain.
+     *
+     * @param g2 contexte graphique Swing.
+     */
     private void drawSelection(Graphics2D g2) {
         Fleur f1 = jeu.getFleurSelectionnee1();
         Fleur f2 = jeu.getFleurSelectionnee2();
@@ -617,6 +679,12 @@ public class JeuGraphique extends JComponent {
         }
     }
 
+    /**
+     * Dessine le marqueur autour d'une fleur sélectionnée.
+     *
+     * @param g2 contexte graphique Swing.
+     * @param f fleur à entourer.
+     */
     private void drawSelectionMarker(Graphics2D g2, Fleur f) {
         if (f == null || f.getPosition() == null)
             return;
@@ -666,6 +734,11 @@ public class JeuGraphique extends JComponent {
         g2.setColor(oldColor);
     }
 
+    /**
+     * Dessine les aides visuelles de la phase 2 avec des marqueurs discrets.
+     *
+     * @param g2 contexte graphique Swing.
+     */
     private void drawPhase2Illustration(Graphics2D g2) {
         Fleur fleurIllu = animCtx.getFleurPhase2Illustree();
         Pion pionIllu = animCtx.getPionPhase2Illustre();
@@ -681,7 +754,11 @@ public class JeuGraphique extends JComponent {
         Pion pionCompare = animCtx.getPionPhase2Compare();
         boolean compare = pionCompare != null && pionCompare.getPosition() != null;
 
-        g2.setStroke(new BasicStroke(4, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND,
+        int rayonFleur = Math.max(13, (int) (converter.fleurSize() * 0.55));
+        int rayonPion = Math.max(15, (int) (converter.fleurSize() * 0.62));
+        int rayonCompare = Math.max(13, (int) (converter.fleurSize() * 0.55));
+
+        g2.setStroke(new BasicStroke(3, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND,
                 1f, new float[] { 12f, 8f }, 0f));
 
         if (compare) {
@@ -693,21 +770,25 @@ public class JeuGraphique extends JComponent {
             g2.drawLine(fp.getX(), fp.getY(), pc.getX(), pc.getY());
             g2.setColor(new Color(255, 215, 0, alphaG));
             g2.drawLine(fp.getX(), fp.getY(), pp.getX(), pp.getY());
-            g2.setStroke(new BasicStroke(5));
+            g2.setStroke(new BasicStroke(3));
             g2.setColor(new Color(255, 255, 255, alphaC));
-            g2.drawOval(pc.getX() - 24, pc.getY() - 24, 48, 48);
+            g2.drawOval(pc.getX() - rayonCompare, pc.getY() - rayonCompare,
+                    rayonCompare * 2, rayonCompare * 2);
             g2.setColor(new Color(255, 215, 0, alphaG));
-            g2.drawOval(pp.getX() - 28, pp.getY() - 28, 56, 56);
+            g2.drawOval(pp.getX() - rayonPion, pp.getY() - rayonPion,
+                    rayonPion * 2, rayonPion * 2);
         } else {
             g2.setColor(new Color(255, 215, 0, 230));
             g2.drawLine(fp.getX(), fp.getY(), pp.getX(), pp.getY());
-            g2.setStroke(new BasicStroke(5));
-            g2.drawOval(pp.getX() - 26, pp.getY() - 26, 52, 52);
+            g2.setStroke(new BasicStroke(3));
+            g2.drawOval(pp.getX() - rayonPion, pp.getY() - rayonPion,
+                    rayonPion * 2, rayonPion * 2);
         }
 
         g2.setColor(new Color(255, 215, 0, 230));
-        g2.setStroke(new BasicStroke(5));
-        g2.drawOval(fp.getX() - 24, fp.getY() - 24, 48, 48);
+        g2.setStroke(new BasicStroke(3));
+        g2.drawOval(fp.getX() - rayonFleur, fp.getY() - rayonFleur,
+                rayonFleur * 2, rayonFleur * 2);
         g2.setStroke(oldStroke);
         g2.setColor(oldColor);
     }
@@ -715,6 +796,11 @@ public class JeuGraphique extends JComponent {
     private void drawPossibleMoves(Graphics2D g2, int fleurSize) {
         if (!afficherCoupsPossibles)
             return;
+
+        if (jeu.estTourIA()) {
+            drawAICandidateMoves(g2);
+            return;
+        }
 
         Fleur f1 = jeu.getFleurSelectionnee1();
         Fleur f2 = jeu.getFleurSelectionnee2();
@@ -739,6 +825,40 @@ public class JeuGraphique extends JComponent {
             g2.setColor(oldC);
             g2.setStroke(old);
         }
+    }
+
+    /**
+     * Dessine les coups que le générateur IA considère comme candidats.
+     *
+     * @param g2 contexte graphique Swing.
+     */
+    private void drawAICandidateMoves(Graphics2D g2) {
+        List<CoupIA> coups = GenerateurCoup.genererCoups(EtatJeu.depuisJeu(jeu, jeu.currentPlayerIndex));
+
+        Stroke oldStroke = g2.getStroke();
+        Color oldColor = g2.getColor();
+        g2.setStroke(new BasicStroke(2));
+
+        for (CoupIA coup : coups) {
+            if (coup == null || coup.fleur1 == null || coup.fleur2 == null || coup.position == null) {
+                continue;
+            }
+            if (filtreCouleurCoups != null && coup.fleur1.getType() != filtreCouleurCoups) {
+                continue;
+            }
+
+            Coordonnees p1 = modelToScreen(coup.fleur1.getPosition().x, coup.fleur1.getPosition().y);
+            Coordonnees p2 = modelToScreen(coup.fleur2.getPosition().x, coup.fleur2.getPosition().y);
+            Coordonnees pion = modelToScreen(coup.position.x, coup.position.y);
+
+            g2.setColor(new Color(0, 255, 255, 145));
+            g2.drawLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
+            g2.setColor(new Color(255, 255, 255, 210));
+            g2.fillOval(pion.getX() - 4, pion.getY() - 4, 8, 8);
+        }
+
+        g2.setStroke(oldStroke);
+        g2.setColor(oldColor);
     }
 
     private void drawPions(Graphics2D g2, int size) {

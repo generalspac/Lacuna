@@ -9,6 +9,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import model.IA.NiveauxIA;
+
 /*
 Gère la connexion à la base de données sqlite du jeu
 */
@@ -46,10 +48,24 @@ public class DatabaseManager {
             "joueur_actuel INTEGER," +
             "avantage_applique INTEGER," +
             "en_phase_selection_avantage INTEGER," +
-            "against_ia INTEGER DEFAULT 0)"
+            "against_ia INTEGER DEFAULT 0," +
+            "mode_jeu TEXT DEFAULT 'HUMAIN_VS_HUMAIN'," +
+            "niveau_ia TEXT," +
+            "niveau_ia_or TEXT," +
+            "niveau_ia_argent TEXT," +
+            "nom_humain_ia TEXT," +
+            "depart_ia TEXT," +
+            "depart_ia_vs_ia TEXT)"
         );
         // migration pour les bases existantes créées avant l'ajout de cette colonne
         try { stmt.execute("ALTER TABLE parties ADD COLUMN against_ia INTEGER DEFAULT 0"); } catch (SQLException ignored) {}
+        try { stmt.execute("ALTER TABLE parties ADD COLUMN mode_jeu TEXT DEFAULT 'HUMAIN_VS_HUMAIN'"); } catch (SQLException ignored) {}
+        try { stmt.execute("ALTER TABLE parties ADD COLUMN niveau_ia TEXT"); } catch (SQLException ignored) {}
+        try { stmt.execute("ALTER TABLE parties ADD COLUMN niveau_ia_or TEXT"); } catch (SQLException ignored) {}
+        try { stmt.execute("ALTER TABLE parties ADD COLUMN niveau_ia_argent TEXT"); } catch (SQLException ignored) {}
+        try { stmt.execute("ALTER TABLE parties ADD COLUMN nom_humain_ia TEXT"); } catch (SQLException ignored) {}
+        try { stmt.execute("ALTER TABLE parties ADD COLUMN depart_ia TEXT"); } catch (SQLException ignored) {}
+        try { stmt.execute("ALTER TABLE parties ADD COLUMN depart_ia_vs_ia TEXT"); } catch (SQLException ignored) {}
 
         // pions sur le plateau (position nullable si le pion n'est pas encore placé)
         stmt.execute(
@@ -105,8 +121,9 @@ public class DatabaseManager {
 
         // insertion dans parties et récupération de l'id généré
         PreparedStatement stmtPartie = connexion.prepareStatement(
-            "INSERT INTO parties (nom, date, joueur_actuel, avantage_applique, en_phase_selection_avantage, against_ia)" +
-            " VALUES (?, ?, ?, ?, ?, ?)",
+            "INSERT INTO parties (nom, date, joueur_actuel, avantage_applique, en_phase_selection_avantage, against_ia," +
+            " mode_jeu, niveau_ia, niveau_ia_or, niveau_ia_argent, nom_humain_ia, depart_ia, depart_ia_vs_ia)" +
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             Statement.RETURN_GENERATED_KEYS
         );
         stmtPartie.setString(1, nom);
@@ -115,6 +132,13 @@ public class DatabaseManager {
         stmtPartie.setInt(4, jeu.isAvantageInitialApplique() ? 1 : 0);
         stmtPartie.setInt(5, jeu.isEnPhaseSelectionAvantage() ? 1 : 0);
         stmtPartie.setInt(6, jeu.isAgainstIA() ? 1 : 0);
+        stmtPartie.setString(7, modeJeu(jeu));
+        stmtPartie.setString(8, nomNiveau(jeu.niveauIA));
+        stmtPartie.setString(9, nomNiveau(jeu.niveauIAOr));
+        stmtPartie.setString(10, nomNiveau(jeu.niveauIAArgent));
+        stmtPartie.setString(11, jeu.nomHumainIA);
+        stmtPartie.setString(12, nomTypePion(jeu.joueurDepartIA));
+        stmtPartie.setString(13, nomTypePion(jeu.joueurDepartIAContreIA));
         stmtPartie.executeUpdate();
 
         // next() positionne le curseur sur la première ligne avant toute lecture
@@ -183,14 +207,24 @@ public class DatabaseManager {
     public void chargerPartie(Jeu jeu, int idPartie) throws SQLException {
         // restauration des données principales de la partie
         PreparedStatement stmtPartie = connexion.prepareStatement(
-            "SELECT joueur_actuel, avantage_applique, en_phase_selection_avantage, against_ia FROM parties WHERE id = ?"
+            "SELECT joueur_actuel, avantage_applique, en_phase_selection_avantage, against_ia," +
+            " mode_jeu, niveau_ia, niveau_ia_or, niveau_ia_argent, nom_humain_ia, depart_ia, depart_ia_vs_ia" +
+            " FROM parties WHERE id = ?"
         );
         stmtPartie.setInt(1, idPartie);
         ResultSet rsPartie = stmtPartie.executeQuery();
         if (rsPartie.next()) {
-            // restaurer le mode de jeu en premier pour recréer les bons types de joueurs
-            if (rsPartie.getInt("against_ia") == 1) {
-                jeu.activerIA(null, "", null);
+            String mode = rsPartie.getString("mode_jeu");
+            if ("IA_VS_IA".equals(mode)) {
+                jeu.configurerIAContreIA(
+                        niveauDepuisTexte(rsPartie.getString("niveau_ia_or")),
+                        niveauDepuisTexte(rsPartie.getString("niveau_ia_argent")),
+                        typeDepuisTexte(rsPartie.getString("depart_ia_vs_ia")));
+            } else if ("HUMAIN_VS_IA".equals(mode) || rsPartie.getInt("against_ia") == 1) {
+                jeu.activerIA(
+                        niveauDepuisTexte(rsPartie.getString("niveau_ia")),
+                        rsPartie.getString("nom_humain_ia"),
+                        typeDepuisTexte(rsPartie.getString("depart_ia")));
             } else {
                 jeu.configurerHumainVsHumain("", "", null);
             }
@@ -233,6 +267,7 @@ public class DatabaseManager {
         }
         rsPion.close();
         stmtPion.close();
+        completerPionsManquants(jeu);
 
         // restauration des fleurs sur le plateau
         jeu.getFleurs().clear();
@@ -267,6 +302,53 @@ public class DatabaseManager {
         }
         rsCollectee.close();
         stmtCollectee.close();
+    }
+
+    private String modeJeu(Jeu jeu) {
+        if (jeu.iaContreIA) {
+            return "IA_VS_IA";
+        }
+        if (jeu.isAgainstIA()) {
+            return "HUMAIN_VS_IA";
+        }
+        return "HUMAIN_VS_HUMAIN";
+    }
+
+    private String nomNiveau(NiveauxIA niveau) {
+        return niveau == null ? null : niveau.name();
+    }
+
+    private String nomTypePion(Pion.TypePion type) {
+        return type == null ? null : type.name();
+    }
+
+    private NiveauxIA niveauDepuisTexte(String texte) {
+        if (texte == null || texte.trim().isEmpty()) {
+            return NiveauxIA.FACILE;
+        }
+        return NiveauxIA.valueOf(texte);
+    }
+
+    private Pion.TypePion typeDepuisTexte(String texte) {
+        if (texte == null || texte.trim().isEmpty()) {
+            return null;
+        }
+        return Pion.TypePion.valueOf(texte);
+    }
+
+    private void completerPionsManquants(Jeu jeu) {
+        for (Pion.TypePion type : Pion.TypePion.values()) {
+            int total = 0;
+            for (Pion pion : jeu.getPions()) {
+                if (pion.getType() == type) {
+                    total++;
+                }
+            }
+            while (total < ConstantesJeu.MAX_PIONS_PAR_JOUEUR) {
+                jeu.getPions().add(new Pion(type, null));
+                total++;
+            }
+        }
     }
 
     /* retourne la liste des parties sauvegardées avec leur id, nom et date */

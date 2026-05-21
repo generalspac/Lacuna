@@ -4,16 +4,29 @@ import model.Fleur;
 import model.Pion;
 import model.ReglesPlateau;
 
-// Calcule le score heuristique d'un état
+/**
+ * Note un état de jeu pour guider le minimax.
+ */
 public class EvaluateurJeu {
 
-    // Sert à définir si il y aura une utilisation du bonus ou non
     private final boolean utiliserBonus;
 
-    public EvaluateurJeu(boolean utiliserBonus){
+    /**
+     * Crée un évaluateur plus ou moins complet selon le niveau d'IA.
+     *
+     * @param utiliserBonus active les bonus d'anticipation et de mobilité.
+     */
+    public EvaluateurJeu(boolean utiliserBonus) {
         this.utiliserBonus = utiliserBonus;
     }
 
+    /**
+     * Calcule le score d'un état pour l'IA donnée.
+     *
+     * @param etat état à noter.
+     * @param indexIA index du joueur contrôlé par l'IA.
+     * @return score positif si l'état favorise l'IA, négatif sinon.
+     */
     public int evaluer(EtatJeu etat, int indexIA) {
 
         int indexJoueur = 1 - indexIA;
@@ -45,10 +58,13 @@ public class EvaluateurJeu {
         return score;
     }
 
-    // Ajuste le score si l'adversaire est à 1 coup d'une majorité
-    // En fait ici, si disons que l'adversaire à 3 fleurs, donc prendre une fleur
-    // de plus lui donne la mmajorité, donc c'est une perte pour l'IA
-    // et dans le cas contraire c'est un gain 
+    /**
+     * Repère les couleurs où un joueur est à une fleur de la majorité.
+     *
+     * @param etat état analysé.
+     * @param indexIA index du joueur IA.
+     * @return bonus ou malus de menace.
+     */
     public int scoreMenaces(EtatJeu etat, int indexIA) {
         int indexJoueur = 1 - indexIA;
         int score = 0;
@@ -71,7 +87,13 @@ public class EvaluateurJeu {
         return score;
     }
 
-    // Compter le nombre de pairs accesibles pour un joueur donné
+    /**
+     * Estime la mobilité grâce au nombre de paires encore accessibles.
+     *
+     * @param etat état analysé.
+     * @param indexJoueur joueur évalué.
+     * @return score de mobilité.
+     */
     public int scoreMobilite(EtatJeu etat, int indexJoueur) {
         int nombre = 0;
         int taille = etat.fleursRestantes.size();
@@ -89,11 +111,25 @@ public class EvaluateurJeu {
         return nombre * 3;
     }
 
-    public int compterCouleursMajoritaires(EtatJeu etat, int index){
+    /**
+     * Compte les couleurs majoritaires en tenant compte de la projection de phase 2.
+     *
+     * @param etat état analysé.
+     * @param index joueur évalué.
+     * @return nombre de couleurs majoritaires.
+     */
+    public int compterCouleursMajoritaires(EtatJeu etat, int index) {
         return compterCouleursMajoritaires(compterFleursAvecProjectionPhase2(etat, index));
     }
     
-    public int bonus(EtatJeu etat,int index){
+    /**
+     * Donne un bonus aux couleurs proches d'une majorité.
+     *
+     * @param etat état analysé.
+     * @param index joueur évalué.
+     * @return score de bonus.
+     */
+    public int bonus(EtatJeu etat, int index) {
         int score = 0;
 
         for (Fleur.TypeFleur type : Fleur.TypeFleur.values()) {
@@ -111,8 +147,13 @@ public class EvaluateurJeu {
         return score;
     }
 
-   
-    // Anticipation de la phase 2
+    /**
+     * Anticipe les fleurs qui pourraient être gagnées en phase 2.
+     *
+     * @param etat état analysé.
+     * @param index joueur évalué.
+     * @return score de projection de phase 2.
+     */
     private int scorePhase2(EtatJeu etat, int index) {
         int score = 0;
 
@@ -127,6 +168,12 @@ public class EvaluateurJeu {
         return score;
     }
 
+    /**
+     * Augmente le poids de la phase 2 quand la fin de partie approche.
+     *
+     * @param etat état analysé.
+     * @return multiplicateur appliqué à l'anticipation de phase 2.
+     */
     private int poidsPhase2(EtatJeu etat) {
         int pionsPlaces = 0;
         for (Pion p : etat.pions) {
@@ -145,6 +192,14 @@ public class EvaluateurJeu {
         return poids;
     }
 
+    /**
+     * Donne une valeur à une couleur selon son intérêt en phase 2.
+     *
+     * @param etat état analysé.
+     * @param index joueur évalué.
+     * @param type couleur étudiée.
+     * @return bonus associé à cette couleur.
+     */
     private int valeurCouleurPhase2(EtatJeu etat, int index, Fleur.TypeFleur type) {
         int nb = nombreFleursDeCouleur(etat, index, type);
         if (nb == 3) {
@@ -159,6 +214,13 @@ public class EvaluateurJeu {
         return 0;
     }
 
+    /**
+     * Valorise les couleurs déjà entamées mais pas encore majoritaires.
+     *
+     * @param etat état analysé.
+     * @param index joueur évalué.
+     * @return score de progression.
+     */
     private int scoreCouleursProchesMajorite(EtatJeu etat, int index) {
         int score = 0;
 
@@ -173,10 +235,25 @@ public class EvaluateurJeu {
         return score;
     }
 
+    /**
+     * Compte les fleurs déjà collectées par un joueur.
+     *
+     * @param etat état analysé.
+     * @param index joueur évalué.
+     * @return nombre de fleurs collectées.
+     */
     private int nombreFleurs(EtatJeu etat, int index) {
         return etat.fleursParJoueur[index].size();
     }
 
+    /**
+     * Compte les fleurs d'une couleur collectées par un joueur.
+     *
+     * @param etat état analysé.
+     * @param index joueur évalué.
+     * @param type couleur recherchée.
+     * @return nombre de fleurs dans cette couleur.
+     */
     private int nombreFleursDeCouleur(EtatJeu etat, int index, Fleur.TypeFleur type) {
         int compteur = 0;
 
@@ -188,6 +265,13 @@ public class EvaluateurJeu {
         return compteur;
     }
 
+    /**
+     * Ajoute aux fleurs gagnées celles que le joueur récupérerait en phase 2.
+     *
+     * @param etat état analysé.
+     * @param index joueur évalué.
+     * @return compteurs par couleur.
+     */
     private int[] compterFleursAvecProjectionPhase2(EtatJeu etat, int index) {
         int[] compteurs = new int[Fleur.TypeFleur.values().length];
 
@@ -205,6 +289,12 @@ public class EvaluateurJeu {
         return compteurs;
     }
 
+    /**
+     * Compte les couleurs qui atteignent la majorité.
+     *
+     * @param compteurs nombre de fleurs par couleur.
+     * @return nombre de couleurs avec au moins quatre fleurs.
+     */
     private int compterCouleursMajoritaires(int[] compteurs) {
         int compteur = 0;
         for (int nb : compteurs) {
@@ -216,6 +306,13 @@ public class EvaluateurJeu {
     }
 
 
+    /**
+     * Délègue la recherche du pion le plus proche aux règles du plateau.
+     *
+     * @param etat état analysé.
+     * @param fleur fleur étudiée.
+     * @return pion le plus proche, ou {@code null} s'il n'y en a aucun.
+     */
     private Pion pionLePlusProche(EtatJeu etat, Fleur fleur) {
         return ReglesPlateau.pionLePlusProche(etat, fleur);
     }

@@ -1,16 +1,29 @@
 package model.IA;
 
-// Niveau d'IA facile
-public class IAFacile implements IA{
+/**
+ * IA légère : profondeur faible, utile pour une partie rapide ou pédagogique.
+ */
+public class IAFacile implements IA {
 
-    // attribut minimax pour calculer le meilleur coup a choisir
     private final Minimax minimax;
-    public IAFacile(int indexIA){
+
+    /**
+     * Prépare une IA facile pour un joueur donné.
+     *
+     * @param indexIA index du joueur contrôlé par cette IA.
+     */
+    public IAFacile(int indexIA) {
         minimax = new Minimax(new EvaluateurJeu(false), 1, indexIA);
 
     }
-    // calcule le meilleur coup a choisir
-    public CoupIA choisirCoup(EtatJeu etat){
+
+    /**
+     * Choisit un coup avec une recherche courte.
+     *
+     * @param etat état courant copié pour l'IA.
+     * @return meilleur coup trouvé, ou {@code null} si aucun coup n'est possible.
+     */
+    public CoupIA choisirCoup(EtatJeu etat) {
         return minimax.meilleurCoup(etat);
     }
 }

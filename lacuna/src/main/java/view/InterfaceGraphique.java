@@ -38,6 +38,8 @@ public class InterfaceGraphique implements Runnable {
         String nomOr;
         String nomArgent;
         String nomHumain;
+        NiveauxIA niveauOr;
+        NiveauxIA niveauArgent;
         Pion.TypePion joueurQuiCommence;
     }
 
@@ -354,6 +356,10 @@ public class InterfaceGraphique implements Runnable {
                     case "IA Difficile":
                         aire.jeu.activerIA(NiveauxIA.DIFFICILE, parametres.nomHumain, parametres.joueurQuiCommence);
                         break;
+                    case "IA vs IA":
+                        aire.jeu.configurerIAContreIA(parametres.niveauOr, parametres.niveauArgent,
+                                parametres.joueurQuiCommence);
+                        break;
                     default:
                         aire.jeu.configurerHumainVsHumain(parametres.nomOr, parametres.nomArgent,
                                 parametres.joueurQuiCommence);
@@ -427,8 +433,17 @@ public class InterfaceGraphique implements Runnable {
                 // Bouton sauvegarder — sauvegarde dans la base SQLite via DatabaseManager
                 sauvegarderButton = new JButton("Save");
                 sauvegarderButton.addActionListener(e -> {
+                    if (aire.isAnimationEnCours()) {
+                        JOptionPane.showMessageDialog(frame,
+                                "Attendez la fin de l'animation avant de sauvegarder la partie.");
+                        return;
+                    }
+                    aire.jeu.annulerIAEnCours();
                     String nom = JOptionPane.showInputDialog(frame, "Nom de la sauvegarde :", "Sauvegarder", JOptionPane.PLAIN_MESSAGE);
-                    if (nom == null) return;
+                    if (nom == null) {
+                        aire.refreshScoresEtTourIA();
+                        return;
+                    }
                     DatabaseManager db = new DatabaseManager();
                     try {
                         db.ouvrirConnexion();
@@ -436,6 +451,8 @@ public class InterfaceGraphique implements Runnable {
                         db.fermerConnexion();
                     } catch (SQLException ex) {
                         JOptionPane.showMessageDialog(frame, "Erreur sauvegarde : " + ex.getMessage());
+                    } finally {
+                        aire.refreshScoresEtTourIA();
                     }
                 });
 
@@ -741,12 +758,14 @@ public class InterfaceGraphique implements Runnable {
         panel.setBackground(Color.BLACK);
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        String[] modes = { "Humain vs Humain", "IA Facile", "IA Moyenne", "IA Difficile" };
+        String[] modes = { "Humain vs Humain", "IA Facile", "IA Moyenne", "IA Difficile", "IA vs IA" };
         JComboBox<String> modeCombo = new JComboBox<>(modes);
 
         JTextField nomOrField = new JTextField();
         JTextField nomArgentField = new JTextField();
         JTextField nomHumainField = new JTextField();
+        JComboBox<NiveauxIA> niveauOrCombo = new JComboBox<>(NiveauxIA.values());
+        JComboBox<NiveauxIA> niveauArgentCombo = new JComboBox<>(NiveauxIA.values());
 
         JComboBox<String> commenceHumain = new JComboBox<>(new String[] { "Aléatoire", "OR", "ARGENT" });
         JComboBox<String> commenceIA = new JComboBox<>(new String[] { "Aléatoire", "Humain", "IA" });
@@ -759,24 +778,33 @@ public class InterfaceGraphique implements Runnable {
         panel.add(nomArgentField);
         panel.add(labelBlanc("Nom humain vs IA (optionnel)"));
         panel.add(nomHumainField);
+        panel.add(labelBlanc("Niveau IA OR"));
+        panel.add(niveauOrCombo);
+        panel.add(labelBlanc("Niveau IA ARGENT"));
+        panel.add(niveauArgentCombo);
         panel.add(labelBlanc("Qui commence ?"));
         panel.add(commenceHumain);
 
         modeCombo.addActionListener(e -> {
             String mode = (String) modeCombo.getSelectedItem();
-            boolean ia = mode != null && mode.startsWith("IA ");
-            nomOrField.setEnabled(!ia);
-            nomArgentField.setEnabled(!ia);
-            nomHumainField.setEnabled(ia);
+            boolean iaSimple = mode != null && mode.startsWith("IA ") && !"IA vs IA".equals(mode);
+            boolean iaVsIA = "IA vs IA".equals(mode);
+            nomOrField.setEnabled(!iaSimple && !iaVsIA);
+            nomArgentField.setEnabled(!iaSimple && !iaVsIA);
+            nomHumainField.setEnabled(iaSimple);
+            niveauOrCombo.setEnabled(iaVsIA);
+            niveauArgentCombo.setEnabled(iaVsIA);
             commenceHumain.setEnabled(true);
-            commenceIA.setEnabled(ia);
-            panel.remove(9);
-            panel.add(ia ? commenceIA : commenceHumain, 9);
+            commenceIA.setEnabled(iaSimple);
+            panel.remove(13);
+            panel.add(iaSimple ? commenceIA : commenceHumain, 13);
             panel.revalidate();
             panel.repaint();
         });
 
         nomHumainField.setEnabled(false);
+        niveauOrCombo.setEnabled(false);
+        niveauArgentCombo.setEnabled(false);
 
         int result = JOptionPane.showConfirmDialog(frame, panel, "Nouvelle partie", JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE);
@@ -789,10 +817,12 @@ public class InterfaceGraphique implements Runnable {
         p.nomOr = nomOrField.getText();
         p.nomArgent = nomArgentField.getText();
         p.nomHumain = nomHumainField.getText();
+        p.niveauOr = (NiveauxIA) niveauOrCombo.getSelectedItem();
+        p.niveauArgent = (NiveauxIA) niveauArgentCombo.getSelectedItem();
 
-        boolean modeIA = p.mode != null && p.mode.startsWith("IA ");
-        String choixDepart = (String) (modeIA ? commenceIA.getSelectedItem() : commenceHumain.getSelectedItem());
-        p.joueurQuiCommence = convertirChoixDepart(choixDepart, modeIA);
+        boolean modeIASimple = p.mode != null && p.mode.startsWith("IA ") && !"IA vs IA".equals(p.mode);
+        String choixDepart = (String) (modeIASimple ? commenceIA.getSelectedItem() : commenceHumain.getSelectedItem());
+        p.joueurQuiCommence = convertirChoixDepart(choixDepart, modeIASimple);
         return p;
     }
 
@@ -802,6 +832,13 @@ public class InterfaceGraphique implements Runnable {
         return label;
     }
 
+    /**
+     * Convertit le choix du dialogue en couleur de départ.
+     *
+     * @param choix valeur affichée dans la liste déroulante.
+     * @param modeIA {@code true} pour humain contre IA, où l'IA joue ARGENT.
+     * @return couleur qui commence, ou {@code null} pour un départ aléatoire.
+     */
     private Pion.TypePion convertirChoixDepart(String choix, boolean modeIA) {
         if (choix == null || "Aléatoire".equals(choix)) {
             return null;

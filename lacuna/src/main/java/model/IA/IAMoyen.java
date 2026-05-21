@@ -1,16 +1,28 @@
 package model.IA;
 
-// Niveau d'IA moyen
+/**
+ * IA intermédiaire : elle regarde plus loin et active les bonus heuristiques.
+ */
 public class IAMoyen implements IA {
-    // attribut minimax pour calculer le meilleur coup a choisir
     private final Minimax minimax;
-    public IAMoyen(int indexIA){
+
+    /**
+     * Prépare une IA moyenne pour un joueur donné.
+     *
+     * @param indexIA index du joueur contrôlé par cette IA.
+     */
+    public IAMoyen(int indexIA) {
         minimax = new Minimax(new EvaluateurJeu(true), 4, indexIA);
     }
-    // calcule le meilleur coup a choisir
-    public CoupIA choisirCoup(EtatJeu etat){
+
+    /**
+     * Choisit un coup avec une recherche de profondeur moyenne.
+     *
+     * @param etat état courant copié pour l'IA.
+     * @return meilleur coup trouvé, ou {@code null} si aucun coup n'est possible.
+     */
+    public CoupIA choisirCoup(EtatJeu etat) {
         return minimax.meilleurCoup(etat);
 
     }
-
 }

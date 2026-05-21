@@ -194,9 +194,15 @@ public class Animation {
 
     // -------------------------- ANIMATION : COUP IA -------------------------- //
 
+    /**
+     * Anime le coup choisi par l'IA, puis laisse la vue décider si un autre tour IA doit suivre.
+     *
+     * @param coup coup calculé par l'IA, ou {@code null} si elle doit jouer le coup de secours.
+     */
     public void animerPuisJouerCoupIA(CoupIA coup) {
         if (coup == null) {
             view.getJeu().jouerCoupIA(null);
+            view.refreshScoresEtTourIA();
             return;
         }
 
@@ -206,6 +212,7 @@ public class Animation {
 
         if (f1 == null || f2 == null) {
             view.getJeu().jouerCoupIA(coup);
+            view.refreshScoresEtTourIA();
             return;
         }
 
@@ -216,7 +223,7 @@ public class Animation {
         ctx.setSelectionIAVisuelle(true);
         final int generation = ctx.nouvelleGeneration();
 
-        view.getJeu().setFeedbackMessage("IA (" + joueurIA.getTypePion() + ") prépare son coup...");
+        view.getJeu().setFeedbackMessage(view.getJeu().nomJoueurPourAffichage(joueurIA) + " prépare son coup...");
         view.refreshScores();
         view.repaint();
 
@@ -225,7 +232,8 @@ public class Animation {
             if (!ctx.estGenerationValide(generation)) return;
 
             view.getJeu().selectionnerFleursPourAnimation(f1, f2);
-            view.getJeu().setFeedbackMessage("IA (" + joueurIA.getTypePion() + ") sélectionne ses deux fleurs...");
+            view.getJeu().setFeedbackMessage(view.getJeu().nomJoueurPourAffichage(joueurIA)
+                    + " sélectionne ses deux fleurs...");
             view.refreshScores();
             view.repaint();
 
@@ -233,7 +241,8 @@ public class Animation {
                 ((Timer) e.getSource()).stop();
                 if (!ctx.estGenerationValide(generation)) return;
 
-                view.getJeu().setFeedbackMessage("IA (" + joueurIA.getTypePion() + ") place son pion...");
+                view.getJeu().setFeedbackMessage(view.getJeu().nomJoueurPourAffichage(joueurIA)
+                        + " place son pion...");
                 if (!view.getJeu().placerPionCoupIA(coup)) {
                     ctx.setState(AnimationState.AUCUNE);
                     ctx.setSelectionIAVisuelle(false);
@@ -249,7 +258,8 @@ public class Animation {
                     ((Timer) e2.getSource()).stop();
                     if (!ctx.estGenerationValide(generation)) return;
 
-                    view.getJeu().setFeedbackMessage("IA (" + joueurIA.getTypePion() + ") collecte ses fleurs...");
+                    view.getJeu().setFeedbackMessage(view.getJeu().nomJoueurPourAffichage(joueurIA)
+                            + " collecte ses fleurs...");
                     animerFleursVersScore(new Fleur[]{f1Animee, f2Animee}, joueurIA, () -> {
                         if (!ctx.estGenerationValide(generation)) return;
                         view.getJeu().collecterFleursCoupIA(coup);
@@ -257,9 +267,7 @@ public class Animation {
                         ctx.setSelectionIAVisuelle(false);
                         view.getJeu().resetFleursSelectionnee1();
                         view.getJeu().resetFleursSelectionnee2();
-                        view.refreshScores();
-                        view.repaint();
-                        lancerAnimationSecondePhase();
+                        view.refreshScoresEtTourIA();
                     });
                 }).start();
             }).start();

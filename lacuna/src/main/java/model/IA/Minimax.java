@@ -7,7 +7,9 @@ import java.util.Random;
 
 import model.ConstantesJeu;
 
-// Algo Minimax
+/**
+ * Recherche le meilleur coup avec minimax et élagage alpha-bêta.
+ */
 public class Minimax {
 
     private final EvaluateurJeu evaluateur;
@@ -15,13 +17,25 @@ public class Minimax {
     private final int indexIA;
     private final Random random = new Random();
 
+    /**
+     * Crée un moteur minimax pour un niveau d'IA.
+     *
+     * @param eval évaluateur qui note les états.
+     * @param profondeur profondeur maximale de recherche.
+     * @param indexIA index du joueur contrôlé par cette IA.
+     */
     public Minimax(EvaluateurJeu eval, int profondeur, int indexIA) {
         this.evaluateur = eval;
         this.profondeurMax = profondeur;
         this.indexIA = indexIA;
     }
 
-    // Retourne le meilleur coup depuis un état avec minimax
+    /**
+     * Cherche le meilleur coup depuis l'état courant.
+     *
+     * @param etat état analysé.
+     * @return meilleur coup trouvé, ou {@code null} si aucun coup n'est jouable.
+     */
     public CoupIA meilleurCoup(EtatJeu etat) {
         List<CoupIA> coups = GenerateurCoup.genererCoups(etat);
 
@@ -29,7 +43,6 @@ public class Minimax {
             return null;
         }
 
-        // Trions pour maximiser l'elagage alpha____beta
         trierCoups(etat, coups, true);
 
         List<CoupIA> meilleursCoups = new ArrayList<>();
@@ -55,8 +68,16 @@ public class Minimax {
         return meilleursCoups.get(random.nextInt(meilleursCoups.size()));
     }
 
-    // algo minimax
-    public int minimax(EtatJeu etat, int profondeur, int alpha, int beta){
+    /**
+     * Évalue récursivement les états suivants.
+     *
+     * @param etat état à évaluer.
+     * @param profondeur profondeur restante.
+     * @param alpha meilleure valeur déjà garantie au maximiseur.
+     * @param beta meilleure valeur déjà garantie au minimiseur.
+     * @return score estimé de l'état.
+     */
+    public int minimax(EtatJeu etat, int profondeur, int alpha, int beta) {
         if (profondeur == 0 || etat.estTerminal()) {
             return evaluateur.evaluer(etat, indexIA);
         }
@@ -108,7 +129,13 @@ public class Minimax {
         }
     }
 
-    // Trier les coups
+    /**
+     * Trie les coups pour rendre l'élagage plus efficace.
+     *
+     * @param etat état de départ.
+     * @param coups coups à trier sur place.
+     * @param maximiser {@code true} si le joueur courant cherche le meilleur score.
+     */
     private void trierCoups(EtatJeu etat, List<CoupIA> coups, boolean maximiser) {
         List<CoupNote> coupsNotes = new ArrayList<>(coups.size());
 
@@ -127,6 +154,12 @@ public class Minimax {
         }
     }
 
+    /**
+     * Limite le nombre de coups explorés selon la profondeur restante.
+     *
+     * @param coups liste de coups modifiée sur place.
+     * @param profondeur profondeur restante.
+     */
     private void limiterCoups(List<CoupIA> coups, int profondeur) {
         int limite = profondeur > 2
                 ? ConstantesJeu.MAX_COUPS_MINIMAX_PROFONDEUR_HAUTE
@@ -137,6 +170,9 @@ public class Minimax {
         }
     }
 
+    /**
+     * Associe un coup à sa note pour le tri interne.
+     */
     private static class CoupNote {
         private final CoupIA coup;
         private final int score;

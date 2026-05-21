@@ -80,6 +80,15 @@ public class Jeu implements EtatPlateau {
 
     ///////////////// IA /////////////////
     IA ia;
+    IA iaOr;
+    IA iaArgent;
+    NiveauxIA niveauIA;
+    NiveauxIA niveauIAOr;
+    NiveauxIA niveauIAArgent;
+    String nomHumainIA;
+    Pion.TypePion joueurDepartIA;
+    Pion.TypePion joueurDepartIAContreIA;
+    boolean iaContreIA = false;
     boolean iaEnCours = false;
     int generationIA = 0;
 
@@ -114,12 +123,6 @@ public class Jeu implements EtatPlateau {
     // ===-----------------------------<--------------------------<
     public Jeu(int WIDTH, int HEIGHT, Cercle cercleDeJeu) {
 
-        if (isAgainstIA()) {
-            System.out.println("Game created in IA mode");
-        } else {
-            System.out.println("Game created in MULTI mode");
-        }
-
         this.cercleDeJeu = cercleDeJeu;
         pions = new ArrayList<>();
         fleurs = new ArrayList<>();
@@ -134,8 +137,6 @@ public class Jeu implements EtatPlateau {
         initFleurs();
         initPions();
         demarrerPhaseSelectionAvantage();
-
-        System.out.println("Game created");
     }
 
     // =========================================================
@@ -248,7 +249,16 @@ public class Jeu implements EtatPlateau {
     // On donne à chacun son nom
     public void configurerHumainVsHumain(String nomOr, String nomArgent, Pion.TypePion joueurQuiCommence) {
         againstIA = false;
+        iaContreIA = false;
         ia = null;
+        iaOr = null;
+        iaArgent = null;
+        niveauIA = null;
+        niveauIAOr = null;
+        niveauIAArgent = null;
+        nomHumainIA = null;
+        joueurDepartIA = null;
+        joueurDepartIAContreIA = null;
         iaEnCours = false;
         partieAbandonnee = false;
         gagnantParAbandon = null;
@@ -311,15 +321,17 @@ public class Jeu implements EtatPlateau {
         }
     }
 
-    // Avantage de l'ia
-    // A REVOIR REFACTORING (UTILISATION DE LA FONCTION D'AVANTAGE POUR HUMAIN)
+    /**
+     * Choisit automatiquement la fleur d'avantage initial pour une IA.
+     */
     public void jouerAvantageIA() {
         if (!enPhaseSelectionAvantage || !estTourIA() || fleurs.isEmpty()) {
             return;
         }
         Fleur fleurChoisie = fleurs.get(random.nextInt(fleurs.size()));
         appliquerAvantageAvecFleur(fleurChoisie);
-        setFeedbackMessage("IA (" + getJoueurActuel().getTypePion() + ") choisit une fleur " + fleurChoisie.getType() + " pour l'avantage initial.");
+        setFeedbackMessage(nomJoueurActuelPourAffichage() + " choisit une fleur "
+                + fleurChoisie.getType() + " pour l'avantage initial.");
     }
 
     public boolean isAgainstIA() {
@@ -414,9 +426,8 @@ public class Jeu implements EtatPlateau {
 
     private void demarrerPhaseSelectionAvantage() {
         enPhaseSelectionAvantage = true;
-        //statusLabel.setText("Phase d'avantage initial: " + getJoueurActuel().getNom() + " doit choisir une fleur");
-        setFeedbackMessage("Phase d'avantage initial: " + getJoueurActuel().getTypePion() + " doit choisir une fleur");
-        //System.out.println("Phase d'avantage initial: " + getJoueurActuel().getNom() + " doit choisir une fleur");
+        setFeedbackMessage("Phase d'avantage initial : "
+                + nomJoueurActuelPourAffichage() + " doit choisir une fleur.");
     }
 
     // Génération de position aleatoire pour les fleurs
@@ -484,8 +495,6 @@ public class Jeu implements EtatPlateau {
                 ecouteurCoupEnvoye.accept(coup);
             }
 
-            System.out.println(
-                    "Avantage initial: " + joueurCommence.getNom() + " choisit une fleur " + fleurChoisie.getType());
         }
     }
 
@@ -493,19 +502,30 @@ public class Jeu implements EtatPlateau {
     ///////////// les 3 premieres fonctions sont les principales pour le
     //////////////// jeu///////////
 
-    // l'avantage du premier joueur au tout debut
+    /**
+     * Donne une fleur aléatoire au joueur qui commence.
+     *
+     * Cette méthode sert surtout aux anciens scénarios sans sélection graphique
+     * d'avantage initial.
+     */
     public void avantagePremierJoueur() {
         Joueur joueur = getJoueurActuel();
 
         if (fleurs.isEmpty())
-            return; // on va verifier la liste des fleurs
+            return;
 
         Fleur f = fleurs.get(random.nextInt(fleurs.size()));
         joueur.ajouterFleur(f);
         fleurs.remove(f);
     }
 
-    // pour placer un pion dans le cercle de jeu
+    /**
+     * Place un pion sur le plateau après les vérifications communes.
+     *
+     * @param pion pion libre à placer.
+     * @param pos position modèle souhaitée.
+     * @return {@code true} si le pion a bien été placé.
+     */
     public boolean placePion(Pion pion, Coordonnees pos) {
 
         if (partieAbandonnee) {
@@ -533,32 +553,30 @@ public class Jeu implements EtatPlateau {
         return true;
     }
 
-    // pour jouer un coup (controller appelle ça )
-    // c'est la premiere phase du jeu
+    /**
+     * Applique un coup complet de phase 1.
+     *
+     * Le coup place le pion, collecte les deux fleurs, l'enregistre dans
+     * l'historique et passe au joueur suivant.
+     *
+     * @param joueur joueur qui joue.
+     * @param pion pion libre du joueur.
+     * @param pos position validée pour le pion.
+     * @param f1 première fleur collectée.
+     * @param f2 seconde fleur collectée.
+     */
     public void jouerCoup(Joueur joueur, Pion pion, Coordonnees pos, Fleur f1, Fleur f2) {
-
-        // si tous les pions sont placés
-        //pas besoin de  cette fonction ici car jouer coup est pour la premiere
-        //phase du jeu
-        /*if (tousLesPionsPlaces()) {
-            attribuerFleursRestantes();// on attribue les fleurs restantes
-            return; // fin du jeu
-        }*/
-
 
         if (!placePion(pion, pos))
             return;
 
         if (!mangerFleurs(joueur, f1, f2)) {
-            pion.setPosition(null); // On remet la position à null (car si on a passé la premiere condition, la
-                                    // position n'est pas null)
+            pion.setPosition(null);
             return;
         }
 
-        // Gestion de la stack
         historique.enregistrerAction(pion, f1, f2, joueur);
 
-        // Émettre le coup réseau si c'est le joueur local qui vient de jouer
         if (enModeReseau && !applicationCoupDistant && currentPlayerIndex == indexJoueurLocal && ecouteurCoupEnvoye != null) {
             CoupReseau coup = new CoupReseau();
             coup.typeMessage = "COUP";
@@ -574,71 +592,114 @@ public class Jeu implements EtatPlateau {
             ecouteurCoupEnvoye.accept(coup);
         }
 
-        joueurSuivant();// Passons au joueur suivant
+        joueurSuivant();
 
     }
 
-
+    /**
+     * Joue le coup correspondant aux deux fleurs actuellement sélectionnées.
+     *
+     * @return {@code true} si le coup a été joué.
+     */
     public boolean jouerCoupAvecFleursSelectionnees() {
         return ActionsJeu.jouerCoupAvecFleursSelectionnees(this);
     }
 
+    /**
+     * Joue avec les fleurs sélectionnées en utilisant le clic comme préférence de placement.
+     *
+     * @param clic position modèle du clic.
+     * @return {@code true} si le coup a été joué.
+     */
     public boolean jouerCoupAvecFleursSelectionnees(Coordonnees clic) {
         return ActionsJeu.jouerCoupAvecFleursSelectionnees(this, clic);
     }
 
+    /**
+     * Trouve l'emplacement libre du segment le plus proche du clic.
+     *
+     * @param A première extrémité du segment.
+     * @param B seconde extrémité du segment.
+     * @param clic position modèle visée par le joueur.
+     * @return position jouable, ou {@code null} si aucune n'existe.
+     */
     public Coordonnees positionSegmentLaPlusProcheDuClic(Coordonnees A, Coordonnees B, Coordonnees clic) {
         return ActionsJeu.positionSegmentLaPlusProcheDuClic(this, A, B, clic);
     }
 
-    //fonction pour la seconde phase du jeu (controller appelle ça aussi )
-    public boolean secondePhase(){
+    /**
+     * Lance la seconde phase si ses conditions sont réunies.
+     *
+     * @return {@code true} si une attribution a été effectuée.
+     */
+    public boolean secondePhase() {
         return Phase2.secondePhase(this);
     }
 
     /* ============= fonctions auxiliares ================= */
 
-    // on verifie si la position où on place le pion est libre
-    // A REVOIR
+    /**
+     * Vérifie qu'un pion peut occuper cette position sans toucher un autre pion.
+     *
+     * @param pos position modèle testée.
+     * @return {@code true} si la position est libre.
+     */
     private boolean positionLibrePourPion(Coordonnees pos) {
         return !pionTropProcheDunAutre(pos);
     }
 
-    // pour savoir si le joueur mange les fleurs ( mange et renvoie vrai si oui)
+    /**
+     * Donne deux fleurs au joueur et les retire du plateau.
+     *
+     * @param joueur joueur qui reçoit les fleurs.
+     * @param f1 première fleur.
+     * @param f2 seconde fleur.
+     * @return {@code true} si les fleurs étaient valides et présentes.
+     */
     public boolean mangerFleurs(Joueur joueur, Fleur f1, Fleur f2) {
-        // on verifie les type d'abord
         if (f1.getType() != f2.getType())
             return false;
-        // s'assrere que les fleurs sont dans le plateau (robustesse)
         if (!fleurs.contains(f1) || !fleurs.contains(f2))
             return false;
 
-        // le joueur mange les 2 fleurs
         joueur.ajouterFleur(f1);
         joueur.ajouterFleur(f2);
-        // les fleurs ne font plus partie du plateau
         fleurs.remove(f1);
         fleurs.remove(f2);
 
         return true;
     }
 
-    // attribuer les fleurs restantes ( après avoir joué , il se peut que le joueur
-    // suivant ai 2 fleurs)
-    // qui sont proche de lui, car des obstacles ont disparus sur le plateau, si on
-    // peut dire comme ça )
+    /**
+     * Attribue toutes les fleurs restantes au pion le plus proche.
+     */
     public void attribuerFleursRestantes() {
         Phase2.attribuerFleursRestantes(this);
     }
 
+    /**
+     * Prépare les attributions de phase 2 sans modifier le plateau.
+     *
+     * @return liste des fleurs et joueurs concernés par la phase 2.
+     */
     public ArrayList<Phase2.AttributionFleur> calculerAttributionsFleursRestantes() {
         return Phase2.calculerAttributionsFleursRestantes(fleurs, pions, joueurs);
     }
 
+    /**
+     * Applique une seule attribution de phase 2.
+     *
+     * @param attribution attribution calculée à appliquer.
+     */
     public void appliquerAttributionFleur(Phase2.AttributionFleur attribution) {
         Phase2.appliquerAttributionFleur(fleurs, attribution);
     }
 
+    /**
+     * Indique si la partie peut passer en phase 2.
+     *
+     * @return {@code true} quand tous les pions sont posés et qu'il reste des fleurs.
+     */
     public boolean estSecondePhaseDisponible() {
         return Phase2.estSecondePhaseDisponible(fleurs, pions);
     }
@@ -659,6 +720,12 @@ public class Jeu implements EtatPlateau {
     // =============== SELECTION DES FLEURS / SEGMENTS ==========
     // =========================================================
 
+    /**
+     * Traite la sélection d'une fleur par un clic humain.
+     *
+     * @param pos position modèle du clic.
+     * @return {@code true} si la sélection a changé.
+     */
     public boolean toucherFleur(Coordonnees pos) {
         return ActionsJeu.toucherFleur(this, pos);
     }
@@ -667,6 +734,13 @@ public class Jeu implements EtatPlateau {
         return ActionsJeu.segmentLibre(this, A, B);
     }
 
+    /**
+     * Vérifie que deux fleurs peuvent être jouées ensemble.
+     *
+     * @param f1 première fleur.
+     * @param f2 seconde fleur.
+     * @return {@code true} si elles ont la même couleur et une ligne libre.
+     */
     public boolean fleursConnectees(Fleur f1, Fleur f2) {
         return ActionsJeu.fleursConnectees(this, f1, f2);
     }
@@ -701,6 +775,12 @@ public class Jeu implements EtatPlateau {
 
     }
 
+    /**
+     * Force la sélection visuelle de deux fleurs pour une animation.
+     *
+     * @param f1 première fleur à afficher comme sélectionnée.
+     * @param f2 seconde fleur à afficher comme sélectionnée.
+     */
     public void selectionnerFleursPourAnimation(Fleur f1, Fleur f2) {
         fleurSelectionnee1 = f1;
         fleurSelectionnee2 = f2;
@@ -718,23 +798,50 @@ public class Jeu implements EtatPlateau {
         return ActionsJeu.horsZoneFleursExtremites(A, B, pos);
     }
 
-    // Retourne toutes les positions possibles pour jouer
+    /**
+     * Liste toutes les positions encore jouables.
+     *
+     * @return positions où un pion humain peut être placé.
+     */
     public List<Coordonnees> coupsPossibles() {
         return ActionsJeu.coupsPossibles(this);
     }
 
+    /**
+     * Liste les positions jouables pour une couleur de fleur.
+     *
+     * @param type couleur filtrée, ou {@code null} pour toutes les couleurs.
+     * @return positions jouables.
+     */
     public List<Coordonnees> coupsPossibles(Fleur.TypeFleur type) {
         return ActionsJeu.coupsPossibles(this, type);
     }
 
+    /**
+     * Liste les paires de fleurs encore connectées.
+     *
+     * @param type couleur filtrée, ou {@code null} pour toutes les couleurs.
+     * @return paires jouables.
+     */
     public List<Fleur[]> pairesConnectees(Fleur.TypeFleur type) {
         return ActionsJeu.pairesConnectees(this, type);
     }
 
+    /**
+     * Indique s'il existe encore un coup classique avec deux fleurs.
+     *
+     * @return {@code true} si une paire connectée existe.
+     */
     public boolean existeCoupConnecte() {
         return ActionsJeu.existeCoupConnecte(this);
     }
 
+    /**
+     * Place un pion libre quand aucune paire de fleurs n'est encore jouable.
+     *
+     * @param pos position modèle choisie.
+     * @return {@code true} si le placement libre a réussi.
+     */
     public boolean placerPionLibreSiAucunCoup(Coordonnees pos) {
         return ActionsJeu.placerPionLibreSiAucunCoup(this, pos);
     }
@@ -751,6 +858,13 @@ public class Jeu implements EtatPlateau {
     // ==================== DRAG AND DROP =======================
     // =========================================================
 
+    /**
+     * Applique le dépôt d'un pion depuis la pile graphique.
+     *
+     * @param pos position modèle du dépôt.
+     * @param payload information portée par le drag, normalement un type de pion.
+     * @return {@code true} si le dépôt a joué un coup.
+     */
     public boolean placerPionDepuisDrag(Coordonnees pos, Object payload) {
         return ActionsJeu.placerPionDepuisDrag(this, pos, payload);
     }
@@ -823,17 +937,34 @@ public class Jeu implements EtatPlateau {
 
     public void reset() {
         annulerIAEnCours();
+        boolean resetIAContreIA = iaContreIA;
+        boolean resetHumainContreIA = againstIA && ia != null;
+        NiveauxIA niveauIAReset = niveauIA;
+        NiveauxIA niveauOrReset = niveauIAOr;
+        NiveauxIA niveauArgentReset = niveauIAArgent;
+        String nomHumainReset = nomHumainIA;
+        Pion.TypePion departIAReset = joueurDepartIA;
+        Pion.TypePion departIAContreIAReset = joueurDepartIAContreIA;
+
         partieAbandonnee = false;
         gagnantParAbandon = null;
-        // init le jeu à son état initial
         avantageInitialApplique = false;
         enPhaseSelectionAvantage = false;
-        initPlayers();
         initFleurs();
         initPions();
+        if (resetIAContreIA) {
+            GestionIA.configurerIAContreIA(this, niveauOrReset, niveauArgentReset, departIAContreIAReset);
+        } else if (resetHumainContreIA) {
+            GestionIA.activerIA(this, niveauIAReset, nomHumainReset, departIAReset);
+        } else {
+            initPlayers();
+        }
+        avantageInitialApplique = false;
+        enPhaseSelectionAvantage = false;
         demarrerPhaseSelectionAvantage();
         historique.clear();
-        setFeedbackMessage("Partie réinitialisée. Choisissez une fleur pour l'avantage initial.");
+        setFeedbackMessage("Partie réinitialisée. " + nomJoueurActuelPourAffichage()
+                + " doit choisir une fleur pour l'avantage initial.");
     }
 
     // =========================================================
@@ -894,22 +1025,40 @@ public class Jeu implements EtatPlateau {
     // ========================= (IA) ==========================
     // =========================================================///////////////////
 
-    // Activation de l'ia
+    /**
+     * Active une partie humain contre IA avec les valeurs par défaut.
+     *
+     * @param niveau niveau de difficulté de l'IA.
+     */
     public void activerIA(NiveauxIA niveau) {
         activerIA(niveau, "Humain", Pion.TypePion.OR);
     }
 
-    //Active le mode IA en laissant --- choisir celui qui commence
+    /**
+     * Active une partie humain contre IA.
+     *
+     * @param niveau niveau de difficulté de l'IA.
+     * @param nomHumain nom affiché pour le joueur humain.
+     * @param joueurQuiCommence couleur qui commence, ou {@code null} pour un départ aléatoire.
+     */
     public void activerIA(NiveauxIA niveau, String nomHumain, Pion.TypePion joueurQuiCommence) {
         GestionIA.activerIA(this, niveau, nomHumain, joueurQuiCommence);
     }
 
-    // Savoir si l'ia est en cours
+    /**
+     * Indique si un calcul d'IA est déjà lancé.
+     *
+     * @return {@code true} pendant que le thread IA réfléchit.
+     */
     public boolean isIAEnCours() {
         return iaEnCours;
     }
 
-    // Savoir si c'est le tour de l'ia
+    /**
+     * Indique si le joueur courant est contrôlé par l'IA.
+     *
+     * @return {@code true} si le tour courant appartient à une IA.
+     */
     public boolean estTourIA() {
         return GestionIA.estTourIA(this);
     }
@@ -918,49 +1067,93 @@ public class Jeu implements EtatPlateau {
         return GestionIA.retrouverFleurDuPlateau(this, recherchee);
     }
 
-    // L'AI joue un coup
+    /**
+     * Place le pion prévu par un coup IA, sans encore collecter les fleurs.
+     *
+     * @param coup coup calculé par l'IA.
+     * @return {@code true} si le pion a été placé.
+     */
     public boolean placerPionCoupIA(CoupIA coup) {
         return GestionIA.placerPionCoupIA(this, coup);
     }
 
+    /**
+     * Collecte les fleurs d'un coup IA déjà placé et passe au joueur suivant.
+     *
+     * @param coup coup calculé par l'IA.
+     * @return {@code true} si les fleurs ont été collectées.
+     */
     public boolean collecterFleursCoupIA(CoupIA coup) {
         return GestionIA.collecterFleursCoupIA(this, coup);
     }
 
+    /**
+     * Joue directement un coup IA complet.
+     *
+     * @param coup coup calculé par l'IA, ou {@code null} pour utiliser le secours.
+     */
     public void jouerCoupIA(CoupIA coup) {
         GestionIA.jouerCoupIA(this, coup);
     }
 
 
-    // Annule  
+    /**
+     * Invalide le calcul IA en cours et remet le drapeau d'activité à zéro.
+     */
     public void annulerIAEnCours() {
         generationIA++;
         iaEnCours = false;
     }
 
+    /**
+     * Produit un libellé court et clair pour un joueur.
+     *
+     * @param joueur joueur à afficher.
+     * @return nom lisible dans l'interface.
+     */
     public String nomJoueurPourAffichage(Joueur joueur) {
         if (joueur instanceof JoueurIa) {
-            return "IA (" + joueur.getTypePion() + ")";
+            return joueur.getNom() + " (" + joueur.getTypePion() + ")";
         }
         return joueur.getNom() + " (" + joueur.getTypePion() + ")";
     }
 
+    /**
+     * Produit le libellé du joueur qui doit jouer.
+     *
+     * @return nom lisible du joueur courant.
+     */
     public String nomJoueurActuelPourAffichage() {
         return nomJoueurPourAffichage(getJoueurActuel());
     }
 
-    // Lancement du thread pour l'ia
+    /**
+     * Lance le calcul du tour IA avec le comportement standard.
+     *
+     * @param callbackFin action appelée quand le calcul est terminé.
+     */
     public void lancerIA(Runnable callbackFin) {
         GestionIA.lancerIA(this, callbackFin);
     }
 
+    /**
+     * Lance le calcul du tour IA et délègue l'application du coup à l'appelant.
+     *
+     * @param actionQuandCoupPret action appelée avec le coup choisi.
+     * @param callbackFin action appelée après la remise à zéro du calcul IA.
+     */
     public void lancerIA(Consumer<CoupIA> actionQuandCoupPret, Runnable callbackFin) {
         GestionIA.lancerIA(this, actionQuandCoupPret, callbackFin);
     }
 
-    //=============================CONFIGURATION POUR TESTER IA VS IA =================//
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
-   public void configurerIAContreIA(NiveauxIA niveauOr, NiveauxIA niveauArgent, Pion.TypePion joueurQuiCommence) {
+    /**
+     * Configure une partie IA contre IA observable depuis l'interface ou les tests.
+     *
+     * @param niveauOr niveau de l'IA qui joue les pions OR.
+     * @param niveauArgent niveau de l'IA qui joue les pions ARGENT.
+     * @param joueurQuiCommence couleur qui commence, ou {@code null} pour un départ aléatoire.
+     */
+    public void configurerIAContreIA(NiveauxIA niveauOr, NiveauxIA niveauArgent, Pion.TypePion joueurQuiCommence) {
         GestionIA.configurerIAContreIA(this, niveauOr, niveauArgent, joueurQuiCommence);
     }
 }

@@ -3,24 +3,46 @@ package model;
 import java.util.function.Consumer;
 
 import model.IA.CoupIA;
+import model.IA.IA;
 import model.IA.EtatJeu;
 import model.IA.NiveauxIA;
 import model.IA.ThreadIA;
 
-// Cette classe, Gère le mode IA
+/**
+ * Regroupe la logique commune des modes avec IA.
+ *
+ * La classe reste volontairement statique : elle manipule un {@link Jeu}
+ * déjà construit, sans porter elle-même l'état de la partie.
+ */
 public final class GestionIA {
 
     private GestionIA() {
     }
 
-    //Active le mode IA en laissant --- choisir celui qui commence
+    /**
+     * Active une partie humain contre IA.
+     *
+     * @param jeu partie à configurer.
+     * @param niveau niveau de difficulté de l'IA.
+     * @param nomHumain nom affiché pour le joueur humain.
+     * @param joueurQuiCommence couleur qui commence, ou {@code null} pour un départ aléatoire.
+     */
     public static void activerIA(Jeu jeu, NiveauxIA niveau, String nomHumain, Pion.TypePion joueurQuiCommence) {
 
         jeu.againstIA = true;
+        jeu.iaContreIA = false;
         if (niveau == null) {
             niveau = NiveauxIA.FACILE;
         }
         jeu.ia = niveau.creerIA(1);
+        jeu.iaOr = null;
+        jeu.iaArgent = null;
+        jeu.niveauIA = niveau;
+        jeu.niveauIAOr = null;
+        jeu.niveauIAArgent = null;
+        jeu.nomHumainIA = nomHumain;
+        jeu.joueurDepartIA = joueurQuiCommence;
+        jeu.joueurDepartIAContreIA = null;
         jeu.partieAbandonnee = false;
         jeu.gagnantParAbandon = null;
 
@@ -30,10 +52,16 @@ public final class GestionIA {
         };
         jeu.choisirJoueurQuiCommence(joueurQuiCommence);
         jeu.iaEnCours = false;
-        jeu.setFeedbackMessage("Mode IA activé (" + niveau + "). " + jeu.nomJoueurActuelPourAffichage() + " commence.");
+        jeu.setFeedbackMessage("Mode IA activé (" + libelleNiveau(niveau) + "). "
+                + jeu.nomJoueurActuelPourAffichage() + " commence.");
     }
 
-    // Savoir si c'est le tour de l'ia
+    /**
+     * Indique si le joueur courant est une IA.
+     *
+     * @param jeu partie consultée.
+     * @return {@code true} si le tour courant appartient à une IA.
+     */
     public static boolean estTourIA(Jeu jeu) {
 
          if (!jeu.againstIA)
@@ -41,6 +69,13 @@ public final class GestionIA {
         return jeu.getJoueurActuel() instanceof JoueurIa;
     }
 
+    /**
+     * Retrouve dans le plateau réel une fleur copiée dans un état IA.
+     *
+     * @param jeu partie courante.
+     * @param recherchee fleur recherchée.
+     * @return fleur du plateau, ou {@code null} si elle n'existe plus.
+     */
     public static Fleur retrouverFleurDuPlateau(Jeu jeu, Fleur recherchee) {
         if (recherchee == null) {
             return null;
@@ -55,7 +90,13 @@ public final class GestionIA {
         return null;
     }
 
-    // L'AI joue un coup
+    /**
+     * Place le pion d'un coup IA sans collecter les fleurs.
+     *
+     * @param jeu partie courante.
+     * @param coup coup choisi par l'IA.
+     * @return {@code true} si le pion a été placé.
+     */
     public static boolean placerPionCoupIA(Jeu jeu, CoupIA coup) {
 
         if (coup == null) {
@@ -90,10 +131,17 @@ public final class GestionIA {
             return false;
         }
 
-        jeu.setFeedbackMessage("IA (" + joueur.getTypePion() + ") place son pion.");
+        jeu.setFeedbackMessage(jeu.nomJoueurPourAffichage(joueur) + " place son pion.");
         return true;
     }
 
+    /**
+     * Collecte les fleurs d'un coup IA déjà placé.
+     *
+     * @param jeu partie courante.
+     * @param coup coup choisi par l'IA.
+     * @return {@code true} si les fleurs ont été collectées.
+     */
     public static boolean collecterFleursCoupIA(Jeu jeu, CoupIA coup) {
 
         if (coup == null || !estTourIA(jeu)) {
@@ -126,35 +174,55 @@ public final class GestionIA {
 
         jeu.historique.enregistrerAction(pionPlace, f1, f2, joueur);
         jeu.joueurSuivant();
-        jeu.setFeedbackMessage("IA (" + joueur.getTypePion() + ") a joué. C'est à " + jeu.nomJoueurActuelPourAffichage() + " de jouer.");
+        jeu.setFeedbackMessage(jeu.nomJoueurPourAffichage(joueur) + " a joué. C'est à "
+                + jeu.nomJoueurActuelPourAffichage() + " de jouer.");
         return true;
     }
 
+    /**
+     * Joue un coup IA complet sans animation.
+     *
+     * @param jeu partie courante.
+     * @param coup coup choisi par l'IA, ou {@code null} pour utiliser le secours.
+     */
     public static void jouerCoupIA(Jeu jeu, CoupIA coup) {
         if (placerPionCoupIA(jeu, coup) && coup != null) {
             collecterFleursCoupIA(jeu, coup);
         }
     }
 
-    // Lancement du thread pour l'ia
+    /**
+     * Lance un tour IA avec l'application standard du coup.
+     *
+     * @param jeu partie courante.
+     * @param callbackFin action appelée après le calcul.
+     */
     public static void lancerIA(Jeu jeu, Runnable callbackFin) {
         lancerIA(jeu, coup -> jouerCoupIA(jeu, coup), callbackFin);
     }
 
+    /**
+     * Lance le calcul du tour IA dans un thread séparé.
+     *
+     * @param jeu partie courante.
+     * @param actionQuandCoupPret action appelée sur l'EDT avec le coup choisi.
+     * @param callbackFin action appelée après la fin du calcul IA.
+     */
     public static void lancerIA(Jeu jeu, Consumer<CoupIA> actionQuandCoupPret, Runnable callbackFin) {
 
-        if (!jeu.againstIA || jeu.ia == null || jeu.iaEnCours)
+        IA iaCourante = iaPourJoueurCourant(jeu);
+        if (!jeu.againstIA || iaCourante == null || jeu.iaEnCours || jeu.isPartieTerminee())
             return;
 
         if (!estTourIA(jeu)) return;
 
         jeu.iaEnCours = true;
         final int generationLancee = ++jeu.generationIA;
-        jeu.setFeedbackMessage("Tour de l'IA (" + jeu.getJoueurActuel().getTypePion() + ") : elle réfléchit hmmmm...");
+        jeu.setFeedbackMessage("Tour de " + jeu.nomJoueurActuelPourAffichage() + " : l'IA réfléchit...");
 
         EtatJeu etat = EtatJeu.depuisJeu(jeu, jeu.currentPlayerIndex);
 
-        ThreadIA thread = new ThreadIA(jeu.ia, etat, coup -> {
+        ThreadIA thread = new ThreadIA(iaCourante, etat, coup -> {
             javax.swing.SwingUtilities.invokeLater(() -> {
                 if (generationLancee != jeu.generationIA) {
                     return;
@@ -178,21 +246,81 @@ public final class GestionIA {
         thread.start();
     }
 
+    /**
+     * Configure une partie IA contre IA avec deux niveaux indépendants.
+     *
+     * @param jeu partie à configurer.
+     * @param niveauOr niveau de l'IA OR.
+     * @param niveauArgent niveau de l'IA ARGENT.
+     * @param joueurQuiCommence couleur qui commence, ou {@code null} pour un départ aléatoire.
+     */
     public static void configurerIAContreIA(Jeu jeu, NiveauxIA niveauOr, NiveauxIA niveauArgent,
             Pion.TypePion joueurQuiCommence) {
+        if (niveauOr == null) {
+            niveauOr = NiveauxIA.FACILE;
+        }
+        if (niveauArgent == null) {
+            niveauArgent = NiveauxIA.FACILE;
+        }
+
         jeu.againstIA = true;
+        jeu.iaContreIA = true;
         jeu.ia = null;
+        jeu.iaOr = niveauOr.creerIA(0);
+        jeu.iaArgent = niveauArgent.creerIA(1);
+        jeu.niveauIA = null;
+        jeu.niveauIAOr = niveauOr;
+        jeu.niveauIAArgent = niveauArgent;
+        jeu.nomHumainIA = null;
+        jeu.joueurDepartIA = null;
+        jeu.joueurDepartIAContreIA = joueurQuiCommence;
         jeu.iaEnCours = false;
         jeu.partieAbandonnee = false;
         jeu.gagnantParAbandon = null;
 
-        jeu.joueurs = new Joueur[] {new JoueurIa("IA " + niveauOr, Pion.TypePion.OR),
-                new JoueurIa("IA " + niveauArgent, Pion.TypePion.ARGENT)};
+        jeu.joueurs = new Joueur[] {
+                new JoueurIa("IA " + libelleNiveau(niveauOr), Pion.TypePion.OR),
+                new JoueurIa("IA " + libelleNiveau(niveauArgent), Pion.TypePion.ARGENT)
+        };
 
         jeu.choisirJoueurQuiCommence(joueurQuiCommence);
 
-        jeu.setFeedbackMessage("Test IA contre IA : " + niveauOr + " (OR) contre "
-                + niveauArgent + " (ARGENT). "
+        jeu.setFeedbackMessage("IA contre IA : " + libelleNiveau(niveauOr) + " (OR) contre "
+                + libelleNiveau(niveauArgent) + " (ARGENT). "
                 + jeu.nomJoueurActuelPourAffichage() + " commence.");
+    }
+
+    /**
+     * Sélectionne l'objet IA qui correspond au joueur courant.
+     *
+     * @param jeu partie courante.
+     * @return IA à utiliser pour ce tour, ou {@code null} si aucune n'est configurée.
+     */
+    private static IA iaPourJoueurCourant(Jeu jeu) {
+        if (jeu.ia != null) {
+            return jeu.ia;
+        }
+        return jeu.currentPlayerIndex == 0 ? jeu.iaOr : jeu.iaArgent;
+    }
+
+    /**
+     * Transforme le nom technique du niveau en texte lisible dans l'interface.
+     *
+     * @param niveau niveau d'IA à afficher.
+     * @return nom humain du niveau.
+     */
+    private static String libelleNiveau(NiveauxIA niveau) {
+        if (niveau == null) {
+            return "Facile";
+        }
+        switch (niveau) {
+            case MOYEN:
+                return "Moyenne";
+            case DIFFICILE:
+                return "Difficile";
+            case FACILE:
+            default:
+                return "Facile";
+        }
     }
 }
