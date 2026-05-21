@@ -1,14 +1,13 @@
 package view.animations;
 
-import java.awt.*;
+import java.awt.Image;
+import java.awt.Point;
+
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
-import java.util.ArrayList;
 
 import model.Coordonnees;
 import model.Fleur;
 import model.Joueur;
-import model.Phase2;
 import model.IA.CoupIA;
 import view.DragLayer;
 import view.JeuGraphique;
@@ -18,173 +17,39 @@ import view.JeuGraphique;
  */
 public class Animation {
 
-    private final JeuGraphique  view;
+    private final JeuGraphique view;
     private final AnimationContext ctx;
+
+    private final WinnerAnimator winnerAnimator;
+    private final Phase2Animator phase2Animator;
+    private final IAAnimator iaAnimator;
 
     public Animation(JeuGraphique view, AnimationContext ctx) {
         this.view = view;
-        this.ctx  = ctx;
+        this.ctx = ctx;
+
+        this.winnerAnimator = new WinnerAnimator(view, ctx);
+        this.phase2Animator = new Phase2Animator(view, ctx, this, winnerAnimator);
+        this.iaAnimator = new IAAnimator(view, ctx, this, phase2Animator);
     }
 
     // -------------------------- ACCESSEURS ----------------------------------- //
 
-    public AnimationState getState()                  { return ctx.getState(); }
-    public void  setState(AnimationState s)  { ctx.setState(s); }
+    public AnimationState getState() {
+        return ctx.getState();
+    }
 
-    // -------------------------- PHASE 2 : ATTRIBUTION ------------------------ //
+    public void setState(AnimationState s) {
+        ctx.setState(s);
+    }
 
-    /**
-     * Lance l'animation de la phase 2 si les conditions sont réunies.
-     * @return true si l'animation a été démarrée.
-     */
+    // -------------------------- PHASE 2 -------------------------------------- //
+
     public boolean lancerAnimationSecondePhase() {
-        if (ctx.getState() == AnimationState.PHASE2
-                || !view.getJeu().estSecondePhaseDisponible()) {
-            return false;
-        }
-
-        ArrayList<Phase2.AttributionFleur> attributions = view.getJeu().calculerAttributionsFleursRestantes();
-        if (attributions.isEmpty()) return false;
-
-        ctx.setState(AnimationState.PHASE2);
-        final int generation = ctx.nouvelleGeneration();
-
-        view.getJeu().setFeedbackMessage("Phase 2 : attribution animée des fleurs restantes.");
-        view.refreshScores();
-        view.repaint();
-        animerAttributionPhase2(attributions, 0, generation);
-        return true;
+        return phase2Animator.lancerAnimationSecondePhase();
     }
 
-    public void animerAttributionPhase2(ArrayList<Phase2.AttributionFleur> attributions,
-                                        int index, int generation) {
-        if (!ctx.estGenerationValide(generation)) return;
-
-        if (index >= attributions.size()) {
-            ctx.clearPhase2();
-            animerGagnant(generation);
-            return;
-        }
-
-        Phase2.AttributionFleur attribution = attributions.get(index);
-        if (attribution == null || attribution.fleur == null || attribution.joueur == null
-                || !view.getJeu().getFleurs().contains(attribution.fleur)) {
-            animerAttributionPhase2(attributions, index + 1, generation);
-            return;
-        }
-
-        view.getJeu().selectionnerFleursPourAnimation(attribution.fleur, null);
-        ctx.setFleurPhase2Illustree(attribution.fleur);
-        ctx.setPionPhase2Illustre(attribution.pionLePlusProche);
-        ctx.setPionPhase2Compare(attribution.comparaisonNecessaire ? attribution.pionCompare : null);
-        ctx.setPhase2ComparePulse(0);
-
-        if (attribution.comparaisonNecessaire && attribution.pionCompare != null) {
-            view.getJeu().setFeedbackMessage("Phase 2 : comparaison des distances avant attribution de la fleur "
-                    + attribution.fleur.getType() + ".");
-            lancerPulseComparaisonPhase2(generation);
-        } else {
-            view.getJeu().setFeedbackMessage("Phase 2 : mesure de la distance avant attribution de la fleur "
-                    + attribution.fleur.getType() + ".");
-        }
-        view.refreshScores();
-        view.repaint();
-
-        double facteur     = view.getFacteurVitesse();
-        int    delaiMesure = (int) ((attribution.comparaisonNecessaire && attribution.pionCompare != null)
-                ? 1900 * facteur : 1150 * facteur);
-
-        new Timer(delaiMesure, e -> {
-            ((Timer) e.getSource()).stop();
-            if (!ctx.estGenerationValide(generation)) return;
-
-            view.getJeu().setFeedbackMessage("Phase 2 : la fleur " + attribution.fleur.getType()
-                    + " est attribuée à " + view.getJeu().nomJoueurPourAffichage(attribution.joueur) + ".");
-            view.refreshScores();
-            view.repaint();
-
-            animerFleursVersScore(new Fleur[]{attribution.fleur}, attribution.joueur, () -> {
-                if (!ctx.estGenerationValide(generation)) return;
-                view.getJeu().appliquerAttributionFleur(attribution);
-                ctx.clearPhase2();
-                view.getJeu().resetFleursSelectionnee1();
-                view.getJeu().resetFleursSelectionnee2();
-                view.refreshScores();
-                view.repaint();
-
-                new Timer(280, e2 -> {
-                    ((Timer) e2.getSource()).stop();
-                    animerAttributionPhase2(attributions, index + 1, generation);
-                }).start();
-            });
-        }).start();
-    }
-
-    // -------------------------- ANIMATION : FLEURS → SCORE ------------------- //
-
-    public void animerFleursVersScore(Fleur[] fleursAnimees, Joueur joueur, Runnable fin) {
-        if (fleursAnimees == null || fleursAnimees.length == 0) {
-            if (fin != null) fin.run();
-            return;
-        }
-
-        DragLayer layer = (DragLayer) view.getFrame().getGlassPane();
-        final int[] restantes = {0};
-
-        for (int i = 0; i < fleursAnimees.length; i++) {
-            Fleur f = fleursAnimees[i];
-            if (f == null || f.getPosition() == null) continue;
-
-            Image img = view.getFlowerImage(f.getType());
-            Coordonnees screen = view.modelToScreen(f.getPosition().x, f.getPosition().y);
-            Point start = SwingUtilities.convertPoint(view,
-                    new Point(screen.getX(), screen.getY()), layer);
-            Point end = view.pointScorePourJoueur(joueur, i, layer);
-
-            restantes[0]++;
-            layer.animateImage(img, start, end, 750, 34, () -> {
-                restantes[0]--;
-                if (restantes[0] <= 0 && fin != null) fin.run();
-            });
-        }
-
-        if (restantes[0] == 0 && fin != null) fin.run();
-    }
-
-    // -------------------------- ANIMATION : GAGNANT -------------------------- //
-
-    public void animerGagnant(int generation) {
-        if (!ctx.estGenerationValide(generation)) return;
-
-        Joueur gagnant = view.getJeu().getGagnant();
-        ctx.setGagnantAnime(gagnant);
-        ctx.setWinnerPulse(0);
-
-        String nom = (gagnant == null) ? "égalité"
-                : view.getJeu().nomJoueurPourAffichage(gagnant);
-        view.getJeu().setFeedbackMessage("Partie terminée : " + nom + " gagne !");
-        view.refreshScores();
-        view.repaint();
-
-        Timer timer = new Timer(120, null);
-        timer.addActionListener(e -> {
-            if (!ctx.estGenerationValide(generation)) {
-                ((Timer) e.getSource()).stop();
-                return;
-            }
-            ctx.incrementerWinnerPulse();
-            view.repaint();
-            if (ctx.getWinnerPulse() >= 26) {
-                ((Timer) e.getSource()).stop();
-                ctx.setState(AnimationState.AUCUNE);
-                view.refreshScores();
-                view.repaint();
-            }
-        });
-        timer.start();
-    }
-
-    // -------------------------- ANIMATION : COUP IA -------------------------- //
+    // -------------------------- IA ------------------------------------------- //
 
     /**
      * Anime le coup choisi par l'IA, puis laisse la vue décider si un autre tour IA doit suivre.
@@ -192,95 +57,65 @@ public class Animation {
      * @param coup coup calculé par l'IA, ou {@code null} si elle doit jouer le coup de secours.
      */
     public void animerPuisJouerCoupIA(CoupIA coup) {
-        if (coup == null) {
-            view.getJeu().jouerCoupIA(null);
-            view.refreshScoresEtTourIA();
-            return;
-        }
-
-        Fleur f1 = view.retrouverFleurGraphique(coup.fleur1);
-        Fleur f2 = view.retrouverFleurGraphique(coup.fleur2);
-        Joueur joueurIA = view.getJeu().getJoueurActuel();
-
-        if (f1 == null || f2 == null) {
-            view.getJeu().jouerCoupIA(coup);
-            view.refreshScoresEtTourIA();
-            return;
-        }
-
-        Fleur f1Animee = Fleur.copieFleur(f1);
-        Fleur f2Animee = Fleur.copieFleur(f2);
-
-        ctx.setState(AnimationState.COUP_IA);
-        ctx.setSelectionIAVisuelle(true);
-        final int generation = ctx.nouvelleGeneration();
-
-        view.getJeu().setFeedbackMessage(view.getJeu().nomJoueurPourAffichage(joueurIA) + " prépare son coup...");
-        view.refreshScores();
-        view.repaint();
-
-        new Timer(700, attente -> {
-            ((Timer) attente.getSource()).stop();
-            if (!ctx.estGenerationValide(generation)) return;
-
-            view.getJeu().selectionnerFleursPourAnimation(f1, f2);
-            view.getJeu().setFeedbackMessage(view.getJeu().nomJoueurPourAffichage(joueurIA)
-                    + " sélectionne ses deux fleurs...");
-            view.refreshScores();
-            view.repaint();
-
-            new Timer(950, e -> {
-                ((Timer) e.getSource()).stop();
-                if (!ctx.estGenerationValide(generation)) return;
-
-                view.getJeu().setFeedbackMessage(view.getJeu().nomJoueurPourAffichage(joueurIA)
-                        + " place son pion...");
-                if (!view.getJeu().placerPionCoupIA(coup)) {
-                    ctx.setState(AnimationState.AUCUNE);
-                    ctx.setSelectionIAVisuelle(false);
-                    view.getJeu().resetFleursSelectionnee1();
-                    view.getJeu().resetFleursSelectionnee2();
-                    view.refreshScoresEtTourIA();
-                    return;
-                }
-                view.refreshScores();
-                view.repaint();
-
-                new Timer(900, e2 -> {
-                    ((Timer) e2.getSource()).stop();
-                    if (!ctx.estGenerationValide(generation)) return;
-
-                    view.getJeu().setFeedbackMessage(view.getJeu().nomJoueurPourAffichage(joueurIA)
-                            + " collecte ses fleurs...");
-                    animerFleursVersScore(new Fleur[]{f1Animee, f2Animee}, joueurIA, () -> {
-                        if (!ctx.estGenerationValide(generation)) return;
-                        view.getJeu().collecterFleursCoupIA(coup);
-                        ctx.setState(AnimationState.AUCUNE);
-                        ctx.setSelectionIAVisuelle(false);
-                        view.getJeu().resetFleursSelectionnee1();
-                        view.getJeu().resetFleursSelectionnee2();
-                        view.refreshScoresEtTourIA();
-                    });
-                }).start();
-            }).start();
-        }).start();
+        iaAnimator.animerPuisJouerCoupIA(coup);
     }
 
-    // -------------------------- PULSE COMPARAISON PHASE 2 -------------------- //
+    // -------------------------- ANIMATION : GAGNANT -------------------------- //
 
-    private void lancerPulseComparaisonPhase2(int generation) {
-        Timer timer = new Timer(110, null);
-        timer.addActionListener(e -> {
-            if (!ctx.estGenerationValide(generation) || ctx.getPionPhase2Compare() == null) {
-                ((Timer) e.getSource()).stop();
-                return;
+    public void animerGagnant(int generation) {
+        winnerAnimator.animerGagnant(generation);
+    }
+
+    // -------------------------- ANIMATION : FLEURS → SCORE ------------------- //
+
+    public void animerFleursVersScore(Fleur[] fleursAnimees, Joueur joueur, Runnable fin) {
+
+        if (fleursAnimees == null || fleursAnimees.length == 0) {
+            if (fin != null) {
+                fin.run();
             }
-            ctx.incrementerPhase2ComparePulse();
-            view.repaint();
-            if (ctx.getPhase2ComparePulse() >= 18) {
-                ((Timer) e.getSource()).stop();
+            return;
+        }
+
+        DragLayer layer = (DragLayer) view.getFrame().getGlassPane();
+
+        final int[] restantes = {0};
+
+        for (int i = 0; i < fleursAnimees.length; i++) {
+
+            Fleur f = fleursAnimees[i];
+
+            if (f == null || f.getPosition() == null) {
+                continue;
             }
-        });
-        timer.start();
+
+            Image img = view.getFlowerImage(f.getType());
+
+            Coordonnees screen =
+                    view.modelToScreen(f.getPosition().x, f.getPosition().y);
+
+            Point start = SwingUtilities.convertPoint(
+                    view,
+                    new Point(screen.getX(), screen.getY()),
+                    layer
+            );
+
+            Point end = view.pointScorePourJoueur(joueur, i, layer);
+
+            restantes[0]++;
+
+            layer.animateImage(img, start, end, 750, 34, () -> {
+
+                restantes[0]--;
+
+                if (restantes[0] <= 0 && fin != null) {
+                    fin.run();
+                }
+            });
+        }
+
+        if (restantes[0] == 0 && fin != null) {
+            fin.run();
+        }
     }
 }

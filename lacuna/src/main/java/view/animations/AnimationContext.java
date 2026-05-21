@@ -60,7 +60,6 @@ public class AnimationContext {
         this.animationProgress = progress;
     }
     // -------------------------- VISUELS FIN DE PARTIE ------------------------ //
-
     public Joueur getGagnantAnime() { return gagnantAnime; }
     public int getWinnerPulse() { return winnerPulse; }
     public void setGagnantAnime(Joueur j) { this.gagnantAnime = j; }

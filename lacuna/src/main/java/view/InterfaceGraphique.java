@@ -10,7 +10,6 @@ import java.awt.*;
 import java.awt.event.*;
 
 import controller.ControleurBoutons;
-import controller.EcouteurDeClavier;
 
 import model.IA.NiveauxIA;
 import model.Fleur;
