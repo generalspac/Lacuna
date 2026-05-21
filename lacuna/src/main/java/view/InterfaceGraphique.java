@@ -853,6 +853,7 @@ public class InterfaceGraphique implements Runnable {
     }
 
     public void afficherMenuNouvellePartie() {
+
         JPanel panel = creerPanelMenu();
 
         RoundedButton pvp = creerBoutonMenu("Joueur 1 vs Joueur 2");
@@ -865,12 +866,189 @@ public class InterfaceGraphique implements Runnable {
         pve.addActionListener(e -> afficherMenuChoixIA());
 
         eve.addActionListener(e -> {
-            ParametresPartie p = new ParametresPartie();
-            p.mode = "IA vs IA";
-            p.niveauOr = NiveauxIA.MOYEN;
-            p.niveauArgent = NiveauxIA.MOYEN;
-            p.joueurQuiCommence = null;
-            lancerJeu(p);
+
+            JDialog dialog = new JDialog(frame, "IA vs IA", true);
+
+            dialog.setSize(900, 550);
+            dialog.setLocationRelativeTo(frame);
+            dialog.setUndecorated(false);
+            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+            String[] niveaux = {
+                    "FACILE",
+                    "MOYEN",
+                    "DIFFICILE"
+            };
+
+            final JList<String> listeOr = new JList<>(niveaux);
+            final JList<String> listeArgent = new JList<>(niveaux);
+
+            DefaultListCellRenderer centerRenderer = new DefaultListCellRenderer() {
+                @Override
+                public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                        boolean isSelected, boolean cellHasFocus) {
+                    super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                    setHorizontalAlignment(SwingConstants.CENTER);
+                    setOpaque(isSelected);
+                    return this;
+                }
+            };
+
+            listeOr.setCellRenderer(centerRenderer);
+            listeArgent.setCellRenderer(centerRenderer);
+
+            JPanel panelDialog = new JPanel() {
+
+                private Image background;
+
+                {
+                    try {
+                        background = javax.imageio.ImageIO.read(
+                                global.Configuration.ouvre("image.png"));
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+
+                @Override
+                protected void paintComponent(Graphics g) {
+
+                    super.paintComponent(g);
+
+                    Graphics2D g2 = (Graphics2D) g;
+
+                    g2.setRenderingHint(
+                            RenderingHints.KEY_ANTIALIASING,
+                            RenderingHints.VALUE_ANTIALIAS_ON);
+
+                    if (background != null) {
+                        g2.drawImage(background, 0, 0, getWidth(), getHeight(), this);
+                    }
+
+                    g2.setColor(new Color(0, 0, 0, 170));
+                    g2.fillRect(0, 0, getWidth(), getHeight());
+
+                    g2.setColor(new Color(100, 180, 255));
+                    g2.setStroke(new BasicStroke(4f));
+
+                    Font font = new Font("Arial", Font.BOLD, 90);
+                    g2.setFont(font);
+
+                    FontMetrics fm = g2.getFontMetrics();
+
+                    String texte = "VS";
+
+                    int textWidth = fm.stringWidth(texte);
+                    int textHeight = fm.getAscent();
+
+                    int cx = getWidth() / 2;
+                    int cy = getHeight() / 2;
+
+                    int x = cx - textWidth / 2;
+                    int y = cy + textHeight / 2;
+
+                    GradientPaint gp = new GradientPaint(
+                            0,
+                            0,
+                            Color.RED,
+                            0,
+                            120,
+                            Color.ORANGE);
+
+                    g2.setPaint(gp);
+
+                    g2.drawString(texte, x, y);
+                 
+
+                    // Dessin des traits pour IA OR
+                    int selOr = listeOr.getSelectedIndex();
+                    if (selOr != -1) {
+                        g2.setStroke(new BasicStroke(3f));
+                        g2.setColor(new Color(255, 180, 50, 180));
+                        int yItem = 130 + selOr * 70 + 35;
+                        int xListRight = 70 + 250;
+
+                        // Chemin orthogonal vers le VS (horizontal puis vertical puis horizontal)
+                        g2.drawLine(xListRight, yItem, cx - 100, yItem);
+                        g2.drawLine(cx - 100, yItem, cx - 100, cy);
+                        g2.drawLine(cx - 100, cy, cx - 80, cy);
+                    }
+
+                    // Dessin des traits pour IA ARGENT
+                    int selArgent = listeArgent.getSelectedIndex();
+                    if (selArgent != -1) {
+                        g2.setStroke(new BasicStroke(3f));
+                        g2.setColor(new Color(120, 180, 255, 180));
+                        int yItem = 130 + selArgent * 70 + 35;
+                        int xListLeft = 580;
+
+                        // Chemin orthogonal vers le VS (horizontal puis vertical puis horizontal)
+                        g2.drawLine(xListLeft, yItem, cx + 100, yItem);
+                        g2.drawLine(cx + 100, yItem, cx + 100, cy);
+                        g2.drawLine(cx + 100, cy, cx + 80, cy);
+                    }
+                }
+            };
+
+            listeOr.addListSelectionListener(ev -> panelDialog.repaint());
+            listeArgent.addListSelectionListener(ev -> panelDialog.repaint());
+
+            panelDialog.setLayout(null);
+
+            JLabel labelOr = new JLabel("IA OR", SwingConstants.CENTER);
+            labelOr.setForeground(new Color(255, 200, 50));
+            labelOr.setFont(new Font("Arial", Font.BOLD, 40));
+            labelOr.setBounds(45, 40, 300, 50);
+            panelDialog.add(labelOr);
+
+            listeOr.setSelectedIndex(1);
+            listeOr.setFont(new Font("Arial", Font.BOLD, 35));
+            listeOr.setBackground(new Color(0, 0, 0, 0));
+            listeOr.setForeground(Color.WHITE);
+            listeOr.setSelectionBackground(new Color(255, 180, 50));
+            listeOr.setFixedCellHeight(70);
+            listeOr.setBounds(70, 130, 250, 250);
+            panelDialog.add(listeOr);
+
+            JLabel labelArgent = new JLabel("IA ARGENT", SwingConstants.CENTER);
+            labelArgent.setForeground(new Color(180, 220, 255));
+            labelArgent.setFont(new Font("Arial", Font.BOLD, 40));
+            labelArgent.setBounds(555, 40, 300, 50);
+            panelDialog.add(labelArgent);
+
+            listeArgent.setSelectedIndex(1);
+            listeArgent.setFont(new Font("Arial", Font.BOLD, 35));
+            listeArgent.setBackground(new Color(0, 0, 0, 0));
+            listeArgent.setForeground(Color.WHITE);
+            listeArgent.setSelectionBackground(new Color(120, 180, 255));
+            listeArgent.setFixedCellHeight(70);
+            listeArgent.setBounds(580, 130, 250, 250);
+            panelDialog.add(listeArgent);
+
+            RoundedButton lancer = new RoundedButton("LANCER");
+            lancer.setFont(new Font("Arial", Font.BOLD, 28));
+            lancer.setBounds(180, 420, 250, 50);
+            lancer.addActionListener(ev -> {
+                ParametresPartie p = new ParametresPartie();
+                p.mode = "IA vs IA";
+                p.niveauOr = convertirNiveauIA(listeOr.getSelectedValue());
+                p.niveauArgent = convertirNiveauIA(listeArgent.getSelectedValue());
+                p.joueurQuiCommence = null;
+                dialog.dispose();
+                lancerJeu(p);
+            });
+            panelDialog.add(lancer);
+
+            RoundedButton retourDialog = new RoundedButton("RETOUR");
+            retourDialog.setFont(new Font("Arial", Font.BOLD, 28));
+            retourDialog.setBounds(470, 420, 250, 50);
+            retourDialog.addActionListener(ev -> {
+                dialog.dispose();
+            });
+            panelDialog.add(retourDialog);
+
+            dialog.setContentPane(panelDialog);
+            dialog.setVisible(true);
         });
 
         retour.addActionListener(e -> afficherMenu());
@@ -890,26 +1068,69 @@ public class InterfaceGraphique implements Runnable {
         frame.repaint();
     }
 
+    private NiveauxIA convertirNiveauIA(String txt) {
+
+        switch (txt) {
+
+            case "FACILE":
+                return NiveauxIA.FACILE;
+
+            case "DIFFICILE":
+                return NiveauxIA.DIFFICILE;
+
+            default:
+                return NiveauxIA.MOYEN;
+        }
+    }
+
     public void afficherMenuNomsPvP() {
         JPanel panel = creerPanelMenu();
 
-        JLabel labelOr = new JLabel("Nom Joueur OR :");
-        labelOr.setForeground(Color.WHITE);
-        labelOr.setFont(new Font("Arial", Font.BOLD, 20));
-        labelOr.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JLabel labelJ1 = new JLabel("Nom Joueur 1 :");
+        labelJ1.setForeground(Color.WHITE);
+        labelJ1.setFont(new Font("Arial", Font.BOLD, 20));
+        labelJ1.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        RoundedTextField fieldOr = new RoundedTextField("Nom optionnel", 15);
-        fieldOr.setMaximumSize(new Dimension(300, 40));
-        fieldOr.setAlignmentX(Component.CENTER_ALIGNMENT);
+        RoundedTextField fieldJ1 = new RoundedTextField("Nom optionnel", 15);
+        fieldJ1.setMaximumSize(new Dimension(300, 40));
+        fieldJ1.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel labelArgent = new JLabel("Nom Joueur ARGENT :");
-        labelArgent.setForeground(Color.WHITE);
-        labelArgent.setFont(new Font("Arial", Font.BOLD, 20));
-        labelArgent.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JLabel labelJ2 = new JLabel("Nom Joueur 2 :");
+        labelJ2.setForeground(Color.WHITE);
+        labelJ2.setFont(new Font("Arial", Font.BOLD, 20));
+        labelJ2.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        RoundedTextField fieldArgent = new RoundedTextField("Nom optionnel", 15);
-        fieldArgent.setMaximumSize(new Dimension(300, 40));
-        fieldArgent.setAlignmentX(Component.CENTER_ALIGNMENT);
+        RoundedTextField fieldJ2 = new RoundedTextField("Nom optionnel", 15);
+        fieldJ2.setMaximumSize(new Dimension(300, 40));
+        fieldJ2.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JPanel colorChoicePanel = new JPanel();
+        colorChoicePanel.setOpaque(false);
+        colorChoicePanel.setLayout(new FlowLayout());
+
+        JLabel colorLabel = new JLabel("Joueur 1 est :");
+        colorLabel.setForeground(Color.WHITE);
+        colorLabel.setFont(new Font("Arial", Font.BOLD, 18));
+
+        JRadioButton rbOr = new JRadioButton("OR");
+        rbOr.setForeground(new Color(255, 200, 50));
+        rbOr.setOpaque(false);
+        rbOr.setSelected(true);
+        rbOr.setFont(new Font("Arial", Font.BOLD, 18));
+
+        JRadioButton rbArgent = new JRadioButton("ARGENT");
+        rbArgent.setForeground(new Color(180, 220, 255));
+        rbArgent.setOpaque(false);
+        rbArgent.setFont(new Font("Arial", Font.BOLD, 18));
+
+        ButtonGroup bg = new ButtonGroup();
+        bg.add(rbOr);
+        bg.add(rbArgent);
+
+        colorChoicePanel.add(colorLabel);
+        colorChoicePanel.add(rbOr);
+        colorChoicePanel.add(rbArgent);
+        colorChoicePanel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         RoundedButton jouer = creerBoutonMenu("Jouer");
         RoundedButton retour = creerBoutonMenu("Retour");
@@ -918,8 +1139,13 @@ public class InterfaceGraphique implements Runnable {
             ParametresPartie p = new ParametresPartie();
             p.mode = "Humain vs Humain";
             p.joueurQuiCommence = null;
-            p.nomOr = fieldOr.getText().trim();
-            p.nomArgent = fieldArgent.getText().trim();
+            if (rbOr.isSelected()) {
+                p.nomOr = fieldJ1.getText().trim();
+                p.nomArgent = fieldJ2.getText().trim();
+            } else {
+                p.nomOr = fieldJ2.getText().trim();
+                p.nomArgent = fieldJ1.getText().trim();
+            }
             p.nomHumain = "";
             lancerJeu(p);
         });
@@ -927,14 +1153,16 @@ public class InterfaceGraphique implements Runnable {
         retour.addActionListener(e -> afficherMenuNouvellePartie());
 
         panel.add(Box.createVerticalGlue());
-        panel.add(labelOr);
+        panel.add(labelJ1);
         panel.add(Box.createRigidArea(new Dimension(0, 5)));
-        panel.add(fieldOr);
-        panel.add(Box.createRigidArea(new Dimension(0, 20)));
-        panel.add(labelArgent);
+        panel.add(fieldJ1);
+        panel.add(Box.createRigidArea(new Dimension(0, 15)));
+        panel.add(labelJ2);
         panel.add(Box.createRigidArea(new Dimension(0, 5)));
-        panel.add(fieldArgent);
-        panel.add(Box.createRigidArea(new Dimension(0, 30)));
+        panel.add(fieldJ2);
+        panel.add(Box.createRigidArea(new Dimension(0, 15)));
+        panel.add(colorChoicePanel);
+        panel.add(Box.createRigidArea(new Dimension(0, 25)));
         panel.add(jouer);
         panel.add(Box.createRigidArea(new Dimension(0, 10)));
         panel.add(retour);
