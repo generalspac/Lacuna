@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Timeout;
 
 import model.Cercle;
+import model.ConstantesJeu;
 import model.Coordonnees;
 import model.Fleur;
 import model.Jeu;
@@ -72,13 +73,13 @@ public class TestsJeu {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
             Jeu jeu = jeuStandard();
             jeu.initFleurs();
-            assertEquals(49, jeu.getFleurs().size());
+            assertEquals(ConstantesJeu.NB_FLEURS, jeu.getFleurs().size());
             int[] counts = new int[Fleur.TypeFleur.values().length];
             for (Fleur f : jeu.getFleurs()) {
                 counts[f.getType().ordinal()]++;
             }
             for (int count : counts) {
-                assertEquals(7, count);
+                assertEquals(ConstantesJeu.NB_FLEURS_PAR_COULEUR, count);
             }
         });
     }
@@ -121,7 +122,7 @@ public class TestsJeu {
 
             jeu.reset();
 
-            assertEquals(49, jeu.getFleurs().size());
+            assertEquals(ConstantesJeu.NB_FLEURS, jeu.getFleurs().size());
             assertEquals(12, jeu.getPions().size());
             assertTrue(jeu.isEnPhaseSelectionAvantage());
             assertFalse(jeu.isAvantageInitialApplique());

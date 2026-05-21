@@ -1,6 +1,7 @@
 package view;
 
 import global.Configuration;
+import model.ConstantesJeu;
 import model.Fleur;
 import model.Joueur;
 import model.Pion;
@@ -149,12 +150,14 @@ public class Score extends JComponent {
 
         int gap = 2;
 
-        int boxSizeH = (availableHeight - 6 * gap) / 7;
-        int boxSizeW = (availableWidth - 6 * gap) / 7;
+        int nbFleursParCouleur = ConstantesJeu.NB_FLEURS_PAR_COULEUR;
+        int nbGaps = nbFleursParCouleur - 1;
+        int boxSizeH = (availableHeight - nbGaps * gap) / nbFleursParCouleur;
+        int boxSizeW = (availableWidth - nbGaps * gap) / nbFleursParCouleur;
         int boxSize = Math.min(boxSizeH, boxSizeW);
         if (boxSize < 1)
             boxSize = 1; // éviter une taille nulle
-        int totalGridW = 7 * boxSize + 6 * gap;
+        int totalGridW = nbFleursParCouleur * boxSize + nbGaps * gap;
 
         // On décale la grille pour laisser de la place à l'étoile selon le joueur
         int startX;
@@ -179,7 +182,7 @@ public class Score extends JComponent {
             if (img == null)
                 continue;
 
-            for (int j = 0; j < 7; j++) {
+            for (int j = 0; j < nbFleursParCouleur; j++) {
 
                 // =========================
                 // POSITION SYMÉTRIQUE
@@ -189,7 +192,7 @@ public class Score extends JComponent {
                 if (playerType == Pion.TypePion.ARGENT) {
                     displayIndex = j;
                 } else {
-                    displayIndex = 6 - j;
+                    displayIndex = nbGaps - j;
                 }
 
                 int x = startX + displayIndex * (boxSize + gap);
