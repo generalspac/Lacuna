@@ -13,6 +13,8 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.AlphaComposite;
+import java.awt.Color;
+import java.awt.Polygon;
 
 public class Score extends JComponent {
     private Image pawnImage;
@@ -62,6 +64,40 @@ public class Score extends JComponent {
         repaint();
     }
 
+    private void dessinerEtoile(
+            Graphics2D g2,
+            int centerX,
+            int centerY,
+            int radius) {
+
+        int branches = 5;
+
+        Polygon star = new Polygon();
+
+        for (int i = 0; i < branches * 2; i++) {
+
+            double angle = Math.PI / branches * i;
+
+            int r = (i % 2 == 0)
+                    ? radius
+                    : radius / 2;
+
+            int x = (int) (centerX + Math.cos(angle - Math.PI / 2) * r);
+
+            int y = (int) (centerY + Math.sin(angle - Math.PI / 2) * r);
+
+            star.addPoint(x, y);
+        }
+
+        g2.setColor(new Color(255, 215, 0));
+
+        g2.fillPolygon(star);
+
+        g2.setColor(Color.WHITE);
+
+        g2.drawPolygon(star);
+    }
+
     public void updateFromGame(Joueur joueur) {
 
         Map<Fleur.TypeFleur, Integer> data = new HashMap<>();
@@ -92,7 +128,6 @@ public class Score extends JComponent {
 
         int w = getWidth();
 
-        
         java.awt.Rectangle vis = getVisibleRect();
         int visH = (vis.height > 0) ? vis.height : getHeight();
         int visY = (vis.height > 0) ? vis.y : 0;
@@ -107,40 +142,108 @@ public class Score extends JComponent {
         // Grille de fleurs (7 types x 7 fleurs)
         int currentY = startY + pawnSize + 15;
         int availableHeight = (visY + visH) - currentY - 10;
-        int availableWidth = w - 10;
 
-       
+        // On réserve de la place pour l'étoile sur le côté
+        int starSpace = 30;
+        int availableWidth = w - 10 - starSpace;
+
         int gap = 2;
 
-        
         int boxSizeH = (availableHeight - 6 * gap) / 7;
         int boxSizeW = (availableWidth - 6 * gap) / 7;
         int boxSize = Math.min(boxSizeH, boxSizeW);
-        if (boxSize < 1) boxSize = 1; // éviter une taille nulle
+        if (boxSize < 1)
+            boxSize = 1; // éviter une taille nulle
         int totalGridW = 7 * boxSize + 6 * gap;
-        int startX = (w - totalGridW) / 2;
+
+        // On décale la grille pour laisser de la place à l'étoile selon le joueur
+        int startX;
+        if (playerType == Pion.TypePion.ARGENT) {
+            startX = 5; // Place pour l'étoile à droite
+        } else {
+            startX = w - totalGridW - 5; // Place pour l'étoile à gauche
+        }
 
         Fleur.TypeFleur[] types = Fleur.TypeFleur.values();
+
         for (int i = 0; i < types.length; i++) {
+
             Fleur.TypeFleur type = types[i];
+
             int y = currentY + i * (boxSize + gap);
+
             int count = flowerCounts.get(type);
 
-            for (int j = 0; j < 7; j++) {
-                int x = startX + j * (boxSize + gap);
-                Image img = flowerImages.get(type);
-                if (img == null)
-                    continue;
+            Image img = flowerImages.get(type);
 
-                if (j < count) {
-                    // fleurs gagnées
-                    g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
-                    g2.drawImage(img, x, y, boxSize, boxSize, null);
+            if (img == null)
+                continue;
+
+            for (int j = 0; j < 7; j++) {
+
+                // =========================
+                // POSITION SYMÉTRIQUE
+                // =========================
+                int displayIndex;
+
+                if (playerType == Pion.TypePion.ARGENT) {
+                    displayIndex = j;
                 } else {
-                    // fleurs non gagnées
-                    g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.1f));
-                    g2.drawImage(img, x, y, boxSize, boxSize, null);
+                    displayIndex = 6 - j;
                 }
+
+                int x = startX + displayIndex * (boxSize + gap);
+
+                // =========================
+                // FLEURS GAGNÉES
+                // =========================
+                boolean active = j < count;
+
+                if (active) {
+                    g2.setComposite(
+                            AlphaComposite.getInstance(
+                                    AlphaComposite.SRC_OVER,
+                                    1.0f));
+                } else {
+                    g2.setComposite(
+                            AlphaComposite.getInstance(
+                                    AlphaComposite.SRC_OVER,
+                                    0.12f));
+                }
+
+                g2.drawImage(img, x, y, boxSize, boxSize, null);
+
+                // Dessiner l'étoile seulement une fois par ligne, à la fin de la grille
+                if (count >= 4 && j == 6) {
+
+                    int starX;
+
+                    if (playerType == Pion.TypePion.ARGENT) {
+                        // étoile à droite de la dernière fleur (qui est à l'index 6)
+                        starX = x + boxSize + gap + (starSpace / 2);
+                    } else {
+                        // étoile à gauche de la première fleur (qui est à l'index 0, donc j=6 pour OR)
+                        // Pour OR, j=6 est l'index d'affichage 0
+                        int x0 = startX;
+                        starX = x0 - (starSpace / 2);
+                    }
+
+                    int starY = y + boxSize / 2;
+                    g2.setComposite(
+                            AlphaComposite.getInstance(
+                                    AlphaComposite.SRC_OVER,
+                                    1.0f));
+
+                    dessinerEtoile(
+                            g2,
+                            starX,
+                            starY,
+                            boxSize / 2);
+                }
+                g2.setComposite(
+                        AlphaComposite.getInstance(
+                                AlphaComposite.SRC_OVER,
+                                1.0f));
             }
         }
     }

@@ -60,7 +60,7 @@ public class InterfaceGraphique implements Runnable {
         menu.nouvellePartie.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                lancerJeu();
+                afficherMenuNouvellePartie();
             }
         });
 
@@ -184,9 +184,15 @@ public class InterfaceGraphique implements Runnable {
             parametres.nomArgent = "";
             parametres.nomHumain = "";
         } else {
-            parametres = demanderParametresPartie();
-            if (parametres == null) return;
+            // Dans le nouveau flux, on affiche le menu de choix de mode
+            afficherMenuNouvellePartie();
+            return;
         }
+        lancerJeu(parametres);
+    }
+
+    public void lancerJeu(ParametresPartie parametres) {
+        if (parametres == null) return;
         String choix = parametres.mode;
 
         // Afficher un écran de chargement temporaire
@@ -753,102 +759,6 @@ public class InterfaceGraphique implements Runnable {
         frame.repaint();
     }
 
-    private ParametresPartie demanderParametresPartie() {
-        JPanel panel = new JPanel(new GridLayout(0, 2, 12, 12));
-        panel.setBackground(Color.BLACK);
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-
-        String[] modes = { "Humain vs Humain", "IA Facile", "IA Moyenne", "IA Difficile", "IA vs IA" };
-        JComboBox<String> modeCombo = new JComboBox<>(modes);
-
-        JTextField nomOrField = new JTextField();
-        JTextField nomArgentField = new JTextField();
-        JTextField nomHumainField = new JTextField();
-        JComboBox<NiveauxIA> niveauOrCombo = new JComboBox<>(NiveauxIA.values());
-        JComboBox<NiveauxIA> niveauArgentCombo = new JComboBox<>(NiveauxIA.values());
-
-        JComboBox<String> commenceHumain = new JComboBox<>(new String[] { "Aléatoire", "OR", "ARGENT" });
-        JComboBox<String> commenceIA = new JComboBox<>(new String[] { "Aléatoire", "Humain", "IA" });
-
-        panel.add(labelBlanc("Mode"));
-        panel.add(modeCombo);
-        panel.add(labelBlanc("Nom joueur OR (optionnel)"));
-        panel.add(nomOrField);
-        panel.add(labelBlanc("Nom joueur ARGENT (optionnel)"));
-        panel.add(nomArgentField);
-        panel.add(labelBlanc("Nom humain vs IA (optionnel)"));
-        panel.add(nomHumainField);
-        panel.add(labelBlanc("Niveau IA OR"));
-        panel.add(niveauOrCombo);
-        panel.add(labelBlanc("Niveau IA ARGENT"));
-        panel.add(niveauArgentCombo);
-        panel.add(labelBlanc("Qui commence ?"));
-        panel.add(commenceHumain);
-
-        modeCombo.addActionListener(e -> {
-            String mode = (String) modeCombo.getSelectedItem();
-            boolean iaSimple = mode != null && mode.startsWith("IA ") && !"IA vs IA".equals(mode);
-            boolean iaVsIA = "IA vs IA".equals(mode);
-            nomOrField.setEnabled(!iaSimple && !iaVsIA);
-            nomArgentField.setEnabled(!iaSimple && !iaVsIA);
-            nomHumainField.setEnabled(iaSimple);
-            niveauOrCombo.setEnabled(iaVsIA);
-            niveauArgentCombo.setEnabled(iaVsIA);
-            commenceHumain.setEnabled(true);
-            commenceIA.setEnabled(iaSimple);
-            panel.remove(13);
-            panel.add(iaSimple ? commenceIA : commenceHumain, 13);
-            panel.revalidate();
-            panel.repaint();
-        });
-
-        nomHumainField.setEnabled(false);
-        niveauOrCombo.setEnabled(false);
-        niveauArgentCombo.setEnabled(false);
-
-        int result = JOptionPane.showConfirmDialog(frame, panel, "Nouvelle partie", JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE);
-        if (result != JOptionPane.OK_OPTION) {
-            return null;
-        }
-
-        ParametresPartie p = new ParametresPartie();
-        p.mode = (String) modeCombo.getSelectedItem();
-        p.nomOr = nomOrField.getText();
-        p.nomArgent = nomArgentField.getText();
-        p.nomHumain = nomHumainField.getText();
-        p.niveauOr = (NiveauxIA) niveauOrCombo.getSelectedItem();
-        p.niveauArgent = (NiveauxIA) niveauArgentCombo.getSelectedItem();
-
-        boolean modeIASimple = p.mode != null && p.mode.startsWith("IA ") && !"IA vs IA".equals(p.mode);
-        String choixDepart = (String) (modeIASimple ? commenceIA.getSelectedItem() : commenceHumain.getSelectedItem());
-        p.joueurQuiCommence = convertirChoixDepart(choixDepart, modeIASimple);
-        return p;
-    }
-
-    private JLabel labelBlanc(String texte) {
-        JLabel label = new JLabel(texte);
-        label.setForeground(Color.WHITE);
-        return label;
-    }
-
-    /**
-     * Convertit le choix du dialogue en couleur de départ.
-     *
-     * @param choix valeur affichée dans la liste déroulante.
-     * @param modeIA {@code true} pour humain contre IA, où l'IA joue ARGENT.
-     * @return couleur qui commence, ou {@code null} pour un départ aléatoire.
-     */
-    private Pion.TypePion convertirChoixDepart(String choix, boolean modeIA) {
-        if (choix == null || "Aléatoire".equals(choix)) {
-            return null;
-        }
-        if (modeIA) {
-            return "IA".equals(choix) ? Pion.TypePion.ARGENT : Pion.TypePion.OR;
-        }
-        return "ARGENT".equals(choix) ? Pion.TypePion.ARGENT : Pion.TypePion.OR;
-    }
-
     private void installerRaccourcisClavier(JComponent cible, ControleurBoutons controleur) {
         // key Bindings
         InputMap inputMap = cible.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
@@ -910,5 +820,176 @@ public class InterfaceGraphique implements Runnable {
             device.setFullScreenWindow(frame);
             maximized = true;
         }
+    }
+
+    public void afficherMenuNouvellePartie() {
+        JPanel panel = creerPanelMenu();
+
+        RoundedButton pvp = creerBoutonMenu("Joueur 1 vs Joueur 2");
+        RoundedButton pve = creerBoutonMenu("Joueur vs IA");
+        RoundedButton eve = creerBoutonMenu("IA vs IA");
+        RoundedButton retour = creerBoutonMenu("Retour");
+
+        pvp.addActionListener(e -> afficherMenuNomsPvP());
+
+        pve.addActionListener(e -> afficherMenuChoixIA());
+
+        eve.addActionListener(e -> {
+            ParametresPartie p = new ParametresPartie();
+            p.mode = "IA vs IA";
+            p.niveauOr = NiveauxIA.MOYEN;
+            p.niveauArgent = NiveauxIA.MOYEN;
+            p.joueurQuiCommence = null;
+            lancerJeu(p);
+        });
+
+        retour.addActionListener(e -> afficherMenu());
+
+        panel.add(Box.createVerticalGlue());
+        panel.add(pvp);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        panel.add(pve);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        panel.add(eve);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        panel.add(retour);
+        panel.add(Box.createVerticalGlue());
+
+        frame.setContentPane(panel);
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    public void afficherMenuNomsPvP() {
+        JPanel panel = creerPanelMenu();
+
+        JLabel labelOr = new JLabel("Nom Joueur OR :");
+        labelOr.setForeground(Color.WHITE);
+        labelOr.setFont(new Font("Arial", Font.BOLD, 20));
+        labelOr.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        RoundedTextField fieldOr = new RoundedTextField("Nom optionnel", 15);
+        fieldOr.setMaximumSize(new Dimension(300, 40));
+        fieldOr.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JLabel labelArgent = new JLabel("Nom Joueur ARGENT :");
+        labelArgent.setForeground(Color.WHITE);
+        labelArgent.setFont(new Font("Arial", Font.BOLD, 20));
+        labelArgent.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        RoundedTextField fieldArgent = new RoundedTextField("Nom optionnel", 15);
+        fieldArgent.setMaximumSize(new Dimension(300, 40));
+        fieldArgent.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        RoundedButton jouer = creerBoutonMenu("Jouer");
+        RoundedButton retour = creerBoutonMenu("Retour");
+
+        jouer.addActionListener(e -> {
+            ParametresPartie p = new ParametresPartie();
+            p.mode = "Humain vs Humain";
+            p.joueurQuiCommence = null;
+            p.nomOr = fieldOr.getText().trim();
+            p.nomArgent = fieldArgent.getText().trim();
+            p.nomHumain = "";
+            lancerJeu(p);
+        });
+
+        retour.addActionListener(e -> afficherMenuNouvellePartie());
+
+        panel.add(Box.createVerticalGlue());
+        panel.add(labelOr);
+        panel.add(Box.createRigidArea(new Dimension(0, 5)));
+        panel.add(fieldOr);
+        panel.add(Box.createRigidArea(new Dimension(0, 20)));
+        panel.add(labelArgent);
+        panel.add(Box.createRigidArea(new Dimension(0, 5)));
+        panel.add(fieldArgent);
+        panel.add(Box.createRigidArea(new Dimension(0, 30)));
+        panel.add(jouer);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        panel.add(retour);
+        panel.add(Box.createVerticalGlue());
+
+        frame.setContentPane(panel);
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    public void afficherMenuChoixIA() {
+        JPanel panel = creerPanelMenu();
+
+        RoundedButton facile = creerBoutonMenu("IA Facile");
+        RoundedButton moyen = creerBoutonMenu("IA Moyenne");
+        RoundedButton difficile = creerBoutonMenu("IA Difficile");
+        RoundedButton retour = creerBoutonMenu("Retour");
+
+        facile.addActionListener(e -> lancerJeuIA(NiveauxIA.FACILE));
+        moyen.addActionListener(e -> lancerJeuIA(NiveauxIA.MOYEN));
+        difficile.addActionListener(e -> lancerJeuIA(NiveauxIA.DIFFICILE));
+        retour.addActionListener(e -> afficherMenuNouvellePartie());
+
+        panel.add(Box.createVerticalGlue());
+        panel.add(facile);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        panel.add(moyen);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        panel.add(difficile);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        panel.add(retour);
+        panel.add(Box.createVerticalGlue());
+
+        frame.setContentPane(panel);
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    private void lancerJeuIA(NiveauxIA niveau) {
+        ParametresPartie p = new ParametresPartie();
+        if (niveau == NiveauxIA.FACILE) p.mode = "IA Facile";
+        else if (niveau == NiveauxIA.MOYEN) p.mode = "IA Moyenne";
+        else if (niveau == NiveauxIA.DIFFICILE) p.mode = "IA Difficile";
+
+        p.nomHumain = "";
+        p.joueurQuiCommence = null;
+        lancerJeu(p);
+    }
+
+    private RoundedButton creerBoutonMenu(String texte) {
+        RoundedButton b = new RoundedButton(texte);
+        b.setAlignmentX(Component.CENTER_ALIGNMENT);
+        b.setBackground(Color.DARK_GRAY);
+        b.setForeground(Color.WHITE);
+        b.setMargin(new Insets(15, 30, 15, 30));
+        b.setFont(new Font("Arial", Font.BOLD, 25));
+        b.setMaximumSize(new Dimension(300, 50));
+
+        b.setOpaque(false);
+        b.setContentAreaFilled(false);
+        b.setBorderPainted(false);
+        b.setFocusPainted(false);
+        return b;
+    }
+
+    private JPanel creerPanelMenu() {
+        JPanel panel = new JPanel() {
+            private Image backgroundImage;
+            {
+                try {
+                    backgroundImage = javax.imageio.ImageIO.read(global.Configuration.ouvre("image.png"));
+                } catch (Exception e) {}
+            }
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                if (backgroundImage != null) {
+                    g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
+                }
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setColor(new Color(0, 0, 0, 100));
+                g2d.fillRect(0, 0, getWidth(), getHeight());
+            }
+        };
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        return panel;
     }
 }
