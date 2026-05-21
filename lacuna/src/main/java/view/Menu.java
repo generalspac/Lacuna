@@ -11,7 +11,7 @@ public class Menu extends JPanel {
 
     public RoundedButton nouvellePartie;
     public RoundedButton chargerPartie;
-    public RoundedButton leaderBoard;
+    // public RoundedButton leaderBoard;
     public RoundedButton regles;
     public RoundedButton tutoriel;
     public RoundedButton multijoueurReseau;
@@ -29,18 +29,18 @@ public class Menu extends JPanel {
         setBackground(Color.white);
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
-        ////LacunaGradientLabel title = new LacunaGradientLabel("LACUNA");
-        ////title.setAlignmentX(Component.CENTER_ALIGNMENT);
-        ////title.setPreferredSize(new Dimension(800, 180));
-        ////title.setMaximumSize(new Dimension(800, 180));
-        ////title.setMinimumSize(new Dimension(800, 180));
+        //// LacunaGradientLabel title = new LacunaGradientLabel("LACUNA");
+        //// title.setAlignmentX(Component.CENTER_ALIGNMENT);
+        //// title.setPreferredSize(new Dimension(800, 180));
+        //// title.setMaximumSize(new Dimension(800, 180));
+        //// title.setMinimumSize(new Dimension(800, 180));
 
         // =========================
         // Styles
         // =========================
         nouvellePartie = new RoundedButton("Nouvelle Partie");
         chargerPartie = new RoundedButton("Charger Partie");
-        leaderBoard = new RoundedButton("LeaderBoard");
+        // leaderBoard = new RoundedButton("LeaderBoard");
         regles = new RoundedButton("Règles du jeu");
         tutoriel = new RoundedButton("Tutoriel");
         multijoueurReseau = new RoundedButton("Multijoueur Réseau");
@@ -49,7 +49,7 @@ public class Menu extends JPanel {
                 nouvellePartie,
                 chargerPartie,
                 tutoriel,
-                leaderBoard,
+             //   leaderBoard,
                 regles,
                 multijoueurReseau
         };
@@ -77,7 +77,7 @@ public class Menu extends JPanel {
         // =========================
         nouvellePartie.setActionCommand("nouvellePartie");
         chargerPartie.setActionCommand("chargerPartie");
-        leaderBoard.setActionCommand("leaderBoard");
+        // leaderBoard.setActionCommand("leaderBoard");
         regles.setActionCommand("regles");
         tutoriel.setActionCommand("tutoriel");
         multijoueurReseau.setActionCommand("multijoueurReseau");
@@ -86,7 +86,7 @@ public class Menu extends JPanel {
         // LAYOUT (IDENTIQUE)
         // =========================
         add(Box.createVerticalStrut(80));
-        //add(title);
+        // add(title);
         add(Box.createVerticalStrut(80));
 
         add(Box.createVerticalGlue());
@@ -95,8 +95,8 @@ public class Menu extends JPanel {
         add(chargerPartie);
         add(Box.createRigidArea(new Dimension(0, 1)));
         add(tutoriel);
-        add(Box.createRigidArea(new Dimension(0, 1)));
-        add(leaderBoard);
+        // add(Box.createRigidArea(new Dimension(0, 1)));
+        // add(leaderBoard);
         add(Box.createRigidArea(new Dimension(0, 1)));
         add(regles);
         add(Box.createRigidArea(new Dimension(0, 1)));

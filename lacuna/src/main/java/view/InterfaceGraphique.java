@@ -18,20 +18,22 @@ import network.CoupReseau;
 import network.ServeurReseau;
 import network.ClientReseau;
 import java.util.concurrent.CountDownLatch;
+
 public class InterfaceGraphique implements Runnable {
 
     JFrame frame;
     boolean maximized = false;
     private Menu menu;
-    // id de la partie à charger depuis la DB après lancerJeu(), -1 si nouvelle partie
+    // id de la partie à charger depuis la DB après lancerJeu(), -1 si nouvelle
+    // partie
     private int idPartieACharger = -1;
 
     // Réseau : stockés avant d'appeler lancerJeu() pour le mode réseau
-    private Object gestionnaireReseau = null;      // ServeurReseau ou ClientReseau
-    private Pion.TypePion typeLocalReseau = null;   // type du joueur local
-    private boolean hoteCommencea = false;          // true si OR (hôte) commence
+    private Object gestionnaireReseau = null; // ServeurReseau ou ClientReseau
+    private Pion.TypePion typeLocalReseau = null; // type du joueur local
+    private boolean hoteCommencea = false; // true si OR (hôte) commence
     private ParametresPartie parametresPresets = null; // bypass du dialogue de config
-    private int graineReseau = 0;                  // graine partagée pour synchroniser les plateaux
+    private int graineReseau = 0; // graine partagée pour synchroniser les plateaux
 
     private static class ParametresPartie {
         String mode;
@@ -87,18 +89,22 @@ public class InterfaceGraphique implements Runnable {
         });
 
         // Affiche la liste des parties en base
-        //  l'utilisateur choisit puis le jeu se lance
+        // l'utilisateur choisit puis le jeu se lance
         menu.chargerPartie.addActionListener(e -> {
             DatabaseManager db = new DatabaseManager();
             try {
                 db.ouvrirConnexion();
                 List<String> parties = db.listerParties();
                 db.fermerConnexion();
-                if (parties.isEmpty()) { JOptionPane.showMessageDialog(frame, "Aucune partie sauvegardée."); return; }
+                if (parties.isEmpty()) {
+                    JOptionPane.showMessageDialog(frame, "Aucune partie sauvegardée.");
+                    return;
+                }
                 String[] options = parties.toArray(new String[0]);
                 String choisi = (String) JOptionPane.showInputDialog(frame, "Choisissez une partie :",
                         "Charger une partie", JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
-                if (choisi == null) return;
+                if (choisi == null)
+                    return;
                 idPartieACharger = Integer.parseInt(choisi.split(" - ")[0]);
                 lancerJeu();
             } catch (SQLException ex) {
@@ -136,11 +142,8 @@ public class InterfaceGraphique implements Runnable {
         frame.repaint();
     }
 
-  
-
     public void lancerJeuTutoriel() {
 
-       
         TutorialOverlay overlay = new TutorialOverlay();
 
         JeuTutoriel tutoriel = new JeuTutoriel(frame, overlay, () -> afficherMenu());
@@ -192,7 +195,8 @@ public class InterfaceGraphique implements Runnable {
     }
 
     public void lancerJeu(ParametresPartie parametres) {
-        if (parametres == null) return;
+        if (parametres == null)
+            return;
         String choix = parametres.mode;
 
         // Afficher un écran de chargement temporaire
@@ -270,7 +274,7 @@ public class InterfaceGraphique implements Runnable {
         // Utiliser un SwingWorker pour ne pas bloquer l'EDT pendant l'initialisation
         SwingWorker<FlexPanel, Void> worker = new SwingWorker<>() {
             JeuGraphique aire;
-            JButton undoButton, redoButton, resetButton, sauvegarderButton;
+            JButton undoButton, redoButton, resetButton, sauvegarderButton, quitterButton;
             JComponent phase2PanelRef;
 
             @Override
@@ -401,6 +405,16 @@ public class InterfaceGraphique implements Runnable {
                 JButton abandonButton = new JButton("Abandonner");
                 abandonButton.addActionListener(e -> controleurBoutons.abandonner());
 
+                quitterButton = new JButton("Quitter");
+                quitterButton.addActionListener(e -> {
+                    int confirm = JOptionPane.showConfirmDialog(frame, "Êtes-vous sûr de vouloir quitter la partie ?",
+                            "Confirmer", JOptionPane.YES_NO_OPTION);
+                    if (confirm == JOptionPane.YES_OPTION) {
+                        aire.jeu.annulerIAEnCours();
+                        afficherMenu();
+                    }
+                });
+
                 JButton gitButton = new JButton("Guide");
                 gitButton.addActionListener(e -> {
                     Object[] options = new Object[Fleur.TypeFleur.values().length + 2];
@@ -445,7 +459,8 @@ public class InterfaceGraphique implements Runnable {
                         return;
                     }
                     aire.jeu.annulerIAEnCours();
-                    String nom = JOptionPane.showInputDialog(frame, "Nom de la sauvegarde :", "Sauvegarder", JOptionPane.PLAIN_MESSAGE);
+                    String nom = JOptionPane.showInputDialog(frame, "Nom de la sauvegarde :", "Sauvegarder",
+                            JOptionPane.PLAIN_MESSAGE);
                     if (nom == null) {
                         aire.refreshScoresEtTourIA();
                         return;
@@ -463,6 +478,7 @@ public class InterfaceGraphique implements Runnable {
                 });
 
                 buttonPanel.add(sauvegarderButton);
+                buttonPanel.add(quitterButton);
 
                 // ================= CONTRÔLES PHASE 2 =================
                 FlexPanel phase2Panel = new FlexPanel();
@@ -613,22 +629,29 @@ public class InterfaceGraphique implements Runnable {
         int roleChoisi = JOptionPane.showOptionDialog(frame, "Choisissez votre rôle :",
                 "Multijoueur Réseau", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE,
                 null, roles, roles[0]);
-        if (roleChoisi < 0) return;
+        if (roleChoisi < 0)
+            return;
 
         boolean estHote = (roleChoisi == 0);
 
         if (estHote) {
             // --- Côté hôte ---
             String portStr = JOptionPane.showInputDialog(frame, "Port d'écoute :", "12345");
-            if (portStr == null) return;
+            if (portStr == null)
+                return;
             int port;
-            try { port = Integer.parseInt(portStr.trim()); } catch (NumberFormatException e) { port = 12345; }
+            try {
+                port = Integer.parseInt(portStr.trim());
+            } catch (NumberFormatException e) {
+                port = 12345;
+            }
 
             String[] departs = { "OR (toi)", "ARGENT (l'invité)" };
             int departChoisi = JOptionPane.showOptionDialog(frame, "Qui commence ?",
                     "Départ", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE,
                     null, departs, departs[0]);
-            if (departChoisi < 0) return;
+            if (departChoisi < 0)
+                return;
             final boolean hoteCommence = (departChoisi == 0);
             final int portFinal = port;
             final int graineFinal = new java.util.Random().nextInt();
@@ -644,7 +667,8 @@ public class InterfaceGraphique implements Runnable {
                     // Attendre que l'invité envoie PRET avant d'envoyer INIT
                     CountDownLatch latch = new CountDownLatch(1);
                     serveur.setEcouteur(coup -> {
-                        if ("PRET".equals(coup.typeMessage)) latch.countDown();
+                        if ("PRET".equals(coup.typeMessage))
+                            latch.countDown();
                     });
                     serveur.demarrer(portFinal);
                     latch.await();
@@ -685,11 +709,17 @@ public class InterfaceGraphique implements Runnable {
         } else {
             // --- Côté invité ---
             String ip = JOptionPane.showInputDialog(frame, "Adresse IP de l'hôte :", "127.0.0.1");
-            if (ip == null) return;
+            if (ip == null)
+                return;
             String portStr = JOptionPane.showInputDialog(frame, "Port :", "12345");
-            if (portStr == null) return;
+            if (portStr == null)
+                return;
             int port;
-            try { port = Integer.parseInt(portStr.trim()); } catch (NumberFormatException e) { port = 12345; }
+            try {
+                port = Integer.parseInt(portStr.trim());
+            } catch (NumberFormatException e) {
+                port = 12345;
+            }
             final String ipFinal = ip.trim().isEmpty() ? "127.0.0.1" : ip.trim();
             final int portFinal = port;
 
@@ -792,7 +822,7 @@ public class InterfaceGraphique implements Runnable {
         actionMap.put("guides", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(controleur.getvue().jeu.getFleurSelectionnee1() != null) {
+                if (controleur.getvue().jeu.getFleurSelectionnee1() != null) {
                     controleur.toggleCoupsPossibles(controleur.getvue().jeu.getFleurSelectionnee1().getType(), false);
                 } else {
                     controleur.toggleCoupsPossibles(null, false);
@@ -945,9 +975,12 @@ public class InterfaceGraphique implements Runnable {
 
     private void lancerJeuIA(NiveauxIA niveau) {
         ParametresPartie p = new ParametresPartie();
-        if (niveau == NiveauxIA.FACILE) p.mode = "IA Facile";
-        else if (niveau == NiveauxIA.MOYEN) p.mode = "IA Moyenne";
-        else if (niveau == NiveauxIA.DIFFICILE) p.mode = "IA Difficile";
+        if (niveau == NiveauxIA.FACILE)
+            p.mode = "IA Facile";
+        else if (niveau == NiveauxIA.MOYEN)
+            p.mode = "IA Moyenne";
+        else if (niveau == NiveauxIA.DIFFICILE)
+            p.mode = "IA Difficile";
 
         p.nomHumain = "";
         p.joueurQuiCommence = null;
@@ -976,8 +1009,10 @@ public class InterfaceGraphique implements Runnable {
             {
                 try {
                     backgroundImage = javax.imageio.ImageIO.read(global.Configuration.ouvre("image.png"));
-                } catch (Exception e) {}
+                } catch (Exception e) {
+                }
             }
+
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
