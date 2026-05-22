@@ -328,8 +328,10 @@ public class JeuGraphique extends JComponent {
             return;
         }
 
-        if (animation.lancerAnimationSecondePhase())
+        if (animation.lancerAnimationSecondePhase()) {
+            enAttenteAdversaire = false; // phase 2 automatique 
             return;
+        }
 
         if (jeu.estTourIA() && jeu.isEnPhaseSelectionAvantage()) {
             animation.animerAvantageIA();
@@ -374,18 +376,38 @@ public class JeuGraphique extends JComponent {
             repaint();
         });
 
-        // Callback de réception : appelé quand l'adversaire joue un coup
+        // callback de réception : appelé quand l'adversaire joue un coup
         java.util.function.Consumer<CoupReseau> reception = coup -> SwingUtilities.invokeLater(() -> {
-            jeu.appliquerCoupReseau(coup);
-            // Après AVANTAGE, l'adversaire joue encore (son COUP) : on reste en attente
-            if (!"AVANTAGE".equals(coup.typeMessage)) {
-                enAttenteAdversaire = false;
+            if ("COUP".equals(coup.typeMessage)) {
+                // Montrer les fleurs choisies par l'adversaire pendant 700ms avant d'appliquer
+                Fleur f1 = jeu.trouverFleurSurPlateau(
+                        model.Fleur.TypeFleur.valueOf(coup.typeFleur1), coup.fleur1X, coup.fleur1Y);
+                Fleur f2 = jeu.trouverFleurSurPlateau(
+                        model.Fleur.TypeFleur.valueOf(coup.typeFleur2), coup.fleur2X, coup.fleur2Y);
+                jeu.setFleurSelectionnee1(f1);
+                jeu.setFleurSelectionnee2(f2);
+                repaint();
+                javax.swing.Timer timer = new javax.swing.Timer(700, e -> {
+                    jeu.setFleurSelectionnee1(null);
+                    jeu.setFleurSelectionnee2(null);
+                    jeu.appliquerCoupReseau(coup);
+                    enAttenteAdversaire = false;
+                    refreshScoresEtTourIA();
+                    if (jeu.isPartieAbandonnee()) afficherGagnantSansAnimation();
+                    repaint();
+                });
+                timer.setRepeats(false);
+                timer.start();
+            } else {
+                // AVANTAGE ou ABANDON : application immédiate
+                jeu.appliquerCoupReseau(coup);
+                if (!"AVANTAGE".equals(coup.typeMessage)) {
+                    enAttenteAdversaire = false;
+                }
+                refreshScoresEtTourIA();
+                if (jeu.isPartieAbandonnee()) afficherGagnantSansAnimation();
+                repaint();
             }
-            refreshScores();
-            if (jeu.isPartieAbandonnee()) {
-                afficherGagnantSansAnimation();
-            }
-            repaint();
         });
 
         if (gestionnaire instanceof ServeurReseau) {
@@ -433,7 +455,7 @@ public class JeuGraphique extends JComponent {
         }
 
         Fleur f1 = jeu.getFleurSelectionnee1();
-        Fleur f2 = jeu.getFleurSelectionnee2();
+        Fleur f2 = jeu.getFleurSelectionnee2(); 
 
         if (f1 == null) {
             instructionLabel.setText(jeu.nomJoueurActuelPourAffichage() + " : cliquez sur une fleur pour commencer.");

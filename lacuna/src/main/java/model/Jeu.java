@@ -1143,7 +1143,7 @@ public class Jeu implements EtatPlateau {
     }
 
     // Cherche une fleur sur le plateau par type et coordonnées exactes
-    private Fleur trouverFleurSurPlateau(Fleur.TypeFleur type, int x, int y) {
+    public Fleur trouverFleurSurPlateau(Fleur.TypeFleur type, int x, int y) {
         for (Fleur f : fleurs) {
             if (f.getType() == type && f.getPosition().getX() == x && f.getPosition().getY() == y) {
                 return f;
