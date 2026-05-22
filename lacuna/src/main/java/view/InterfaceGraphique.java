@@ -607,11 +607,7 @@ public class InterfaceGraphique implements Runnable {
                         aire.jeu.currentPlayerIndex = hoteCommencea ? 0 : 1;
                         aire.installerReseau(gestionnaire, typeLocal);
                     } else {
-                        aire.refreshScores();
-                        if (aire.jeu.estTourIA()) {
-                            aire.jeu.jouerAvantageIA();
-                            aire.refreshScoresEtTourIA();
-                        }
+                        aire.refreshScoresEtTourIA();
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

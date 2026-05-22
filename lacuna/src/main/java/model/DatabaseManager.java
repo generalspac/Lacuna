@@ -6,6 +6,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,8 +19,8 @@ Gère la connexion à la base de données sqlite du jeu
 */
 public class DatabaseManager {
 
-    // chemin vers le fichier de base de données
-    private static final String URL = "jdbc:sqlite:lacuna.db";
+    private static final String NOM_DOSSIER_DONNEES = ".lacuna";
+    private static final String NOM_BASE_DONNEES = "lacuna.db";
 
     private Connection connexion;
 
@@ -31,8 +34,23 @@ public class DatabaseManager {
         } catch (ClassNotFoundException e) {
             throw new SQLException("Driver SQLite introuvable : " + e.getMessage());
         }
-        connexion = DriverManager.getConnection(URL);
+        connexion = DriverManager.getConnection(urlBaseDonnees());
         initialiserBase();
+    }
+
+    private String urlBaseDonnees() throws SQLException {
+        String dossierUtilisateur = System.getProperty("user.home");
+        Path dossierDonnees = (dossierUtilisateur == null || dossierUtilisateur.isBlank())
+                ? Paths.get(NOM_DOSSIER_DONNEES)
+                : Paths.get(dossierUtilisateur, NOM_DOSSIER_DONNEES);
+
+        try {
+            Files.createDirectories(dossierDonnees);
+        } catch (Exception e) {
+            throw new SQLException("Impossible de créer le dossier de sauvegarde : " + e.getMessage(), e);
+        }
+
+        return "jdbc:sqlite:" + dossierDonnees.resolve(NOM_BASE_DONNEES).toAbsolutePath();
     }
 
     /* crée les tables nécessaires au jeu si elles n'existent pas encore */
@@ -54,6 +72,7 @@ public class DatabaseManager {
             "niveau_ia_or TEXT," +
             "niveau_ia_argent TEXT," +
             "nom_humain_ia TEXT," +
+            "type_humain_ia TEXT," +
             "depart_ia TEXT," +
             "depart_ia_vs_ia TEXT)"
         );
@@ -64,6 +83,7 @@ public class DatabaseManager {
         try { stmt.execute("ALTER TABLE parties ADD COLUMN niveau_ia_or TEXT"); } catch (SQLException ignored) {}
         try { stmt.execute("ALTER TABLE parties ADD COLUMN niveau_ia_argent TEXT"); } catch (SQLException ignored) {}
         try { stmt.execute("ALTER TABLE parties ADD COLUMN nom_humain_ia TEXT"); } catch (SQLException ignored) {}
+        try { stmt.execute("ALTER TABLE parties ADD COLUMN type_humain_ia TEXT"); } catch (SQLException ignored) {}
         try { stmt.execute("ALTER TABLE parties ADD COLUMN depart_ia TEXT"); } catch (SQLException ignored) {}
         try { stmt.execute("ALTER TABLE parties ADD COLUMN depart_ia_vs_ia TEXT"); } catch (SQLException ignored) {}
 
@@ -122,8 +142,8 @@ public class DatabaseManager {
         // insertion dans parties et récupération de l'id généré
         PreparedStatement stmtPartie = connexion.prepareStatement(
             "INSERT INTO parties (nom, date, joueur_actuel, avantage_applique, en_phase_selection_avantage, against_ia," +
-            " mode_jeu, niveau_ia, niveau_ia_or, niveau_ia_argent, nom_humain_ia, depart_ia, depart_ia_vs_ia)" +
-            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            " mode_jeu, niveau_ia, niveau_ia_or, niveau_ia_argent, nom_humain_ia, type_humain_ia, depart_ia, depart_ia_vs_ia)" +
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             Statement.RETURN_GENERATED_KEYS
         );
         stmtPartie.setString(1, nom);
@@ -137,8 +157,9 @@ public class DatabaseManager {
         stmtPartie.setString(9, nomNiveau(jeu.niveauIAOr));
         stmtPartie.setString(10, nomNiveau(jeu.niveauIAArgent));
         stmtPartie.setString(11, jeu.nomHumainIA);
-        stmtPartie.setString(12, nomTypePion(jeu.joueurDepartIA));
-        stmtPartie.setString(13, nomTypePion(jeu.joueurDepartIAContreIA));
+        stmtPartie.setString(12, nomTypePion(jeu.typeHumainIA));
+        stmtPartie.setString(13, nomTypePion(jeu.joueurDepartIA));
+        stmtPartie.setString(14, nomTypePion(jeu.joueurDepartIAContreIA));
         stmtPartie.executeUpdate();
 
         // next() positionne le curseur sur la première ligne avant toute lecture
@@ -208,7 +229,7 @@ public class DatabaseManager {
         // restauration des données principales de la partie
         PreparedStatement stmtPartie = connexion.prepareStatement(
             "SELECT joueur_actuel, avantage_applique, en_phase_selection_avantage, against_ia," +
-            " mode_jeu, niveau_ia, niveau_ia_or, niveau_ia_argent, nom_humain_ia, depart_ia, depart_ia_vs_ia" +
+            " mode_jeu, niveau_ia, niveau_ia_or, niveau_ia_argent, nom_humain_ia, type_humain_ia, depart_ia, depart_ia_vs_ia" +
             " FROM parties WHERE id = ?"
         );
         stmtPartie.setInt(1, idPartie);
@@ -221,10 +242,12 @@ public class DatabaseManager {
                         niveauDepuisTexte(rsPartie.getString("niveau_ia_argent")),
                         typeDepuisTexte(rsPartie.getString("depart_ia_vs_ia")));
             } else if ("HUMAIN_VS_IA".equals(mode) || rsPartie.getInt("against_ia") == 1) {
-                jeu.activerIA(
+                GestionIA.activerIA(
+                        jeu,
                         niveauDepuisTexte(rsPartie.getString("niveau_ia")),
                         rsPartie.getString("nom_humain_ia"),
-                        typeDepuisTexte(rsPartie.getString("depart_ia")));
+                        typeDepuisTexte(rsPartie.getString("depart_ia")),
+                        typeDepuisTexte(rsPartie.getString("type_humain_ia")));
             } else {
                 jeu.configurerHumainVsHumain("", "", null);
             }

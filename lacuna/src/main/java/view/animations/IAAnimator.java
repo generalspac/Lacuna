@@ -1,6 +1,7 @@
 package view.animations;
 
-import javax.swing.Timer;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 import model.Fleur;
 import model.Joueur;
@@ -25,6 +26,43 @@ public class IAAnimator {
     }
 
     // -------------------------- ANIMATION : COUP IA -------------------------- //
+
+    public void animerAvantageIA() {
+        List<Fleur> fleurs = view.getJeu().getFleurs();
+        if (!view.getJeu().isEnPhaseSelectionAvantage() || !view.getJeu().estTourIA() || fleurs.isEmpty()) {
+            return;
+        }
+
+        Fleur fleur = fleurs.get(ThreadLocalRandom.current().nextInt(fleurs.size()));
+        Fleur fleurAnimee = Fleur.copieFleur(fleur);
+        Joueur joueurIA = view.getJeu().getJoueurActuel();
+
+        ctx.setState(AnimationState.COUP_IA);
+        ctx.setSelectionIAVisuelle(true);
+        final int generation = ctx.nouvelleGeneration();
+
+        view.getJeu().selectionnerFleursPourAnimation(fleur, null);
+        view.getJeu().setFeedbackMessage("IA (" + joueurIA.getTypePion() + ") choisit son avantage initial...");
+        view.refreshScores();
+        view.repaint();
+
+        SwingTimers.startSingle(900, attente -> {
+            if (!ctx.estGenerationValide(generation)) return;
+
+            animation.animerFleursVersScore(new Fleur[]{fleurAnimee}, joueurIA, () -> {
+                if (!ctx.estGenerationValide(generation)) return;
+
+                view.getJeu().appliquerAvantageAvecFleur(fleur);
+                view.getJeu().setFeedbackMessage("IA (" + joueurIA.getTypePion() + ") collecte une fleur "
+                        + fleur.getType() + " pour l'avantage initial.");
+                ctx.setState(AnimationState.AUCUNE);
+                ctx.setSelectionIAVisuelle(false);
+                view.getJeu().resetFleursSelectionnee1();
+                view.getJeu().resetFleursSelectionnee2();
+                view.refreshScoresEtTourIA();
+            });
+        });
+    }
 
     public void animerPuisJouerCoupIA(CoupIA coup) {
         if (coup == null) {
@@ -86,9 +124,7 @@ public class IAAnimator {
                         ctx.setSelectionIAVisuelle(false);
                         view.getJeu().resetFleursSelectionnee1();
                         view.getJeu().resetFleursSelectionnee2();
-                        view.refreshScores();
-                        view.repaint();
-                        phase2Animator.lancerAnimationSecondePhase();
+                        view.refreshScoresEtTourIA();
                     });
                 });
             });

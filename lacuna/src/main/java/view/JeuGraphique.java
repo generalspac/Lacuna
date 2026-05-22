@@ -332,9 +332,8 @@ public class JeuGraphique extends JComponent {
             return;
 
         if (jeu.estTourIA() && jeu.isEnPhaseSelectionAvantage()) {
-            jeu.jouerAvantageIA();
-            refreshScores();
-            repaint();
+            animation.animerAvantageIA();
+            return;
         }
 
         jeu.lancerIA(coup -> animation.animerPuisJouerCoupIA(coup), () -> {

@@ -87,6 +87,7 @@ public class Jeu implements EtatPlateau {
     NiveauxIA niveauIAOr;
     NiveauxIA niveauIAArgent;
     String nomHumainIA;
+    Pion.TypePion typeHumainIA;
     Pion.TypePion joueurDepartIA;
     Pion.TypePion joueurDepartIAContreIA;
     boolean iaContreIA = false;
@@ -258,6 +259,7 @@ public class Jeu implements EtatPlateau {
         niveauIAOr = null;
         niveauIAArgent = null;
         nomHumainIA = null;
+        typeHumainIA = null;
         joueurDepartIA = null;
         joueurDepartIAContreIA = null;
         iaEnCours = false;
@@ -1086,6 +1088,7 @@ public class Jeu implements EtatPlateau {
         NiveauxIA niveauOrReset = niveauIAOr;
         NiveauxIA niveauArgentReset = niveauIAArgent;
         String nomHumainReset = nomHumainIA;
+        Pion.TypePion typeHumainReset = typeHumainIA;
         Pion.TypePion departIAReset = joueurDepartIA;
         Pion.TypePion departIAContreIAReset = joueurDepartIAContreIA;
 
@@ -1098,7 +1101,7 @@ public class Jeu implements EtatPlateau {
         if (resetIAContreIA) {
             GestionIA.configurerIAContreIA(this, niveauOrReset, niveauArgentReset, departIAContreIAReset);
         } else if (resetHumainContreIA) {
-            GestionIA.activerIA(this, niveauIAReset, nomHumainReset, departIAReset);
+            GestionIA.activerIA(this, niveauIAReset, nomHumainReset, departIAReset, typeHumainReset);
         } else {
             initPlayers();
         }
@@ -1174,7 +1177,7 @@ public class Jeu implements EtatPlateau {
      * @param niveau niveau de difficulté de l'IA.
      */
     public void activerIA(NiveauxIA niveau) {
-        activerIA(niveau, "Humain", Pion.TypePion.OR);
+        activerIA(niveau, "Humain", null);
     }
 
     /**

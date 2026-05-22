@@ -121,9 +121,10 @@ public final class ActionsJeu {
         if (jeu.partieAbandonnee) {
             return false;
         }
+        double rayonClicFleur = ConstantesJeu.DIAMETRE_FLEUR_MODELE / 2.0 + ConstantesJeu.MARGE_COLLISION;
         for (Fleur f : jeu.fleurs) {
 
-            if (Coordonnees.distance(pos, f.getPosition()) < 10) {
+            if (Coordonnees.distance(pos, f.getPosition()) <= rayonClicFleur) {
 
                 // Phase de sélection d'avantage initial
                 if (jeu.enPhaseSelectionAvantage) {
@@ -162,7 +163,7 @@ public final class ActionsJeu {
                 return true;
             }
         }
-        jeu.setFeedbackMessage("Aucune fleur touchée. Cliquez sur une fleur visible dans le cercle.");
+        jeu.setFeedbackMessage("Aucune fleur touchée. Cliquez sur une fleur visible.");
         return false;
     }
 
@@ -453,12 +454,11 @@ public final class ActionsJeu {
             return false;
         }
 
-        if (!jeu.cercleDeJeu.contientPoint(pos)) {
-            jeu.setFeedbackMessage("Placement invalide : le pion doit rester dans le cercle.");
-            return false;
-        }
-
         if (!existeCoupConnecte(jeu)) {
+            if (!jeu.cercleDeJeu.contientPoint(pos)) {
+                jeu.setFeedbackMessage("Placement invalide : le pion doit rester dans le cercle.");
+                return false;
+            }
             return placerPionLibreSiAucunCoup(jeu, pos);
         }
 

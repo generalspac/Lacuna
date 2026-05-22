@@ -58,10 +58,6 @@ public class EcouteurDeSouris extends MouseAdapter {
             return;
         }
 
-        if (!game.getCercleDeJeu().contientPoint(modelPos)) {
-            return;
-        }
-
         // First, allow clicks on flowers to select/deselect even when a pair is already selected.
         if (game.toucherFleur(modelPos)) {
             jeuGraphique.refreshScores();
@@ -76,6 +72,10 @@ public class EcouteurDeSouris extends MouseAdapter {
                 jeuGraphique.refreshScores();
                 jeuGraphique.repaint();
             }
+            return;
+        }
+
+        if (!game.getCercleDeJeu().contientPoint(modelPos)) {
             return;
         }
 
