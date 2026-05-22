@@ -61,9 +61,21 @@ public class JeuGraphique extends JComponent {
     private Object gestionnaireReseau = null; // ServeurReseau ou ClientReseau
     private boolean enAttenteAdversaire = false;
 
-    // Panneau phase 2 (slider + skip) — caché en phase 1, affiché quand phase 2 disponible
+    // Panneau phase 2 (slider + skip) — caché en phase 1, affiché quand phase 2
+    // disponible
     private javax.swing.JComponent phase2Panel = null;
     private boolean phase2Affichee = false;
+
+    private Fleur suggestedFlower = null;
+    private java.util.List<Fleur> otherSuggestedFleurs = new java.util.ArrayList<>();
+
+    public void setSuggestedFlower(Fleur f) {
+        this.suggestedFlower = f;
+    }
+
+    public void setOtherSuggestedFleurs(java.util.List<Fleur> fleurs) {
+        this.otherSuggestedFleurs = fleurs != null ? fleurs : new java.util.ArrayList<>();
+    }
 
     public void setPhase2Panel(javax.swing.JComponent panel) {
         this.phase2Panel = panel;
@@ -95,9 +107,9 @@ public class JeuGraphique extends JComponent {
         setBackground(Color.WHITE);
         setOpaque(true);
         setFocusable(true);
-
         initImages();
-        new Timer(400, e -> repaint()).start();
+        new Timer(33, e -> repaint()).start();
+
         initListeners();
     }
 
@@ -315,10 +327,17 @@ public class JeuGraphique extends JComponent {
 
         updateInstructionText();
         updateStatusMessage();
+
+        // Synchroniser les suggestions avec la sélection du modèle
+        if (jeu.getFleurSelectionnee1() == null) {
+            suggestedFlower = null;
+            otherSuggestedFleurs.clear();
+        }
     }
 
     /**
-     * Met l'interface à jour puis lance le tour IA si le joueur courant en a besoin.
+     * Met l'interface à jour puis lance le tour IA si le joueur courant en a
+     * besoin.
      */
     public void refreshScoresEtTourIA() {
         refreshScores();
@@ -350,7 +369,8 @@ public class JeuGraphique extends JComponent {
         return enAttenteAdversaire;
     }
 
-    // Configure le mode réseau : relie le gestionnaire (ServeurReseau ou ClientReseau) au jeu
+    // Configure le mode réseau : relie le gestionnaire (ServeurReseau ou
+    // ClientReseau) au jeu
     public void installerReseau(Object gestionnaire, Pion.TypePion typeLocal) {
         this.gestionnaireReseau = gestionnaire;
         int indexLocal = (typeLocal == Pion.TypePion.OR) ? 0 : 1;
@@ -507,7 +527,7 @@ public class JeuGraphique extends JComponent {
     }
 
     protected Fleur getHighlightedFlower() {
-        return null;
+        return suggestedFlower;
     }
 
     public Image getFlowerImage(Fleur.TypeFleur type) {
@@ -639,10 +659,19 @@ public class JeuGraphique extends JComponent {
 
         drawPossibleMoves(g2, fleurSz);
         drawSelection(g2);
-        drawAnimatedCercle(g2, getHighlightedFlower());
+
+        // Dessin des fleurs suggérées / tutoriel
+        // On utilise getHighlightedFlower() pour supporter les overrides du tutoriel
+        drawAnimatedCercle(g2, getHighlightedFlower(), Color.GREEN);
+
+        for (Fleur f : otherSuggestedFleurs) {
+            drawAnimatedCercle(g2, f, Color.WHITE);
+        }
+
         drawPhase2Illustration(g2);
         drawPions(g2, fleurSz);
-        if (enAttenteAdversaire) drawAttenteAdversaireOverlay(g2);
+        if (enAttenteAdversaire)
+            drawAttenteAdversaireOverlay(g2);
         drawWinnerOverlay(g2);
     }
 
@@ -683,7 +712,7 @@ public class JeuGraphique extends JComponent {
      * Dessine le marqueur autour d'une fleur sélectionnée.
      *
      * @param g2 contexte graphique Swing.
-     * @param f fleur à entourer.
+     * @param f  fleur à entourer.
      */
     private void drawSelectionMarker(Graphics2D g2, Fleur f) {
         if (f == null || f.getPosition() == null)
@@ -693,7 +722,7 @@ public class JeuGraphique extends JComponent {
         g2.drawOval(p.getX() - sz / 2, p.getY() - sz / 2, sz, sz);
     }
 
-    protected void drawAnimatedCercle(Graphics2D g2, Fleur f) {
+    protected void drawAnimatedCercle(Graphics2D g2, Fleur f, Color color) {
 
         if (f == null || f.getPosition() == null)
             return;
@@ -704,31 +733,33 @@ public class JeuGraphique extends JComponent {
 
         int maxSz = Math.max(30, (int) (converter.size() * 0.08));
 
-        // Taille fixe (pas de pulse)
-        int sz = maxSz;
-
-        // Clignotement ON/OFF basé sur le temps
-        boolean visible = (System.currentTimeMillis() / 300) % 2 == 0;
-
-        if (!visible)
-            return; // invisible = OFF
+        // Pulsation fluide basée sur le temps
+        double time = System.currentTimeMillis() / 1000.0;
+        float alpha = (float) (Math.sin(time * 6.0) * 0.4 + 0.6); // Oscille entre 0.2 et 1.0
+        alpha = Math.max(0.1f, Math.min(1.0f, alpha));
 
         Stroke oldStroke = g2.getStroke();
         Color oldColor = g2.getColor();
 
-        // Cercle blanc simple
         g2.setStroke(new BasicStroke(
                 4,
                 BasicStroke.CAP_ROUND,
                 BasicStroke.JOIN_ROUND));
 
-        g2.setColor(Color.WHITE);
+        // Application de l'alpha à la couleur
+        Color pulseColor = new Color(
+                color.getRed(),
+                color.getGreen(),
+                color.getBlue(),
+                (int) (alpha * 255));
+
+        g2.setColor(pulseColor);
 
         g2.drawOval(
-                p.getX() - sz / 2,
-                p.getY() - sz / 2,
-                sz,
-                sz);
+                p.getX() - maxSz / 2,
+                p.getY() - maxSz / 2,
+                maxSz,
+                maxSz);
 
         g2.setStroke(oldStroke);
         g2.setColor(oldColor);
@@ -875,7 +906,7 @@ public class JeuGraphique extends JComponent {
     // Overlay semi-transparent affiché pendant qu'on attend le coup de l'adversaire
     private void drawAttenteAdversaireOverlay(Graphics2D g2) {
         Color oldColor = g2.getColor();
-        Font  oldFont  = g2.getFont();
+        Font oldFont = g2.getFont();
 
         g2.setColor(new Color(0, 0, 0, 130));
         g2.fillRect(0, 0, getWidth(), getHeight());

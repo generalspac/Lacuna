@@ -13,24 +13,23 @@ import model.IA.NiveauxIA;
 import model.IA.CoupIA;
 import network.CoupReseau;
 
-
-
 // Classe principale du modèle: garde l'état de la partie
 // Elle délègue aussi les règles
 public class Jeu implements EtatPlateau {
 
     // =========================================================
-    // ===================== ATTRIBUTS 
+    // ===================== ATTRIBUTS
     // =====================================
     Cercle cercleDeJeu; // le cercle du jeu
     ArrayList<Pion> pions; // contient tous les pions actuel dans le cercle
     ArrayList<Fleur> fleurs;
     Fleur fleurSelectionnee1; // la fleur que le joueur a touché ( pour le moment on suppose que c'est la
-                                      // fleur la plus proche du point de clic )
+                              // fleur la plus proche du point de clic )
     Fleur fleurSelectionnee2; // la fleur que le joueur a touché ( pour le moment on suppose que c'est la
-                                      // fleur la plus proche du point de clic )
+                              // fleur la plus proche du point de clic )
     int nbPions = 12; // nombre de pions
     int nbFleurs = ConstantesJeu.NB_FLEURS; // nombre de fleurs
+    private boolean activerSuggestion = true; // si les suggestions sont activées (pour l'IA)
 
     private static final double DIST_MIN_FLEURS = ConstantesJeu.DIST_MIN_FLEURS; // distance min entre les fleurs
     private static final double DIAMETRE_FLEUR_MODELE = ConstantesJeu.DIAMETRE_FLEUR_MODELE;
@@ -40,7 +39,6 @@ public class Jeu implements EtatPlateau {
     private static final int MAX_PIONS_PAR_JOUEUR = ConstantesJeu.MAX_PIONS_PAR_JOUEUR;
     private static final int NB_COULEURS = ConstantesJeu.NB_COULEURS;
     private static final int NB_FLEURS_PAR_COULEUR = ConstantesJeu.NB_FLEURS_PAR_COULEUR;
-
 
     private static final int NB_POINTS_SEGMENT = ConstantesJeu.NB_POINTS_SEGMENT; // le nombre de points
     private static final double TOLERANCE_DROP_SEGMENT = ConstantesJeu.TOLERANCE_DROP_SEGMENT;
@@ -57,7 +55,8 @@ public class Jeu implements EtatPlateau {
 
     public boolean againstIA = false;
 
-    ///////// pour la marge (afin que les fleurs ne sortent pas du cercle----centre du cerlce)//////////
+    ///////// pour la marge (afin que les fleurs ne sortent pas du cercle----centre
+    ///////// du cerlce)//////////
     ////////// vu qu'on dessine les fleurs avec le format dans view (hauteur *
     ///////// largeur )
     ///////// avec hauteur == largeur, alors la view va nous envoyer la taille qu'on
@@ -77,7 +76,6 @@ public class Jeu implements EtatPlateau {
     // Fin anticipée de partie (abandon)
     boolean partieAbandonnee = false;
     Joueur gagnantParAbandon = null;
-
 
     ///////////////// IA /////////////////
     IA ia;
@@ -170,6 +168,10 @@ public class Jeu implements EtatPlateau {
         return nbFleurs;
     }
 
+   public boolean suggestionStatus() {
+        return activerSuggestion;
+    }
+
     public int getNbJoueurs() {
         return NB_JOUEURS;
     }
@@ -244,7 +246,6 @@ public class Jeu implements EtatPlateau {
     public void joueurPrecedent() {
         currentPlayerIndex = (currentPlayerIndex - 1 + NB_JOUEURS) % NB_JOUEURS;
     }
-
 
     // Configuration des jeoueurs qui commencent
     // On donne à chacun son nom
@@ -391,7 +392,8 @@ public class Jeu implements EtatPlateau {
                     new JoueurHumain("Joueur 2", Pion.TypePion.ARGENT)
             };
             currentPlayerIndex = random.nextInt(getNbJoueurs());
-            setFeedbackMessage(feedbackMessage + " Le joueur qui commence est : " + getJoueurActuel().getNom() + " (" + getJoueurActuel().getTypePion() + ").") ;
+            setFeedbackMessage(feedbackMessage + " Le joueur qui commence est : " + getJoueurActuel().getNom() + " ("
+                    + getJoueurActuel().getTypePion() + ").");
         }
     }
 
@@ -472,7 +474,7 @@ public class Jeu implements EtatPlateau {
     }
 
     // =========================================================
-    // ================= LOGIQUE DU JEU////////////////////////// 
+    // ================= LOGIQUE DU JEU//////////////////////////
 
     public void appliquerAvantageAvecFleur(Fleur fleurChoisie) {
         if (enPhaseSelectionAvantage && !avantageInitialApplique && fleurs.contains(fleurChoisie)) {
@@ -485,7 +487,8 @@ public class Jeu implements EtatPlateau {
             enPhaseSelectionAvantage = false;
 
             // Émettre l'avantage réseau si c'est le joueur local qui vient de jouer
-            if (enModeReseau && !applicationCoupDistant && currentPlayerIndex == indexJoueurLocal && ecouteurCoupEnvoye != null) {
+            if (enModeReseau && !applicationCoupDistant && currentPlayerIndex == indexJoueurLocal
+                    && ecouteurCoupEnvoye != null) {
                 CoupReseau coup = new CoupReseau();
                 coup.typeMessage = "AVANTAGE";
                 coup.pionNull = true;
@@ -521,7 +524,7 @@ public class Jeu implements EtatPlateau {
      * Place un pion sur le plateau après les vérifications communes.
      *
      * @param pion pion libre à placer.
-     * @param pos position modèle souhaitée.
+     * @param pos  position modèle souhaitée.
      * @return {@code true} si le pion a bien été placé.
      */
     public boolean placePion(Pion pion, Coordonnees pos) {
@@ -558,10 +561,10 @@ public class Jeu implements EtatPlateau {
      * l'historique et passe au joueur suivant.
      *
      * @param joueur joueur qui joue.
-     * @param pion pion libre du joueur.
-     * @param pos position validée pour le pion.
-     * @param f1 première fleur collectée.
-     * @param f2 seconde fleur collectée.
+     * @param pion   pion libre du joueur.
+     * @param pos    position validée pour le pion.
+     * @param f1     première fleur collectée.
+     * @param f2     seconde fleur collectée.
      */
     public void jouerCoup(Joueur joueur, Pion pion, Coordonnees pos, Fleur f1, Fleur f2) {
 
@@ -575,7 +578,8 @@ public class Jeu implements EtatPlateau {
 
         historique.enregistrerAction(pion, f1, f2, joueur);
 
-        if (enModeReseau && !applicationCoupDistant && currentPlayerIndex == indexJoueurLocal && ecouteurCoupEnvoye != null) {
+        if (enModeReseau && !applicationCoupDistant && currentPlayerIndex == indexJoueurLocal
+                && ecouteurCoupEnvoye != null) {
             CoupReseau coup = new CoupReseau();
             coup.typeMessage = "COUP";
             coup.typePion = pion.getType().name();
@@ -604,7 +608,8 @@ public class Jeu implements EtatPlateau {
     }
 
     /**
-     * Joue avec les fleurs sélectionnées en utilisant le clic comme préférence de placement.
+     * Joue avec les fleurs sélectionnées en utilisant le clic comme préférence de
+     * placement.
      *
      * @param clic position modèle du clic.
      * @return {@code true} si le coup a été joué.
@@ -616,8 +621,8 @@ public class Jeu implements EtatPlateau {
     /**
      * Trouve l'emplacement libre du segment le plus proche du clic.
      *
-     * @param A première extrémité du segment.
-     * @param B seconde extrémité du segment.
+     * @param A    première extrémité du segment.
+     * @param B    seconde extrémité du segment.
      * @param clic position modèle visée par le joueur.
      * @return position jouable, ou {@code null} si aucune n'existe.
      */
@@ -650,8 +655,8 @@ public class Jeu implements EtatPlateau {
      * Donne deux fleurs au joueur et les retire du plateau.
      *
      * @param joueur joueur qui reçoit les fleurs.
-     * @param f1 première fleur.
-     * @param f2 seconde fleur.
+     * @param f1     première fleur.
+     * @param f2     seconde fleur.
      * @return {@code true} si les fleurs étaient valides et présentes.
      */
     public boolean mangerFleurs(Joueur joueur, Fleur f1, Fleur f2) {
@@ -696,7 +701,8 @@ public class Jeu implements EtatPlateau {
     /**
      * Indique si la partie peut passer en phase 2.
      *
-     * @return {@code true} quand tous les pions sont posés et qu'il reste des fleurs.
+     * @return {@code true} quand tous les pions sont posés et qu'il reste des
+     *         fleurs.
      */
     public boolean estSecondePhaseDisponible() {
         return Phase2.estSecondePhaseDisponible(fleurs, pions);
@@ -753,7 +759,7 @@ public class Jeu implements EtatPlateau {
 
     public void setFleurSelectionnee1(Fleur fleur) {
         this.fleurSelectionnee1 = fleur;
-    }   
+    }
 
     public void setFleurSelectionnee2(Fleur fleur) {
         this.fleurSelectionnee2 = fleur;
@@ -816,7 +822,7 @@ public class Jeu implements EtatPlateau {
     }
 
     // fonction pour recuperer une fleur en donnant juste ses coordonnees
-    private Fleur recupererFleur(Coordonnees position){
+    private Fleur recupererFleur(Coordonnees position) {
         if (position == null) {
             return null;
         }
@@ -831,10 +837,31 @@ public class Jeu implements EtatPlateau {
         return null;
     }
 
+    /**
+     * Récupère toutes les fleurs du plateau ayant le même type que la fleur fournie,
+     * en excluant la fleur de base et une éventuelle fleur à ignorer (le meilleur choix).
+     *
+     * @param base fleur de référence pour le type.
+     * @param aIgnorer fleur à exclure du résultat (ex: le meilleur choix suggéré).
+     * @return liste des autres fleurs du même type.
+     */
+    public List<Fleur> recupererAutresFleursMemeType(Fleur base, Fleur aIgnorer) {
+        List<Fleur> result = new ArrayList<>();
+        if (base == null)
+            return result;
+
+        for (Fleur f : fleurs) {
+            if (f.getType() == base.getType() && !memeFleur(f, base) && !memeFleur(f, aIgnorer)
+                    && fleursConnectees(base, f)) {
+                result.add(f);
+            }
+        }
+        return result;
+    }
 
     // Permet de choisir la 2nd meilleure fleur, pour mieux avantager
     // le joueur
-    public Fleur choisirDeuxiemeMeilleurFleur(Fleur fleurSelectionnee1){
+    public Fleur choisirDeuxiemeMeilleurFleur(Fleur fleurSelectionnee1) {
         if (fleurSelectionnee1 == null || fleurSelectionnee1.getPosition() == null) {
             return null;
         }
@@ -863,6 +890,7 @@ public class Jeu implements EtatPlateau {
         return meilleureFleur;
     }
 
+    
     private Fleur autreFleurDeLaPaire(Fleur[] paire, Fleur fleur) {
         if (paire == null || paire.length < 2) {
             return null;
@@ -884,7 +912,8 @@ public class Jeu implements EtatPlateau {
         int score = 0;
         score += progressionMajorite(joueurs[joueur].nbFleursDeCouleur(type)) * 90;
         score += progressionMajorite(joueurs[adversaire].nbFleursDeCouleur(type)) * 70;
-        score += (int) Math.max(0, 180 - Coordonnees.distance(premiereFleur.getPosition(), deuxiemeFleur.getPosition()));
+        score += (int) Math.max(0,
+                180 - Coordonnees.distance(premiereFleur.getPosition(), deuxiemeFleur.getPosition()));
         score += scorePhase2Fleur(joueur, premiereFleur);
         score += scorePhase2Fleur(joueur, deuxiemeFleur);
         score += meilleurePositionSurPaire(premiereFleur, deuxiemeFleur);
@@ -943,7 +972,8 @@ public class Jeu implements EtatPlateau {
 
             double distanceNouveauPion = Coordonnees.distance(position, fleur.getPosition());
             Pion pionProche = ReglesPlateau.pionLePlusProche(this, fleur);
-            if (pionProche == null || distanceNouveauPion < Coordonnees.distance(pionProche.getPosition(), fleur.getPosition())) {
+            if (pionProche == null
+                    || distanceNouveauPion < Coordonnees.distance(pionProche.getPosition(), fleur.getPosition())) {
                 score += 12;
             } else if (pionProche.getType() == typeJoueur) {
                 score += 3;
@@ -1004,7 +1034,7 @@ public class Jeu implements EtatPlateau {
     /**
      * Applique le dépôt d'un pion depuis la pile graphique.
      *
-     * @param pos position modèle du dépôt.
+     * @param pos     position modèle du dépôt.
      * @param payload information portée par le drag, normalement un type de pion.
      * @return {@code true} si le dépôt a joué un coup.
      */
@@ -1058,7 +1088,7 @@ public class Jeu implements EtatPlateau {
         }
         Configuration.debugeur("#\n");
     }
-//////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////
 
     public Map<Fleur.TypeFleur, Integer> getScore(Joueur joueur) {
         return ScoreJeu.getScore(joueur);
@@ -1120,7 +1150,8 @@ public class Jeu implements EtatPlateau {
         try {
             if ("AVANTAGE".equals(coup.typeMessage)) {
                 Fleur f = trouverFleurSurPlateau(Fleur.TypeFleur.valueOf(coup.typeFleur1), coup.fleur1X, coup.fleur1Y);
-                if (f != null) appliquerAvantageAvecFleur(f);
+                if (f != null)
+                    appliquerAvantageAvecFleur(f);
 
             } else if ("COUP".equals(coup.typeMessage)) {
                 Pion pion = getPionLibre(Pion.TypePion.valueOf(coup.typePion));
@@ -1161,9 +1192,6 @@ public class Jeu implements EtatPlateau {
         historique.chargerPartie(this, cheminFichier);
     }
 
-
-
-
     // ==============-------------------------===========================================
     // ========================= (IA) ==========================
     // =========================================================///////////////////
@@ -1180,9 +1208,10 @@ public class Jeu implements EtatPlateau {
     /**
      * Active une partie humain contre IA.
      *
-     * @param niveau niveau de difficulté de l'IA.
-     * @param nomHumain nom affiché pour le joueur humain.
-     * @param joueurQuiCommence couleur qui commence, ou {@code null} pour un départ aléatoire.
+     * @param niveau            niveau de difficulté de l'IA.
+     * @param nomHumain         nom affiché pour le joueur humain.
+     * @param joueurQuiCommence couleur qui commence, ou {@code null} pour un départ
+     *                          aléatoire.
      */
     public void activerIA(NiveauxIA niveau, String nomHumain, Pion.TypePion joueurQuiCommence) {
         GestionIA.activerIA(this, niveau, nomHumain, joueurQuiCommence);
@@ -1239,7 +1268,6 @@ public class Jeu implements EtatPlateau {
         GestionIA.jouerCoupIA(this, coup);
     }
 
-
     /**
      * Invalide le calcul IA en cours et remet le drapeau d'activité à zéro.
      */
@@ -1249,7 +1277,7 @@ public class Jeu implements EtatPlateau {
     }
 
     /**
-     * Produit un libellé  pour un joueur.
+     * Produit un libellé pour un joueur.
      *
      * @param joueur joueur à afficher.
      * @return nom lisible dans l'interface.
@@ -1283,7 +1311,8 @@ public class Jeu implements EtatPlateau {
      * Lance le calcul du tour IA et délègue l'application du coup à l'appelant.
      *
      * @param actionQuandCoupPret action appelée avec le coup choisi.
-     * @param callbackFin action appelée après la remise à zéro du calcul IA.
+     * @param callbackFin         action appelée après la remise à zéro du calcul
+     *                            IA.
      */
     public void lancerIA(Consumer<CoupIA> actionQuandCoupPret, Runnable callbackFin) {
         GestionIA.lancerIA(this, actionQuandCoupPret, callbackFin);
@@ -1292,9 +1321,10 @@ public class Jeu implements EtatPlateau {
     /**
      * Configure une partie IA contre IA observable depuis l'interface ou les tests.
      *
-     * @param niveauOr niveau de l'IA qui joue les pions OR.
-     * @param niveauArgent niveau de l'IA qui joue les pions ARGENT.
-     * @param joueurQuiCommence couleur qui commence, ou {@code null} pour un départ aléatoire.
+     * @param niveauOr          niveau de l'IA qui joue les pions OR.
+     * @param niveauArgent      niveau de l'IA qui joue les pions ARGENT.
+     * @param joueurQuiCommence couleur qui commence, ou {@code null} pour un départ
+     *                          aléatoire.
      */
     public void configurerIAContreIA(NiveauxIA niveauOr, NiveauxIA niveauArgent, Pion.TypePion joueurQuiCommence) {
         GestionIA.configurerIAContreIA(this, niveauOr, niveauArgent, joueurQuiCommence);

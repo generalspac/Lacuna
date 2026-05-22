@@ -18,9 +18,10 @@ public class IntroductionPanel extends JPanel {
     private String texteAffiche = "";
 
     private JLabel texteLabel;
+    private final Runnable onQuit;
 
-    public IntroductionPanel(Runnable onFinish) {
-
+    public IntroductionPanel(Runnable onFinish, Runnable onQuit) {
+        this.onQuit = onQuit;
         setLayout(null);
         setBackground(new Color(15, 15, 15));
 
@@ -118,6 +119,23 @@ public class IntroductionPanel extends JPanel {
         });
 
         add(continuer);
+
+        // =========================
+        // BOUTON QUITTER
+        // =========================
+        RoundedButton quitter = new RoundedButton("QUITTER");
+        quitter.setBounds(575, 605, 250, 45);
+        quitter.setFont(new Font("SansSerif", Font.BOLD, 18));
+        quitter.setBackground(new Color(120, 30, 30));
+        quitter.setForeground(Color.WHITE);
+
+        quitter.addActionListener(e -> {
+            if (onQuit != null) {
+                onQuit.run();
+            }
+        });
+
+        add(quitter);
 
         // =========================
         // ANIMATION TEXTE

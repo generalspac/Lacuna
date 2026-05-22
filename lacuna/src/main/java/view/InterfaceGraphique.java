@@ -134,6 +134,8 @@ public class InterfaceGraphique implements Runnable {
 
         IntroductionPanel intro = new IntroductionPanel(() -> {
             lancerJeuTutoriel();
+        }, () -> {
+            afficherMenu();
         });
 
         frame.setContentPane(intro);
@@ -957,7 +959,6 @@ public class InterfaceGraphique implements Runnable {
                     g2.setPaint(gp);
 
                     g2.drawString(texte, x, y);
-                 
 
                     // Dessin des traits pour IA OR
                     int selOr = listeOr.getSelectedIndex();
@@ -1082,90 +1083,285 @@ public class InterfaceGraphique implements Runnable {
         }
     }
 
-    public void afficherMenuNomsPvP() {
-        JPanel panel = creerPanelMenu();
+    private JPanel createPlayerCard(String title, Color color) {
 
-        JLabel labelJ1 = new JLabel("Nom Joueur 1 :");
-        labelJ1.setForeground(Color.WHITE);
-        labelJ1.setFont(new Font("Arial", Font.BOLD, 20));
+        JPanel panel = new JPanel() {
+
+            @Override
+            protected void paintComponent(Graphics g) {
+
+                Graphics2D g2 = (Graphics2D) g;
+
+                g2.setRenderingHint(
+                        RenderingHints.KEY_ANTIALIASING,
+                        RenderingHints.VALUE_ANTIALIAS_ON);
+
+                g2.setColor(new Color(20, 20, 20, 220));
+
+                g2.fillRoundRect(
+                        0,
+                        0,
+                        getWidth(),
+                        getHeight(),
+                        40,
+                        40);
+
+                g2.setColor(color);
+
+                g2.setStroke(new BasicStroke(3f));
+
+                g2.drawRoundRect(
+                        1,
+                        1,
+                        getWidth() - 2,
+                        getHeight() - 2,
+                        40,
+                        40);
+
+                super.paintComponent(g);
+            }
+        };
+
+        panel.setOpaque(false);
+        panel.setLayout(null);
+
+        JLabel label = new JLabel(title, SwingConstants.CENTER);
+
+        label.setForeground(color);
+
+        label.setFont(new Font("Arial", Font.BOLD, 32));
+
+        label.setBounds(0, 40, 300, 40);
+
+        panel.add(label);
+
+        return panel;
+    }
+
+    private void styleToggle(JToggleButton btn, Color color) {
+
+        btn.setFocusPainted(false);
+
+        btn.setFont(new Font("Arial", Font.BOLD, 18));
+
+        btn.setForeground(Color.WHITE);
+
+        btn.setBackground(new Color(40, 40, 40));
+
+        btn.setBorder(BorderFactory.createLineBorder(color, 2));
+
+        btn.addChangeListener(e -> {
+
+            if (btn.isSelected()) {
+
+                btn.setBackground(color);
+                btn.setForeground(Color.BLACK);
+
+            } else {
+
+                btn.setBackground(new Color(40, 40, 40));
+                btn.setForeground(Color.WHITE);
+            }
+        });
+    }
+
+  
+
+    public void afficherMenuNomsPvP() {
+
+        JPanel panel = creerPanelMenu();
+        panel.setLayout(new GridBagLayout());
+
+        // ================= CARTE CENTRALE =================
+
+        JPanel card = new JPanel();
+        card.setOpaque(false);
+        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(255, 255, 255, 40), 2),
+                BorderFactory.createEmptyBorder(35, 50, 35, 50)));
+
+        // ================= TITRE =================
+
+        JLabel titre = new JLabel("DUEL JOUEURS");
+        titre.setForeground(Color.WHITE);
+        titre.setFont(new Font("Arial", Font.BOLD, 36));
+        titre.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // ================= CHAMPS NOMS =================
+
+        JLabel labelJ1 = new JLabel("Joueur 1");
+        labelJ1.setForeground(new Color(255, 210, 90));
+        labelJ1.setFont(new Font("Arial", Font.BOLD, 22));
         labelJ1.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         RoundedTextField fieldJ1 = new RoundedTextField("Nom optionnel", 15);
-        fieldJ1.setMaximumSize(new Dimension(300, 40));
+        fieldJ1.setMaximumSize(new Dimension(320, 45));
+        fieldJ1.setFont(new Font("Arial", Font.PLAIN, 18));
         fieldJ1.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JLabel labelJ2 = new JLabel("Nom Joueur 2 :");
-        labelJ2.setForeground(Color.WHITE);
-        labelJ2.setFont(new Font("Arial", Font.BOLD, 20));
+        JLabel labelJ2 = new JLabel("Joueur 2");
+        labelJ2.setForeground(new Color(180, 220, 255));
+        labelJ2.setFont(new Font("Arial", Font.BOLD, 22));
         labelJ2.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         RoundedTextField fieldJ2 = new RoundedTextField("Nom optionnel", 15);
-        fieldJ2.setMaximumSize(new Dimension(300, 40));
+        fieldJ2.setMaximumSize(new Dimension(320, 45));
+        fieldJ2.setFont(new Font("Arial", Font.PLAIN, 18));
         fieldJ2.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        JPanel colorChoicePanel = new JPanel();
-        colorChoicePanel.setOpaque(false);
-        colorChoicePanel.setLayout(new FlowLayout());
+        // ================= CHOIX COULEUR =================
 
-        JLabel colorLabel = new JLabel("Joueur 1 est :");
-        colorLabel.setForeground(Color.WHITE);
-        colorLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        JLabel couleurTitre = new JLabel("Couleur du Joueur 1");
+        couleurTitre.setForeground(Color.WHITE);
+        couleurTitre.setFont(new Font("Arial", Font.BOLD, 20));
+        couleurTitre.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JPanel couleurPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 25, 0));
+        couleurPanel.setOpaque(false);
 
         JRadioButton rbOr = new JRadioButton("OR");
-        rbOr.setForeground(new Color(255, 200, 50));
         rbOr.setOpaque(false);
         rbOr.setSelected(true);
+        rbOr.setForeground(new Color(255, 210, 90));
         rbOr.setFont(new Font("Arial", Font.BOLD, 18));
 
         JRadioButton rbArgent = new JRadioButton("ARGENT");
-        rbArgent.setForeground(new Color(180, 220, 255));
         rbArgent.setOpaque(false);
+        rbArgent.setForeground(new Color(180, 220, 255));
         rbArgent.setFont(new Font("Arial", Font.BOLD, 18));
 
-        ButtonGroup bg = new ButtonGroup();
-        bg.add(rbOr);
-        bg.add(rbArgent);
+        ButtonGroup bgCouleur = new ButtonGroup();
+        bgCouleur.add(rbOr);
+        bgCouleur.add(rbArgent);
 
-        colorChoicePanel.add(colorLabel);
-        colorChoicePanel.add(rbOr);
-        colorChoicePanel.add(rbArgent);
-        colorChoicePanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        couleurPanel.add(rbOr);
+        couleurPanel.add(rbArgent);
 
-        RoundedButton jouer = creerBoutonMenu("Jouer");
-        RoundedButton retour = creerBoutonMenu("Retour");
+        // ================= QUI COMMENCE =================
+
+        JLabel commenceTitre = new JLabel("Qui commence ?");
+        commenceTitre.setForeground(Color.WHITE);
+        commenceTitre.setFont(new Font("Arial", Font.BOLD, 20));
+        commenceTitre.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JPanel commencePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
+        commencePanel.setOpaque(false);
+
+        JRadioButton rbRandom = new JRadioButton("Aléatoire");
+        rbRandom.setOpaque(false);
+        rbRandom.setSelected(true);
+        rbRandom.setForeground(Color.WHITE);
+        rbRandom.setFont(new Font("Arial", Font.BOLD, 17));
+
+        JRadioButton rbStartOr = new JRadioButton("OR");
+        rbStartOr.setOpaque(false);
+        rbStartOr.setForeground(new Color(255, 210, 90));
+        rbStartOr.setFont(new Font("Arial", Font.BOLD, 17));
+
+        JRadioButton rbStartArgent = new JRadioButton("ARGENT");
+        rbStartArgent.setOpaque(false);
+        rbStartArgent.setForeground(new Color(180, 220, 255));
+        rbStartArgent.setFont(new Font("Arial", Font.BOLD, 17));
+
+        ButtonGroup bgCommence = new ButtonGroup();
+        bgCommence.add(rbRandom);
+        bgCommence.add(rbStartOr);
+        bgCommence.add(rbStartArgent);
+
+        commencePanel.add(rbRandom);
+        commencePanel.add(rbStartOr);
+        commencePanel.add(rbStartArgent);
+
+        // ================= BOUTONS =================
+
+        RoundedButton jouer = creerBoutonMenu("LANCER");
+        RoundedButton retour = creerBoutonMenu("RETOUR");
+
+        jouer.setAlignmentX(Component.CENTER_ALIGNMENT);
+        retour.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        jouer.setMaximumSize(new Dimension(260, 55));
+        retour.setMaximumSize(new Dimension(260, 55));
+
+        // ================= ACTIONS =================
 
         jouer.addActionListener(e -> {
+
             ParametresPartie p = new ParametresPartie();
+
             p.mode = "Humain vs Humain";
-            p.joueurQuiCommence = null;
+
+            // Attribution couleurs
             if (rbOr.isSelected()) {
+
                 p.nomOr = fieldJ1.getText().trim();
                 p.nomArgent = fieldJ2.getText().trim();
+
             } else {
+
                 p.nomOr = fieldJ2.getText().trim();
                 p.nomArgent = fieldJ1.getText().trim();
             }
-            p.nomHumain = "";
+
+            // Qui commence
+            if (rbStartOr.isSelected()) {
+
+                p.joueurQuiCommence = Pion.TypePion.OR;
+
+            } else if (rbStartArgent.isSelected()) {
+
+                p.joueurQuiCommence = Pion.TypePion.ARGENT;
+
+            } else {
+
+                p.joueurQuiCommence = Math.random() < 0.5
+                        ? Pion.TypePion.OR
+                        : Pion.TypePion.ARGENT;
+            }
+
             lancerJeu(p);
         });
 
         retour.addActionListener(e -> afficherMenuNouvellePartie());
 
-        panel.add(Box.createVerticalGlue());
-        panel.add(labelJ1);
-        panel.add(Box.createRigidArea(new Dimension(0, 5)));
-        panel.add(fieldJ1);
-        panel.add(Box.createRigidArea(new Dimension(0, 15)));
-        panel.add(labelJ2);
-        panel.add(Box.createRigidArea(new Dimension(0, 5)));
-        panel.add(fieldJ2);
-        panel.add(Box.createRigidArea(new Dimension(0, 15)));
-        panel.add(colorChoicePanel);
-        panel.add(Box.createRigidArea(new Dimension(0, 25)));
-        panel.add(jouer);
-        panel.add(Box.createRigidArea(new Dimension(0, 10)));
-        panel.add(retour);
-        panel.add(Box.createVerticalGlue());
+        // ================= AJOUTS =================
+
+        card.add(titre);
+
+        card.add(Box.createRigidArea(new Dimension(0, 30)));
+
+        card.add(labelJ1);
+        card.add(Box.createRigidArea(new Dimension(0, 8)));
+        card.add(fieldJ1);
+
+        card.add(Box.createRigidArea(new Dimension(0, 22)));
+
+        card.add(labelJ2);
+        card.add(Box.createRigidArea(new Dimension(0, 8)));
+        card.add(fieldJ2);
+
+        card.add(Box.createRigidArea(new Dimension(0, 28)));
+
+        card.add(couleurTitre);
+        card.add(Box.createRigidArea(new Dimension(0, 10)));
+        card.add(couleurPanel);
+
+        card.add(Box.createRigidArea(new Dimension(0, 28)));
+
+        card.add(commenceTitre);
+        card.add(Box.createRigidArea(new Dimension(0, 10)));
+        card.add(commencePanel);
+
+        card.add(Box.createRigidArea(new Dimension(0, 35)));
+
+        card.add(jouer);
+
+        card.add(Box.createRigidArea(new Dimension(0, 12)));
+
+        card.add(retour);
+
+        panel.add(card);
 
         frame.setContentPane(panel);
         frame.revalidate();
@@ -1174,33 +1370,113 @@ public class InterfaceGraphique implements Runnable {
 
     public void afficherMenuChoixIA() {
         JPanel panel = creerPanelMenu();
+        panel.setLayout(new GridBagLayout());
 
+        // ================= CARTE CENTRALE =================
+        JPanel card = new JPanel();
+        card.setOpaque(false);
+        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(255, 255, 255, 40), 2),
+                BorderFactory.createEmptyBorder(35, 50, 35, 50)));
+
+        // ================= TITRE =================
+        JLabel titre = new JLabel("JOUEUR VS IA");
+        titre.setForeground(Color.WHITE);
+        titre.setFont(new Font("Arial", Font.BOLD, 36));
+        titre.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // ================= CHAMP NOM =================
+        JLabel labelNom = new JLabel("Ton nom");
+        labelNom.setForeground(new Color(255, 210, 90));
+        labelNom.setFont(new Font("Arial", Font.BOLD, 22));
+        labelNom.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        RoundedTextField fieldNom = new RoundedTextField("Nom optionnel", 15);
+        fieldNom.setMaximumSize(new Dimension(320, 45));
+        fieldNom.setFont(new Font("Arial", Font.PLAIN, 18));
+        fieldNom.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // ================= QUI COMMENCE =================
+        JLabel commenceTitre = new JLabel("Qui commence ?");
+        commenceTitre.setForeground(Color.WHITE);
+        commenceTitre.setFont(new Font("Arial", Font.BOLD, 20));
+        commenceTitre.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JPanel commencePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
+        commencePanel.setOpaque(false);
+
+        JRadioButton rbRandom = new JRadioButton("Aléatoire");
+        rbRandom.setOpaque(false);
+        rbRandom.setSelected(true);
+        rbRandom.setForeground(Color.WHITE);
+        rbRandom.setFont(new Font("Arial", Font.BOLD, 17));
+
+        JRadioButton rbHumain = new JRadioButton("Moi");
+        rbHumain.setOpaque(false);
+        rbHumain.setForeground(new Color(255, 210, 90));
+        rbHumain.setFont(new Font("Arial", Font.BOLD, 17));
+
+        JRadioButton rbIA = new JRadioButton("IA");
+        rbIA.setOpaque(false);
+        rbIA.setForeground(new Color(180, 220, 255));
+        rbIA.setFont(new Font("Arial", Font.BOLD, 17));
+
+        ButtonGroup bgCommence = new ButtonGroup();
+        bgCommence.add(rbRandom);
+        bgCommence.add(rbHumain);
+        bgCommence.add(rbIA);
+
+        commencePanel.add(rbRandom);
+        commencePanel.add(rbHumain);
+        commencePanel.add(rbIA);
+
+        // ================= BOUTONS DIFFICULTÉ =================
         RoundedButton facile = creerBoutonMenu("IA Facile");
         RoundedButton moyen = creerBoutonMenu("IA Moyenne");
         RoundedButton difficile = creerBoutonMenu("IA Difficile");
-        RoundedButton retour = creerBoutonMenu("Retour");
+        RoundedButton retour = creerBoutonMenu("RETOUR");
 
-        facile.addActionListener(e -> lancerJeuIA(NiveauxIA.FACILE));
-        moyen.addActionListener(e -> lancerJeuIA(NiveauxIA.MOYEN));
-        difficile.addActionListener(e -> lancerJeuIA(NiveauxIA.DIFFICILE));
+        facile.addActionListener(e -> {
+            Pion.TypePion quiCommence = rbHumain.isSelected() ? Pion.TypePion.OR : (rbIA.isSelected() ? Pion.TypePion.ARGENT : null);
+            lancerJeuIA(NiveauxIA.FACILE, fieldNom.getText().trim(), quiCommence);
+        });
+        moyen.addActionListener(e -> {
+            Pion.TypePion quiCommence = rbHumain.isSelected() ? Pion.TypePion.OR : (rbIA.isSelected() ? Pion.TypePion.ARGENT : null);
+            lancerJeuIA(NiveauxIA.MOYEN, fieldNom.getText().trim(), quiCommence);
+        });
+        difficile.addActionListener(e -> {
+            Pion.TypePion quiCommence = rbHumain.isSelected() ? Pion.TypePion.OR : (rbIA.isSelected() ? Pion.TypePion.ARGENT : null);
+            lancerJeuIA(NiveauxIA.DIFFICILE, fieldNom.getText().trim(), quiCommence);
+        });
         retour.addActionListener(e -> afficherMenuNouvellePartie());
 
-        panel.add(Box.createVerticalGlue());
-        panel.add(facile);
-        panel.add(Box.createRigidArea(new Dimension(0, 10)));
-        panel.add(moyen);
-        panel.add(Box.createRigidArea(new Dimension(0, 10)));
-        panel.add(difficile);
-        panel.add(Box.createRigidArea(new Dimension(0, 10)));
-        panel.add(retour);
-        panel.add(Box.createVerticalGlue());
+        // ================= AJOUTS =================
+        card.add(titre);
+        card.add(Box.createRigidArea(new Dimension(0, 30)));
+        card.add(labelNom);
+        card.add(Box.createRigidArea(new Dimension(0, 8)));
+        card.add(fieldNom);
+        card.add(Box.createRigidArea(new Dimension(0, 25)));
+        card.add(commenceTitre);
+        card.add(Box.createRigidArea(new Dimension(0, 10)));
+        card.add(commencePanel);
+        card.add(Box.createRigidArea(new Dimension(0, 35)));
+        card.add(facile);
+        card.add(Box.createRigidArea(new Dimension(0, 10)));
+        card.add(moyen);
+        card.add(Box.createRigidArea(new Dimension(0, 10)));
+        card.add(difficile);
+        card.add(Box.createRigidArea(new Dimension(0, 20)));
+        card.add(retour);
 
+        panel.add(card);
         frame.setContentPane(panel);
         frame.revalidate();
         frame.repaint();
     }
 
-    private void lancerJeuIA(NiveauxIA niveau) {
+    private void lancerJeuIA(NiveauxIA niveau, String nom, Pion.TypePion quiCommence) {
         ParametresPartie p = new ParametresPartie();
         if (niveau == NiveauxIA.FACILE)
             p.mode = "IA Facile";
@@ -1209,8 +1485,8 @@ public class InterfaceGraphique implements Runnable {
         else if (niveau == NiveauxIA.DIFFICILE)
             p.mode = "IA Difficile";
 
-        p.nomHumain = "";
-        p.joueurQuiCommence = null;
+        p.nomHumain = nom;
+        p.joueurQuiCommence = quiCommence;
         lancerJeu(p);
     }
 
