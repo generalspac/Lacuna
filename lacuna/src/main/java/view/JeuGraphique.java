@@ -301,6 +301,19 @@ public class JeuGraphique extends JComponent {
      * Met à jour les scores, piles de pions et messages de la partie.
      */
     public void refreshScores() {
+        // Si l'utilisateur change la sélection des fleurs pendant que le feedforward est affiché,
+        // on le masque automatiquement quand il n'y a plus 2 fleurs sélectionnées connectées.
+        if (afficherFeedforward) {
+            Fleur f1 = jeu.getFleurSelectionnee1();
+            Fleur f2 = jeu.getFleurSelectionnee2();
+            boolean ok = (f1 != null && f2 != null && f1.getPosition() != null && f2.getPosition() != null)
+                    && jeu.fleursConnectees(f1, f2);
+            if (!ok) {
+                afficherFeedforward = false;
+                invaliderFeedforwardCache();
+            }
+        }
+
         if (scoreOr != null)
             scoreOr.updateFromGame(jeu.getJoueurs()[0]);
         if (scoreArgent != null)
@@ -979,7 +992,7 @@ public class JeuGraphique extends JComponent {
         return (s1.compareTo(s2) <= 0) ? (s1 + "|" + s2) : (s2 + "|" + s1);
     }
 
-    private void invaliderFeedforwardCache() {
+    public void invaliderFeedforwardCache() {
         feedforwardCacheValide = false;
         feedforwardPairesNouvelles.clear();
     }

@@ -836,6 +836,15 @@ public class InterfaceGraphique implements Runnable {
                 controleur.abandonner();
             }
         });
+
+        // Touche F : feedforward
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F, 0), "feedforward");
+        actionMap.put("feedforward", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                controleur.feedforward();
+            }
+        });
     }
 
     public void toggleFullscreen() {
