@@ -153,7 +153,7 @@ public class EtatJeu implements EtatPlateau {
         return typesPionsJoueurs[indexJoueur];
     }
 
-    private Fleur trouverFleur(Fleur recherchee) {
+    public Fleur trouverFleur(Fleur recherchee) {
         for (Fleur f : fleursRestantes) {
             if (memeFleur(f, recherchee)) {
                 return f;

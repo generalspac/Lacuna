@@ -273,7 +273,7 @@ public class InterfaceGraphique implements Runnable {
         // Utiliser un SwingWorker pour ne pas bloquer l'EDT pendant l'initialisation
         SwingWorker<FlexPanel, Void> worker = new SwingWorker<>() {
             JeuGraphique aire;
-            JButton undoButton, redoButton, resetButton, sauvegarderButton, quitterButton;
+            JButton undoButton, redoButton, resetButton, sauvegarderButton, quitterButton, feedforwardButton;
             JComponent phase2PanelRef;
 
             @Override
@@ -404,6 +404,9 @@ public class InterfaceGraphique implements Runnable {
                 JButton abandonButton = new JButton("Abandonner");
                 abandonButton.addActionListener(e -> controleurBoutons.abandonner());
 
+                feedforwardButton = new JButton("Feedforward");
+                feedforwardButton.addActionListener(e -> controleurBoutons.feedforward());
+
                 quitterButton = new JButton("Quitter");
                 quitterButton.addActionListener(e -> {
                     int confirm = JOptionPane.showConfirmDialog(frame, "Êtes-vous sûr de vouloir quitter la partie ?",
@@ -477,6 +480,7 @@ public class InterfaceGraphique implements Runnable {
                 });
 
                 buttonPanel.add(sauvegarderButton);
+                buttonPanel.add(feedforwardButton);
                 buttonPanel.add(quitterButton);
 
                 // ================= CONTRÔLES PHASE 2 =================
