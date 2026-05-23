@@ -148,9 +148,12 @@ public final class GestionIA {
             return false;
         }
 
-        if (!jeu.placePion(pionLibre, coup.position)) {
+        if (!jeu.placePion(pionLibre, coup.position, f1, f2)) {
             return false;
         }
+
+        // Mettre à jour la position dans le coup IA au cas où placePion l'a décalée
+        coup.position = pionLibre.getPosition();
 
         jeu.setFeedbackMessage(jeu.nomJoueurPourAffichage(joueur) + " place son pion.");
         return true;

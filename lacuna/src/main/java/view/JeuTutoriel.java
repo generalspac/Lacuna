@@ -31,13 +31,25 @@ public class JeuTutoriel extends JeuGraphique {
             TutorialOverlay overlay,
             Runnable quitterAction) {
 
-        super(frame);
+        super(frame, null, null, null, null, quitterAction);
 
         this.overlay = overlay;
 
         this.quitterAction = quitterAction;
 
         setBackground(Color.BLACK);
+
+        // =========================
+        // BOUTON QUITTER PERMANENT
+        // =========================
+        setLayout(null);
+        RoundedButton btnQuitter = new RoundedButton("Quitter le tutoriel");
+        btnQuitter.setBounds(20, 20, 200, 45);
+        btnQuitter.setBackground(new Color(180, 40, 40));
+        btnQuitter.setForeground(Color.WHITE);
+        btnQuitter.setFont(new Font("SansSerif", Font.BOLD, 16));
+        btnQuitter.addActionListener(e -> arreterTutoriel());
+        add(btnQuitter);
 
         // =========================
         // PILES LATERALES

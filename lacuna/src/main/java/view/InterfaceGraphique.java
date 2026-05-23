@@ -423,7 +423,7 @@ public class InterfaceGraphique implements Runnable {
                 });
 
                 checkAide = new JCheckBox("Aide");
-                checkAide.setSelected(true);
+                checkAide.setSelected(false);
                 checkAide.setOpaque(false);
                 checkAide.setForeground(Color.WHITE);
                 checkAide.setFont(new Font("Arial", Font.BOLD, 14));

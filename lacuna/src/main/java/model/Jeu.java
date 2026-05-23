@@ -28,7 +28,7 @@ public class Jeu implements EtatPlateau {
     Fleur fleurSelectionnee2; // la fleur que le joueur a touché ( pour le moment on suppose que c'est la
                               // fleur la plus proche du point de clic )
     int nbPions = 12; // nombre de pions
-    int nbFleurs = ConstantesJeu.NB_FLEURS; // nombre de fleurs
+    int nbFleurs = ConstantesJeu.NB_FLEURS; // nombre de fleurs;
 
     private static final double DIST_MIN_FLEURS = ConstantesJeu.DIST_MIN_FLEURS; // distance min entre les fleurs
     private static final double DIAMETRE_FLEUR_MODELE = ConstantesJeu.DIAMETRE_FLEUR_MODELE;
@@ -117,6 +117,8 @@ public class Jeu implements EtatPlateau {
     public boolean estFinNormalePartie() {
         return Phase2.tousLesPionsPlaces(pions) && fleurs.isEmpty();
     }
+
+ 
 
     // =========================================================
     // ===================== CONSTRUCTEUR ======================
@@ -247,6 +249,8 @@ public class Jeu implements EtatPlateau {
     public Cercle getCercleDeJeu() {
         return cercleDeJeu;
     }
+
+   
 
     public ArrayList<Pion> getPions() {
         return pions;
@@ -622,13 +626,14 @@ public class Jeu implements EtatPlateau {
     }
 
     /**
-     * Place un pion sur le plateau après les vérifications communes.
+     * Place un pion sur le plateau après les vérifications communes et ajustement
+     * de position si nécessaire.
      *
      * @param pion pion libre à placer.
      * @param pos  position modèle souhaitée.
      * @return {@code true} si le pion a bien été placé.
      */
-    public boolean placePion(Pion pion, Coordonnees pos) {
+    public boolean placePion(Pion pion, Coordonnees pos, Fleur... fleursAIgnorer) {
 
         if (partieAbandonnee) {
             setFeedbackMessage("La partie est terminée : un joueur a abandonné.");
@@ -640,19 +645,140 @@ public class Jeu implements EtatPlateau {
             return false;
         }
 
-        if (!cercleDeJeu.contientPoint(pos)) {
+        // Ajuster la position si trop proche d'une fleur ou d'un pion
+        Coordonnees adjusted = ajusterPositionPion(pos, fleursAIgnorer);
+
+        if (!cercleDeJeu.contientPoint(adjusted)) {
             setFeedbackMessage("Impossible : le pion doit être placé à l'intérieur du cercle.");
             return false;
         }
 
-        if (!positionLibrePourPion(pos)) {
-            setFeedbackMessage("Impossible : la position est déjà occupée ou trop proche d'un autre pion.");
+        if (!positionLibrePourPion(adjusted, pion, fleursAIgnorer)) {
+            setFeedbackMessage("Impossible : la position est déjà occupée ou trop proche d'un autre objet.");
             return false;
         }
 
-        pion.setPosition(pos);
+        pion.setPosition(adjusted);
         setFeedbackMessage("Pion " + pion.getType() + " placé avec succès.");
         return true;
+    }
+
+    /**
+     * 
+     * A REVOIR : cette fonction est appelée après ajustement de la position, elle
+     * vérifie si la position finale est valide pour le pion.
+     * Ajuste la position d'un pion s'il chevauche une fleur ou un autre
+     * pion. Tente de le décaler légèrement pour qu'il soit côte à côte.
+     */
+    private Coordonnees ajusterPositionPion(Coordonnees pos, Fleur... fleursAIgnorer) {
+        Coordonnees adjusted = new Coordonnees(pos.getX(), pos.getY());
+        double distMinPionFleur = (DIAMETRE_PION_MODELE + DIAMETRE_FLEUR_MODELE) / 2.0;
+        double distMinPionPion = DIAMETRE_PION_MODELE;
+        double tinyMargin = 0.1;
+
+        boolean aDecale = true;
+        int maxEssais = 15;
+
+        while (aDecale && maxEssais > 0) {
+            aDecale = false;
+
+            // Vérifier contre les fleurs
+            for (Fleur f : fleurs) {
+
+                boolean ignorer = false;
+
+                for (Fleur ignore : fleursAIgnorer) {
+                    if (ignore != null && memeFleur(f, ignore)) {
+                        ignorer = true;
+                        break;
+                    }
+                }
+
+                if (ignorer)
+                    continue;
+
+                double d = Coordonnees.distance(adjusted, f.getPosition());
+
+                if (d < distMinPionFleur - tinyMargin) {
+
+                    double dx = adjusted.getX() - f.getPosition().getX();
+                    double dy = adjusted.getY() - f.getPosition().getY();
+
+                    double longueur = Math.sqrt(dx * dx + dy * dy);
+
+                    // Cas spécial : même position exacte
+                    if (longueur == 0) {
+                        dx = 1;
+                        dy = 0;
+                        longueur = 1;
+                    }
+
+                    // Vecteur unitaire
+                    double ux = dx / longueur;
+                    double uy = dy / longueur;
+
+                    // Distance à corriger
+                    double penetration = distMinPionFleur - d + tinyMargin;
+
+                    // Déplacement le long de la droite
+                    adjusted.setX((int) Math.round(
+                            adjusted.getX() + ux * penetration));
+
+                    adjusted.setY((int) Math.round(
+                            adjusted.getY() + uy * penetration));
+
+                    aDecale = true;
+                    break;
+                }
+            }
+            if (aDecale) {
+                maxEssais--;
+                continue;
+            }
+
+            // Vérifier contre les autres pions
+            for (Pion p : pions) {
+
+                if (p.getPosition() == null || p.getPosition().equals(pos))
+                    continue;
+
+                double d = Coordonnees.distance(adjusted, p.getPosition());
+
+                if (d < distMinPionPion - tinyMargin) {
+
+                    double dx = adjusted.getX() - p.getPosition().getX();
+                    double dy = adjusted.getY() - p.getPosition().getY();
+
+                    double longueur = Math.sqrt(dx * dx + dy * dy);
+
+                    // Cas spécial : même position exacte
+                    if (longueur == 0) {
+                        dx = 1;
+                        dy = 0;
+                        longueur = 1;
+                    }
+
+                    // Vecteur unitaire
+                    double ux = dx / longueur;
+                    double uy = dy / longueur;
+
+                    // Distance nécessaire pour sortir de la collision
+                    double penetration = distMinPionPion - d + tinyMargin;
+
+                    // Déplacement EXACT suivant la droite
+                    adjusted.setX((int) Math.round(
+                            adjusted.getX() + ux * penetration));
+
+                    adjusted.setY((int) Math.round(
+                            adjusted.getY() + uy * penetration));
+
+                    aDecale = true;
+                    break;
+                }
+            }
+            maxEssais--;
+        }
+        return adjusted;
     }
 
     /**
@@ -669,7 +795,7 @@ public class Jeu implements EtatPlateau {
      */
     public void jouerCoup(Joueur joueur, Pion pion, Coordonnees pos, Fleur f1, Fleur f2) {
 
-        if (!placePion(pion, pos))
+        if (!placePion(pion, pos, f1, f2))
             return;
 
         if (!mangerFleurs(joueur, f1, f2)) {
@@ -743,13 +869,49 @@ public class Jeu implements EtatPlateau {
     /* ============= fonctions auxiliares ================= */
 
     /**
-     * Vérifie qu'un pion peut occuper cette position sans toucher un autre pion.
+     * Vérifie qu'un pion peut occuper cette position sans chevaucher un autre objet
+     * (fleur ou pion). Autorise le "côte à côte".
      *
-     * @param pos position modèle testée.
+     * @param pos            position modèle testée.
+     * @param pion           pion à placer (pour l'ignorer lors du test de
+     *                       proximité).
+     * @param fleursAIgnorer fleurs à ne pas considérer comme obstacles (ex: celles
+     *                       du coup en cours).
      * @return {@code true} si la position est libre.
      */
-    private boolean positionLibrePourPion(Coordonnees pos) {
-        return !pionTropProcheDunAutre(pos);
+    private boolean positionLibrePourPion(Coordonnees pos, Pion pion, Fleur... fleursAIgnorer) {
+        // Distance minimale pour éviter le chevauchement : rayon1 + rayon2
+        double distMinPionFleur = (DIAMETRE_PION_MODELE + DIAMETRE_FLEUR_MODELE) / 2.0;
+        double distMinPionPion = DIAMETRE_PION_MODELE;
+        double tinyMargin = 0.1; // Évite les erreurs de précision
+
+        // Vérifier contre les fleurs
+        for (Fleur f : fleurs) {
+            boolean ignorer = false;
+            for (Fleur ignore : fleursAIgnorer) {
+                if (ignore != null && memeFleur(f, ignore)) {
+                    ignorer = true;
+                    break;
+                }
+            }
+            if (ignorer)
+                continue;
+
+            if (Coordonnees.distance(pos, f.getPosition()) < distMinPionFleur - tinyMargin) {
+                return false;
+            }
+        }
+
+        // Vérifier contre les autres pions
+        for (Pion p : pions) {
+            if (p == pion || p.getPosition() == null)
+                continue;
+            if (Coordonnees.distance(pos, p.getPosition()) < distMinPionPion - tinyMargin) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
