@@ -5,9 +5,11 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.imageio.ImageIO;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import java.util.List;
 
@@ -68,34 +70,41 @@ public class JeuGraphique extends JComponent {
 
     private Fleur suggestedFlower = null;
     private java.util.List<Fleur> otherSuggestedFleurs = new java.util.ArrayList<>();
+    private boolean afficherSuggestions = true;
+  
 
     public void setSuggestedFlower(Fleur f) {
         this.suggestedFlower = f;
     }
 
+public void setAfficherSuggestions(boolean afficher) {
+    jeu.setAfficherSuggestions(afficher);
+}
+
     public void setOtherSuggestedFleurs(java.util.List<Fleur> fleurs) {
         this.otherSuggestedFleurs = fleurs != null ? fleurs : new java.util.ArrayList<>();
     }
 
+    private final Runnable quitterAction;
+
     public void setPhase2Panel(javax.swing.JComponent panel) {
         this.phase2Panel = panel;
-        this.phase2Affichee = false;
     }
-
     // -------------------------- CONSTRUCTEURS --------------------------------- //
 
     public JeuGraphique(JFrame frame) {
-        this(frame, null, null, null, null);
+        this(frame, null, null, null, null, null);
     }
 
     public JeuGraphique(JFrame frame, Score scoreArgent, Score scoreOr,
-            JLabel instructionLabel, JLabel statusLabel) {
+            JLabel instructionLabel, JLabel statusLabel, Runnable quitterAction) {
 
         this.frame = frame;
         this.scoreArgent = scoreArgent;
         this.scoreOr = scoreOr;
         this.instructionLabel = instructionLabel;
         this.statusLabel = statusLabel;
+        this.quitterAction = quitterAction;
 
         this.jeu = new Jeu(modelWidth, modelHeight,
                 new Cercle(new Coordonnees(modelWidth / 2, modelHeight / 2),
@@ -104,6 +113,7 @@ public class JeuGraphique extends JComponent {
         this.converter = new CoordonneeConverter(jeu.getCercleDeJeu(), modelWidth, modelHeight);
         this.animation = new Animation(this, animCtx);
 
+       
         setBackground(Color.WHITE);
         setOpaque(true);
         setFocusable(true);
@@ -134,6 +144,7 @@ public class JeuGraphique extends JComponent {
     public double getFacteurVitesse() {
         return facteurVitesse;
     }
+
 
     public AnimationState getAnimationState() {
         return animCtx.getState();
@@ -660,12 +671,16 @@ public class JeuGraphique extends JComponent {
         drawPossibleMoves(g2, fleurSz);
         drawSelection(g2);
 
-        // Dessin des fleurs suggérées / tutoriel
-        // On utilise getHighlightedFlower() pour supporter les overrides du tutoriel
-        drawAnimatedCercle(g2, getHighlightedFlower(), Color.GREEN);
+       
 
-        for (Fleur f : otherSuggestedFleurs) {
-            drawAnimatedCercle(g2, f, Color.WHITE);
+        // Dessin des fleurs suggérées / tutoriel
+        if (jeu.isAfficherSuggestions()) {
+            drawAnimatedCercle(g2, getHighlightedFlower(), Color.GREEN);
+            for (Fleur f : otherSuggestedFleurs) {
+                drawAnimatedCercle(g2, f, Color.WHITE);
+            }
+        } else if (this instanceof JeuTutoriel) {
+            drawAnimatedCercle(g2, getHighlightedFlower(), Color.GREEN);
         }
 
         drawPhase2Illustration(g2);
@@ -673,9 +688,46 @@ public class JeuGraphique extends JComponent {
         if (enAttenteAdversaire)
             drawAttenteAdversaireOverlay(g2);
         drawWinnerOverlay(g2);
-    }
 
+        verifierFinDePartie();
+    }
     // -------------------------- SOUS-MÉTHODES DE DESSIN ----------------------- //
+
+    private boolean finPartieAffichee = false;
+
+    private void verifierFinDePartie() {
+        if (jeu.isPartieTerminee() && !finPartieAffichee && !animCtx.isEnCours()) {
+            finPartieAffichee = true;
+            SwingUtilities.invokeLater(() -> {
+                Joueur gagnant = jeu.getGagnant();
+                String msg = (gagnant == null) ? "ÉGALITÉ !"
+                        : "FÉLICITATIONS " + jeu.nomJoueurPourAffichage(gagnant).toUpperCase() + ", VOUS AVEZ GAGNÉ !";
+
+                Object[] options = { "Rejouer", "Menu Principal" };
+                int n = JOptionPane.showOptionDialog(frame,
+                        msg + "\n\nQue voulez-vous faire ?",
+                        "Fin de partie",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        options,
+                        options[0]);
+
+                if (n == JOptionPane.YES_OPTION) {
+                    finPartieAffichee = false;
+                    jeu.recommencerPartie();
+                    refreshScoresEtTourIA();
+                } else {
+                    // Menu Principal
+                    finPartieAffichee = false;
+                    frame.getGlassPane().setVisible(false);
+                    if (quitterAction != null) {
+                        quitterAction.run();
+                    }
+                }
+            });
+        }
+    }
 
     /**
      * Dessine la sélection courante du joueur humain.

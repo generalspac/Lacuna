@@ -31,7 +31,7 @@ public class JeuTutoriel extends JeuGraphique {
             TutorialOverlay overlay,
             Runnable quitterAction) {
 
-        super(frame);
+        super(frame, null, null, null, null, quitterAction);
 
         this.overlay = overlay;
 

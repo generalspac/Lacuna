@@ -33,6 +33,7 @@ public class InterfaceGraphique implements Runnable {
     private boolean hoteCommencea = false; // true si OR (hôte) commence
     private ParametresPartie parametresPresets = null; // bypass du dialogue de config
     private int graineReseau = 0; // graine partagée pour synchroniser les plateaux
+    
 
     private static class ParametresPartie {
         String mode;
@@ -277,6 +278,7 @@ public class InterfaceGraphique implements Runnable {
             JeuGraphique aire;
             JButton undoButton, redoButton, resetButton, sauvegarderButton, quitterButton;
             JComponent phase2PanelRef;
+            JCheckBox checkAide;
 
             @Override
             protected FlexPanel doInBackground() throws Exception {
@@ -349,7 +351,8 @@ public class InterfaceGraphique implements Runnable {
                 gameCenter.setAlign(FlexPanel.Align.STRETCH);
                 gameCenter.setBackground(Color.BLACK);
 
-                aire = new JeuGraphique(frame, scoreArgent, scoreOr, instructionLabel, statusLabel);
+                aire = new JeuGraphique(frame, scoreArgent, scoreOr, instructionLabel, statusLabel,
+                        () -> afficherMenu());
                 aire.setPreferredSize(new Dimension(900, 900));
                 aire.setMinimumSize(new Dimension(700, 700));
                 aire.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
@@ -415,6 +418,18 @@ public class InterfaceGraphique implements Runnable {
                         afficherMenu();
                     }
                 });
+
+                checkAide = new JCheckBox("Aide");
+                checkAide.setSelected(true);
+                checkAide.setOpaque(false);
+                checkAide.setForeground(Color.WHITE);
+                checkAide.setFont(new Font("Arial", Font.BOLD, 14));
+
+                checkAide.addActionListener(e -> {
+                    aire.setAfficherSuggestions(checkAide.isSelected());
+                    aire.repaint();
+                });
+                buttonPanel.add(checkAide);
 
                 JButton gitButton = new JButton("Guide");
                 gitButton.addActionListener(e -> {
@@ -729,53 +744,52 @@ public class InterfaceGraphique implements Runnable {
             ClientReseau client = new ClientReseau();
 
             SwingWorker<CoupReseau, Void> worker = new SwingWorker<CoupReseau, Void>() {
-                @Override
-                protected CoupReseau doInBackground() throws Exception {
-                    client.connecter(ipFinal, portFinal);
 
-                    // Configurer l'écouteur avant d'envoyer PRET pour ne pas rater INIT
-                    CountDownLatch latch = new CountDownLatch(1);
-                    CoupReseau[] initHolder = new CoupReseau[1];
-                    client.setEcouteur(coup -> {
-                        if ("INIT".equals(coup.typeMessage)) {
-                            initHolder[0] = coup;
-                            latch.countDown();
-                        }
-                    });
+    @Override
+    protected CoupReseau doInBackground() throws Exception {
+        client.connecter(ipFinal, portFinal);
 
-                    // Signaler à l'hôte qu'on est prêt
-                    CoupReseau pret = new CoupReseau();
-                    pret.typeMessage = "PRET";
-                    client.envoyerCoup(pret);
+        // Configurer l'écouteur avant d'envoyer PRET pour ne pas rater INIT
+        CountDownLatch latch = new CountDownLatch(1);
+        CoupReseau[] initHolder = new CoupReseau[1];
+        client.setEcouteur(coup -> {
+            if ("INIT".equals(coup.typeMessage)) {
+                initHolder[0] = coup;
+                latch.countDown();
+            }
+        });
 
-                    latch.await();
-                    return initHolder[0];
-                }
+        // Signaler à l'hôte qu'on est prêt
+        CoupReseau pret = new CoupReseau();
+        pret.typeMessage = "PRET";
+        client.envoyerCoup(pret);
 
-                @Override
-                protected void done() {
-                    try {
-                        CoupReseau init = get();
-                        gestionnaireReseau = client;
-                        typeLocalReseau = Pion.TypePion.ARGENT;
-                        hoteCommencea = init.hoteCommence;
-                        graineReseau = init.fleur1X;
-                        parametresPresets = new ParametresPartie();
-                        parametresPresets.mode = "Réseau";
-                        parametresPresets.nomOr = "Hôte";
-                        parametresPresets.nomArgent = "Invité";
-                        parametresPresets.nomHumain = "";
-                        parametresPresets.joueurQuiCommence = null;
-                        lancerJeu();
-                    } catch (Exception e) {
-                        JOptionPane.showMessageDialog(frame, "Erreur réseau : " + e.getMessage());
-                        afficherMenu();
-                    }
-                }
-            };
-            worker.execute();
+        latch.await();
+        return initHolder[0];
+    }
+
+    @Override
+    protected void done() {
+        try {
+            CoupReseau init = get();
+            gestionnaireReseau = client;
+            typeLocalReseau = Pion.TypePion.ARGENT;
+            hoteCommencea = init.hoteCommence;
+            graineReseau = init.fleur1X;
+            parametresPresets = new ParametresPartie();
+            parametresPresets.mode = "Réseau";
+            parametresPresets.nomOr = "Hôte";
+            parametresPresets.nomArgent = "Invité";
+            parametresPresets.nomHumain = "";
+            parametresPresets.joueurQuiCommence = null;
+            lancerJeu();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(frame, "Erreur réseau : " + e.getMessage());
+            afficherMenu();
         }
     }
+
+    };worker.execute();}}
 
     // Affiche un écran d'attente simple avec un message
     private void afficherEcranAttente(String message) {
@@ -1165,8 +1179,6 @@ public class InterfaceGraphique implements Runnable {
         });
     }
 
-  
-
     public void afficherMenuNomsPvP() {
 
         JPanel panel = creerPanelMenu();
@@ -1438,15 +1450,18 @@ public class InterfaceGraphique implements Runnable {
         RoundedButton retour = creerBoutonMenu("RETOUR");
 
         facile.addActionListener(e -> {
-            Pion.TypePion quiCommence = rbHumain.isSelected() ? Pion.TypePion.OR : (rbIA.isSelected() ? Pion.TypePion.ARGENT : null);
+            Pion.TypePion quiCommence = rbHumain.isSelected() ? Pion.TypePion.OR
+                    : (rbIA.isSelected() ? Pion.TypePion.ARGENT : null);
             lancerJeuIA(NiveauxIA.FACILE, fieldNom.getText().trim(), quiCommence);
         });
         moyen.addActionListener(e -> {
-            Pion.TypePion quiCommence = rbHumain.isSelected() ? Pion.TypePion.OR : (rbIA.isSelected() ? Pion.TypePion.ARGENT : null);
+            Pion.TypePion quiCommence = rbHumain.isSelected() ? Pion.TypePion.OR
+                    : (rbIA.isSelected() ? Pion.TypePion.ARGENT : null);
             lancerJeuIA(NiveauxIA.MOYEN, fieldNom.getText().trim(), quiCommence);
         });
         difficile.addActionListener(e -> {
-            Pion.TypePion quiCommence = rbHumain.isSelected() ? Pion.TypePion.OR : (rbIA.isSelected() ? Pion.TypePion.ARGENT : null);
+            Pion.TypePion quiCommence = rbHumain.isSelected() ? Pion.TypePion.OR
+                    : (rbIA.isSelected() ? Pion.TypePion.ARGENT : null);
             lancerJeuIA(NiveauxIA.DIFFICILE, fieldNom.getText().trim(), quiCommence);
         });
         retour.addActionListener(e -> afficherMenuNouvellePartie());
