@@ -5,9 +5,11 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.imageio.ImageIO;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import java.util.List;
 import java.util.ArrayList;
@@ -64,29 +66,48 @@ public class JeuGraphique extends JComponent {
     private Object gestionnaireReseau = null; // ServeurReseau ou ClientReseau
     private boolean enAttenteAdversaire = false;
 
-    // Panneau phase 2 (slider + skip) — caché en phase 1, affiché quand phase 2 disponible
+    // Panneau phase 2 (slider + skip) — caché en phase 1, affiché quand phase 2
+    // disponible
     private javax.swing.JComponent phase2Panel = null;
     private boolean phase2Affichee = false;
 
-    public void setPhase2Panel(javax.swing.JComponent panel) {
-        this.phase2Panel = panel;
-        this.phase2Affichee = false;
+    private Fleur suggestedFlower = null;
+    private java.util.List<Fleur> otherSuggestedFleurs = new java.util.ArrayList<>();
+    private boolean afficherSuggestions = true;
+  
+
+    public void setSuggestedFlower(Fleur f) {
+        this.suggestedFlower = f;
     }
 
+public void setAfficherSuggestions(boolean afficher) {
+    jeu.setAfficherSuggestions(afficher);
+}
+
+    public void setOtherSuggestedFleurs(java.util.List<Fleur> fleurs) {
+        this.otherSuggestedFleurs = fleurs != null ? fleurs : new java.util.ArrayList<>();
+    }
+
+    private final Runnable quitterAction;
+
+    public void setPhase2Panel(javax.swing.JComponent panel) {
+        this.phase2Panel = panel;
+    }
     // -------------------------- CONSTRUCTEURS --------------------------------- //
 
     public JeuGraphique(JFrame frame) {
-        this(frame, null, null, null, null);
+        this(frame, null, null, null, null, null);
     }
 
     public JeuGraphique(JFrame frame, Score scoreArgent, Score scoreOr,
-            JLabel instructionLabel, JLabel statusLabel) {
+            JLabel instructionLabel, JLabel statusLabel, Runnable quitterAction) {
 
         this.frame = frame;
         this.scoreArgent = scoreArgent;
         this.scoreOr = scoreOr;
         this.instructionLabel = instructionLabel;
         this.statusLabel = statusLabel;
+        this.quitterAction = quitterAction;
 
         this.jeu = new Jeu(modelWidth, modelHeight,
                 new Cercle(new Coordonnees(modelWidth / 2, modelHeight / 2),
@@ -95,12 +116,13 @@ public class JeuGraphique extends JComponent {
         this.converter = new CoordonneeConverter(jeu.getCercleDeJeu(), modelWidth, modelHeight);
         this.animation = new Animation(this, animCtx);
 
+       
         setBackground(Color.WHITE);
         setOpaque(true);
         setFocusable(true);
-
         initImages();
-        new Timer(400, e -> repaint()).start();
+        new Timer(33, e -> repaint()).start();
+
         initListeners();
     }
 
@@ -125,6 +147,7 @@ public class JeuGraphique extends JComponent {
     public double getFacteurVitesse() {
         return facteurVitesse;
     }
+
 
     public AnimationState getAnimationState() {
         return animCtx.getState();
@@ -331,10 +354,17 @@ public class JeuGraphique extends JComponent {
 
         updateInstructionText();
         updateStatusMessage();
+
+        // Synchroniser les suggestions avec la sélection du modèle
+        if (jeu.getFleurSelectionnee1() == null) {
+            suggestedFlower = null;
+            otherSuggestedFleurs.clear();
+        }
     }
 
     /**
-     * Met l'interface à jour puis lance le tour IA si le joueur courant en a besoin.
+     * Met l'interface à jour puis lance le tour IA si le joueur courant en a
+     * besoin.
      */
     public void refreshScoresEtTourIA() {
         refreshScores();
@@ -367,7 +397,8 @@ public class JeuGraphique extends JComponent {
         return enAttenteAdversaire;
     }
 
-    // Configure le mode réseau : relie le gestionnaire (ServeurReseau ou ClientReseau) au jeu
+    // Configure le mode réseau : relie le gestionnaire (ServeurReseau ou
+    // ClientReseau) au jeu
     public void installerReseau(Object gestionnaire, Pion.TypePion typeLocal) {
         this.gestionnaireReseau = gestionnaire;
         int indexLocal = (typeLocal == Pion.TypePion.OR) ? 0 : 1;
@@ -544,7 +575,7 @@ public class JeuGraphique extends JComponent {
     }
 
     protected Fleur getHighlightedFlower() {
-        return null;
+        return suggestedFlower;
     }
 
     public Image getFlowerImage(Fleur.TypeFleur type) {
@@ -679,14 +710,65 @@ public class JeuGraphique extends JComponent {
              afficheFeedforward(g2);
         }
         drawSelection(g2);
-        drawAnimatedCercle(g2, getHighlightedFlower());
+
+       
+
+        // Dessin des fleurs suggérées / tutoriel
+        if (jeu.isAfficherSuggestions()) {
+            drawAnimatedCercle(g2, getHighlightedFlower(), Color.GREEN);
+            for (Fleur f : otherSuggestedFleurs) {
+                drawAnimatedCercle(g2, f, Color.WHITE);
+            }
+        } else if (this instanceof JeuTutoriel) {
+            drawAnimatedCercle(g2, getHighlightedFlower(), Color.GREEN);
+        }
+
         drawPhase2Illustration(g2);
         drawPions(g2, fleurSz);
-        if (enAttenteAdversaire) drawAttenteAdversaireOverlay(g2);
+        if (enAttenteAdversaire)
+            drawAttenteAdversaireOverlay(g2);
         drawWinnerOverlay(g2);
-    }
 
+        verifierFinDePartie();
+    }
     // -------------------------- SOUS-MÉTHODES DE DESSIN ----------------------- //
+
+    private boolean finPartieAffichee = false;
+
+    private void verifierFinDePartie() {
+        if (jeu.isPartieTerminee() && !finPartieAffichee && !animCtx.isEnCours()) {
+            finPartieAffichee = true;
+            SwingUtilities.invokeLater(() -> {
+                Joueur gagnant = jeu.getGagnant();
+                String msg = (gagnant == null) ? "ÉGALITÉ !"
+                        : "FÉLICITATIONS " + jeu.nomJoueurPourAffichage(gagnant).toUpperCase() + ", VOUS AVEZ GAGNÉ !";
+
+                Object[] options = { "Rejouer", "Menu Principal" };
+                int n = JOptionPane.showOptionDialog(frame,
+                        msg + "\n\nQue voulez-vous faire ?",
+                        "Fin de partie",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        options,
+                        options[0]);
+
+                if (n == JOptionPane.YES_OPTION) {
+                    finPartieAffichee = false;
+                    jeu.recommencerPartie();
+                    animCtx.reset();
+                    refreshScoresEtTourIA();
+                } else {
+                    // Menu Principal
+                    finPartieAffichee = false;
+                    frame.getGlassPane().setVisible(false);
+                    if (quitterAction != null) {
+                        quitterAction.run();
+                    }
+                }
+            });
+        }
+    }
 
     /**
      * Dessine la sélection courante du joueur humain.
@@ -723,7 +805,7 @@ public class JeuGraphique extends JComponent {
      * Dessine le marqueur autour d'une fleur sélectionnée.
      *
      * @param g2 contexte graphique Swing.
-     * @param f fleur à entourer.
+     * @param f  fleur à entourer.
      */
     private void drawSelectionMarker(Graphics2D g2, Fleur f) {
         if (f == null || f.getPosition() == null)
@@ -733,7 +815,7 @@ public class JeuGraphique extends JComponent {
         g2.drawOval(p.getX() - sz / 2, p.getY() - sz / 2, sz, sz);
     }
 
-    protected void drawAnimatedCercle(Graphics2D g2, Fleur f) {
+    protected void drawAnimatedCercle(Graphics2D g2, Fleur f, Color color) {
 
         if (f == null || f.getPosition() == null)
             return;
@@ -744,31 +826,33 @@ public class JeuGraphique extends JComponent {
 
         int maxSz = Math.max(30, (int) (converter.size() * 0.08));
 
-        // Taille fixe (pas de pulse)
-        int sz = maxSz;
-
-        // Clignotement ON/OFF basé sur le temps
-        boolean visible = (System.currentTimeMillis() / 300) % 2 == 0;
-
-        if (!visible)
-            return; // invisible = OFF
+        // Pulsation fluide basée sur le temps
+        double time = System.currentTimeMillis() / 1000.0;
+        float alpha = (float) (Math.sin(time * 6.0) * 0.4 + 0.6); // Oscille entre 0.2 et 1.0
+        alpha = Math.max(0.1f, Math.min(1.0f, alpha));
 
         Stroke oldStroke = g2.getStroke();
         Color oldColor = g2.getColor();
 
-        // Cercle blanc simple
         g2.setStroke(new BasicStroke(
                 4,
                 BasicStroke.CAP_ROUND,
                 BasicStroke.JOIN_ROUND));
 
-        g2.setColor(Color.WHITE);
+        // Application de l'alpha à la couleur
+        Color pulseColor = new Color(
+                color.getRed(),
+                color.getGreen(),
+                color.getBlue(),
+                (int) (alpha * 255));
+
+        g2.setColor(pulseColor);
 
         g2.drawOval(
-                p.getX() - sz / 2,
-                p.getY() - sz / 2,
-                sz,
-                sz);
+                p.getX() - maxSz / 2,
+                p.getY() - maxSz / 2,
+                maxSz,
+                maxSz);
 
         g2.setStroke(oldStroke);
         g2.setColor(oldColor);
@@ -915,7 +999,7 @@ public class JeuGraphique extends JComponent {
     // Overlay semi-transparent affiché pendant qu'on attend le coup de l'adversaire
     private void drawAttenteAdversaireOverlay(Graphics2D g2) {
         Color oldColor = g2.getColor();
-        Font  oldFont  = g2.getFont();
+        Font oldFont = g2.getFont();
 
         g2.setColor(new Color(0, 0, 0, 130));
         g2.fillRect(0, 0, getWidth(), getHeight());
