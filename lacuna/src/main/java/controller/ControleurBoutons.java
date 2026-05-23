@@ -23,20 +23,24 @@ public class ControleurBoutons {
      */
     public void undo() {
         if (vue.jeu.isEnModeReseau()) return;
+        if (vue.jeu.isPartieTerminee()) return;
         vue.annulerAnimationsVisuelles();
         vue.jeu.undo();
         vue.refreshScoresEtTourIA();
     }
+
 
     /**
      * Rejoue le dernier coup annulé puis rafraîchit l'affichage.
      */
     public void redo() {
         if (vue.jeu.isEnModeReseau()) return;
+        if (vue.jeu.isPartieTerminee()) return;
         vue.annulerAnimationsVisuelles();
         vue.jeu.redo();
         vue.refreshScoresEtTourIA();
     }
+
 
     /**
      * Recommence la partie courante depuis son état initial.
