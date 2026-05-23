@@ -755,6 +755,9 @@ public void setAfficherSuggestions(boolean afficher) {
 
                 if (n == JOptionPane.YES_OPTION) {
                     finPartieAffichee = false;
+                    // Nettoyer l'état visuel de fin de partie avant de relancer.
+                    // Sinon l'overlay "gagnant" peut rester affiché après recommencer.
+                    animCtx.reset();
                     jeu.recommencerPartie();
                     animCtx.reset();
                     refreshScoresEtTourIA();
