@@ -279,7 +279,7 @@ public void setAfficherSuggestions(boolean afficher) {
      * Termine immédiatement la phase 2 animée.
      */
     public void skipAnimationPhase2() {
-        if (animCtx.getState() == AnimationState.PHASE2)
+        if (animCtx.getState() != AnimationState.PHASE2)
             return;
 
         jeu.attribuerFleursRestantes();
