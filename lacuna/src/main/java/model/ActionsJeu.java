@@ -541,7 +541,7 @@ public final class ActionsJeu {
             );
                     }*/
     public static void simulerCoups(Jeu jeu, Fleur f1, Fleur f2) {
-        // NOTICE: cette méthode ne sert plus au feedforward graphique.
+        // NOTICE_______: cette méthode ne sert plus au feedforward graphique.
         // Le feedforward doit être calculé à partir de EtatJeu directement.
         // On la garde pour compatibilité (aucun effet sur le plateau).
     }

@@ -1,7 +1,7 @@
 package model.IA;
 
 /**
- * Contrat commun à tous les niveaux d'IA.
+ * Interface (Contrat) commune à tous les niveaux d'IA.
  */
 public interface IA {
 

@@ -14,8 +14,7 @@ import model.ReglesPlateau;
  * Génère les coups que l'IA peut envisager depuis un état donné.
  *
  * Le générateur garde seulement les meilleures paires et quelques positions
- * fortes par paire. Cela évite de donner trop de branches au minimax tout en
- * conservant des coups naturels à regarder pendant une partie graphique.
+ * fortes par paire.    
  */
 public class GenerateurCoup {
 
@@ -237,7 +236,7 @@ public class GenerateurCoup {
     }
 
     /**
-     * Petite structure interne pour trier les paires avant de créer les coups.
+     * structure interne pour trier les paires avant de créer les coups
      */
     private static class PaireCandidate {
         private final Fleur f1;

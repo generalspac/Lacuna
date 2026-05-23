@@ -59,6 +59,14 @@ public class DragLayer extends JComponent {
         repaint();
     }
 
+    public void cancelAnimations() {
+        animations.clear();
+        if (animationTimer != null) {
+            animationTimer.stop();
+        }
+        clear();
+    }
+
     public boolean hasAnimations() {
         return !animations.isEmpty();
     }

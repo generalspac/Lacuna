@@ -902,14 +902,38 @@ public class Jeu implements EtatPlateau {
     public void recommencerPartie() {
         if (isEnModeReseau())
             return;
-        initPlayers();
+        annulerIAEnCours();
+        boolean recommencerIAContreIA = iaContreIA;
+        boolean recommencerHumainContreIA = againstIA && ia != null;
+        NiveauxIA niveauIARejouer = niveauIA;
+        NiveauxIA niveauOrRejouer = niveauIAOr;
+        NiveauxIA niveauArgentRejouer = niveauIAArgent;
+        String nomHumainRejouer = nomHumainIA;
+        Pion.TypePion typeHumainRejouer = typeHumainIA;
+        Pion.TypePion departIARejouer = joueurDepartIA;
+        Pion.TypePion departIAContreIARejouer = joueurDepartIAContreIA;
+        String nomOrRejouer = joueurs != null && joueurs.length > 0 ? joueurs[0].getNom() : "OR";
+        String nomArgentRejouer = joueurs != null && joueurs.length > 1 ? joueurs[1].getNom() : "ARGENT";
+
         initFleurs();
         initPions();
-        historique.clear();
-        avantageInitialApplique = false;
-        enPhaseSelectionAvantage = false;
         partieAbandonnee = false;
         gagnantParAbandon = null;
+        avantageInitialApplique = false;
+        enPhaseSelectionAvantage = false;
+
+        if (recommencerIAContreIA) {
+            GestionIA.configurerIAContreIA(this, niveauOrRejouer, niveauArgentRejouer, departIAContreIARejouer);
+        } else if (recommencerHumainContreIA) {
+            GestionIA.activerIA(this, niveauIARejouer, nomHumainRejouer, departIARejouer, typeHumainRejouer);
+        } else {
+            configurerHumainVsHumain(nomOrRejouer, nomArgentRejouer, null);
+        }
+
+        avantageInitialApplique = false;
+        enPhaseSelectionAvantage = false;
+        demarrerPhaseSelectionAvantage();
+        historique.clear();
     }
 
     /**
