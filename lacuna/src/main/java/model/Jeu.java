@@ -149,103 +149,99 @@ public class Jeu implements EtatPlateau {
 
     public Jeu(Jeu autre) {
 
-    this.cercleDeJeu = autre.cercleDeJeu;
+        this.cercleDeJeu = autre.cercleDeJeu;
 
-    // ===== COPIE DES PIONS =====
-    this.pions = new ArrayList<>();
-    for (Pion p : autre.pions) {
-        this.pions.add(
-            new Pion(
-                p.getType(),
-                p.getPosition() == null ? null : new Coordonnees(p.getPosition().getX(), p.getPosition().getY())
-            )
-        );
-    }
+        // ===== COPIE DES PIONS =====
+        this.pions = new ArrayList<>();
+        for (Pion p : autre.pions) {
+            this.pions.add(
+                    new Pion(
+                            p.getType(),
+                            p.getPosition() == null ? null
+                                    : new Coordonnees(p.getPosition().getX(), p.getPosition().getY())));
+        }
 
-    // ===== COPIE DES FLEURS =====
-    this.fleurs = new ArrayList<>();
-    for (Fleur f : autre.fleurs) {
-        Coordonnees pos = f.getPosition();
+        // ===== COPIE DES FLEURS =====
+        this.fleurs = new ArrayList<>();
+        for (Fleur f : autre.fleurs) {
+            Coordonnees pos = f.getPosition();
 
-        this.fleurs.add(
-            new Fleur(
-                f.getType(),
-                new Coordonnees(pos.x, pos.y)
-            )
-        );
-    }
+            this.fleurs.add(
+                    new Fleur(
+                            f.getType(),
+                            new Coordonnees(pos.x, pos.y)));
+        }
 
-    // ===== RECALAGE DES FLEURS SÉLECTIONNÉES =====
-    this.fleurSelectionnee1 = null;
-    this.fleurSelectionnee2 = null;
+        // ===== RECALAGE DES FLEURS SÉLECTIONNÉES =====
+        this.fleurSelectionnee1 = null;
+        this.fleurSelectionnee2 = null;
 
-    if (autre.fleurSelectionnee1 != null) {
-        for (Fleur f : this.fleurs) {
-            if (f.getPosition().x == autre.fleurSelectionnee1.getPosition().x &&
-                f.getPosition().y == autre.fleurSelectionnee1.getPosition().y) {
-                this.fleurSelectionnee1 = f;
-                break;
+        if (autre.fleurSelectionnee1 != null) {
+            for (Fleur f : this.fleurs) {
+                if (f.getPosition().x == autre.fleurSelectionnee1.getPosition().x &&
+                        f.getPosition().y == autre.fleurSelectionnee1.getPosition().y) {
+                    this.fleurSelectionnee1 = f;
+                    break;
+                }
             }
         }
-    }
 
-    if (autre.fleurSelectionnee2 != null) {
-        for (Fleur f : this.fleurs) {
-            if (f.getPosition().x == autre.fleurSelectionnee2.getPosition().x &&
-                f.getPosition().y == autre.fleurSelectionnee2.getPosition().y) {
-                this.fleurSelectionnee2 = f;
-                break;
+        if (autre.fleurSelectionnee2 != null) {
+            for (Fleur f : this.fleurs) {
+                if (f.getPosition().x == autre.fleurSelectionnee2.getPosition().x &&
+                        f.getPosition().y == autre.fleurSelectionnee2.getPosition().y) {
+                    this.fleurSelectionnee2 = f;
+                    break;
+                }
             }
         }
+
+        // ===== AUTRES DONNÉES =====
+        this.nbPions = autre.nbPions;
+        this.nbFleurs = autre.nbFleurs;
+
+        this.joueurs = new Joueur[autre.joueurs.length];
+        for (int i = 0; i < autre.joueurs.length; i++) {
+            this.joueurs[i] = new JoueurHumain(
+                    autre.joueurs[i].getNom(),
+                    autre.joueurs[i].getTypePion());
+            this.joueurs[i].getFleursGagnees()
+                    .addAll(autre.joueurs[i].getFleursGagnees());
+        }
+
+        this.currentPlayerIndex = autre.currentPlayerIndex;
+
+        this.random = new Random();
+
+        this.avantageInitialApplique = autre.avantageInitialApplique;
+        this.enPhaseSelectionAvantage = autre.enPhaseSelectionAvantage;
+        this.feedbackMessage = autre.feedbackMessage;
+
+        this.partieAbandonnee = autre.partieAbandonnee;
+        this.gagnantParAbandon = autre.gagnantParAbandon;
+
+        this.ia = autre.ia;
+        this.iaOr = autre.iaOr;
+        this.iaArgent = autre.iaArgent;
+
+        this.niveauIA = autre.niveauIA;
+        this.niveauIAOr = autre.niveauIAOr;
+        this.niveauIAArgent = autre.niveauIAArgent;
+
+        this.nomHumainIA = autre.nomHumainIA;
+        this.typeHumainIA = autre.typeHumainIA;
+
+        this.joueurDepartIA = autre.joueurDepartIA;
+        this.joueurDepartIAContreIA = autre.joueurDepartIAContreIA;
+
+        this.iaContreIA = autre.iaContreIA;
+        this.iaEnCours = autre.iaEnCours;
+
+        this.enModeReseau = autre.enModeReseau;
+        this.indexJoueurLocal = autre.indexJoueurLocal;
+
+        this.ecouteurCoupEnvoye = autre.ecouteurCoupEnvoye;
     }
-
-    // ===== AUTRES DONNÉES =====
-    this.nbPions = autre.nbPions;
-    this.nbFleurs = autre.nbFleurs;
-
-    this.joueurs = new Joueur[autre.joueurs.length];
-    for (int i = 0; i < autre.joueurs.length; i++) {
-        this.joueurs[i] = new JoueurHumain(
-            autre.joueurs[i].getNom(),
-            autre.joueurs[i].getTypePion()
-        );
-        this.joueurs[i].getFleursGagnees()
-            .addAll(autre.joueurs[i].getFleursGagnees());
-    }
-
-    this.currentPlayerIndex = autre.currentPlayerIndex;
-
-    this.random = new Random();
-
-    this.avantageInitialApplique = autre.avantageInitialApplique;
-    this.enPhaseSelectionAvantage = autre.enPhaseSelectionAvantage;
-    this.feedbackMessage = autre.feedbackMessage;
-
-    this.partieAbandonnee = autre.partieAbandonnee;
-    this.gagnantParAbandon = autre.gagnantParAbandon;
-
-    this.ia = autre.ia;
-    this.iaOr = autre.iaOr;
-    this.iaArgent = autre.iaArgent;
-
-    this.niveauIA = autre.niveauIA;
-    this.niveauIAOr = autre.niveauIAOr;
-    this.niveauIAArgent = autre.niveauIAArgent;
-
-    this.nomHumainIA = autre.nomHumainIA;
-    this.typeHumainIA = autre.typeHumainIA;
-
-    this.joueurDepartIA = autre.joueurDepartIA;
-    this.joueurDepartIAContreIA = autre.joueurDepartIAContreIA;
-
-    this.iaContreIA = autre.iaContreIA;
-    this.iaEnCours = autre.iaEnCours;
-
-    this.enModeReseau = autre.enModeReseau;
-    this.indexJoueurLocal = autre.indexJoueurLocal;
-
-    this.ecouteurCoupEnvoye = autre.ecouteurCoupEnvoye;
-}
     // =========================================================
     // ================= GETTERS ET SETTERS =====================
     // =========-------------------------------------------------
@@ -699,30 +695,49 @@ public class Jeu implements EtatPlateau {
 
             // Vérifier contre les fleurs
             for (Fleur f : fleurs) {
+
                 boolean ignorer = false;
+
                 for (Fleur ignore : fleursAIgnorer) {
                     if (ignore != null && memeFleur(f, ignore)) {
                         ignorer = true;
                         break;
                     }
                 }
+
                 if (ignorer)
                     continue;
 
                 double d = Coordonnees.distance(adjusted, f.getPosition());
-                if (d < distMinPionFleur - tinyMargin) {
-                    // Calcul du vecteur de décalage pour s'éloigner
-                    int dx = adjusted.getX() - f.getPosition().getX();
-                    int dy = adjusted.getY() - f.getPosition().getY();
 
-                    // Si exactement sur le même point, décalage arbitraire
-                    if (dx == 0 && dy == 0) {
+                if (d < distMinPionFleur - tinyMargin) {
+
+                    double dx = adjusted.getX() - f.getPosition().getX();
+                    double dy = adjusted.getY() - f.getPosition().getY();
+
+                    double longueur = Math.sqrt(dx * dx + dy * dy);
+
+                    // Cas spécial : même position exacte
+                    if (longueur == 0) {
                         dx = 1;
-                        dy = 1;
+                        dy = 0;
+                        longueur = 1;
                     }
 
-                    adjusted.setX(adjusted.getX() + (dx >= 0 ? 2 : -2));
-                    adjusted.setY(adjusted.getY() + (dy >= 0 ? 2 : -2));
+                    // Vecteur unitaire
+                    double ux = dx / longueur;
+                    double uy = dy / longueur;
+
+                    // Distance à corriger
+                    double penetration = distMinPionFleur - d + tinyMargin;
+
+                    // Déplacement le long de la droite
+                    adjusted.setX((int) Math.round(
+                            adjusted.getX() + ux * penetration));
+
+                    adjusted.setY((int) Math.round(
+                            adjusted.getY() + uy * penetration));
+
                     aDecale = true;
                     break;
                 }
@@ -734,21 +749,40 @@ public class Jeu implements EtatPlateau {
 
             // Vérifier contre les autres pions
             for (Pion p : pions) {
+
                 if (p.getPosition() == null || p.getPosition().equals(pos))
                     continue;
 
                 double d = Coordonnees.distance(adjusted, p.getPosition());
-                if (d < distMinPionPion - tinyMargin) {
-                    int dx = adjusted.getX() - p.getPosition().getX();
-                    int dy = adjusted.getY() - p.getPosition().getY();
 
-                    if (dx == 0 && dy == 0) {
+                if (d < distMinPionPion - tinyMargin) {
+
+                    double dx = adjusted.getX() - p.getPosition().getX();
+                    double dy = adjusted.getY() - p.getPosition().getY();
+
+                    double longueur = Math.sqrt(dx * dx + dy * dy);
+
+                    // Cas spécial : même position exacte
+                    if (longueur == 0) {
                         dx = 1;
-                        dy = 1;
+                        dy = 0;
+                        longueur = 1;
                     }
 
-                    adjusted.setX(adjusted.getX() + (dx >= 0 ? 2 : -2));
-                    adjusted.setY(adjusted.getY() + (dy >= 0 ? 2 : -2));
+                    // Vecteur unitaire
+                    double ux = dx / longueur;
+                    double uy = dy / longueur;
+
+                    // Distance nécessaire pour sortir de la collision
+                    double penetration = distMinPionPion - d + tinyMargin;
+
+                    // Déplacement EXACT suivant la droite
+                    adjusted.setX((int) Math.round(
+                            adjusted.getX() + ux * penetration));
+
+                    adjusted.setY((int) Math.round(
+                            adjusted.getY() + uy * penetration));
+
                     aDecale = true;
                     break;
                 }
@@ -1583,8 +1617,8 @@ public class Jeu implements EtatPlateau {
     public Fleur findFleurDansJeu(Jeu jeu, Fleur f) {
         for (Fleur fj : jeu.fleurs) {
             if (fj.getPosition().x == f.getPosition().x &&
-                fj.getPosition().y == f.getPosition().y &&
-                fj.getType() == f.getType()) {
+                    fj.getPosition().y == f.getPosition().y &&
+                    fj.getType() == f.getType()) {
                 return fj;
             }
         }
