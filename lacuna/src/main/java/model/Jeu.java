@@ -85,6 +85,7 @@ public class Jeu implements EtatPlateau {
     NiveauxIA niveauIAOr;
     NiveauxIA niveauIAArgent;
     String nomHumainIA;
+    Pion.TypePion typeHumainIA;
     Pion.TypePion joueurDepartIA;
     Pion.TypePion joueurDepartIAContreIA;
     boolean iaContreIA = false;
@@ -146,6 +147,105 @@ public class Jeu implements EtatPlateau {
         demarrerPhaseSelectionAvantage();
     }
 
+    public Jeu(Jeu autre) {
+
+    this.cercleDeJeu = autre.cercleDeJeu;
+
+    // ===== COPIE DES PIONS =====
+    this.pions = new ArrayList<>();
+    for (Pion p : autre.pions) {
+        this.pions.add(
+            new Pion(
+                p.getType(),
+                p.getPosition() == null ? null : new Coordonnees(p.getPosition().getX(), p.getPosition().getY())
+            )
+        );
+    }
+
+    // ===== COPIE DES FLEURS =====
+    this.fleurs = new ArrayList<>();
+    for (Fleur f : autre.fleurs) {
+        Coordonnees pos = f.getPosition();
+
+        this.fleurs.add(
+            new Fleur(
+                f.getType(),
+                new Coordonnees(pos.x, pos.y)
+            )
+        );
+    }
+
+    // ===== RECALAGE DES FLEURS SÉLECTIONNÉES =====
+    this.fleurSelectionnee1 = null;
+    this.fleurSelectionnee2 = null;
+
+    if (autre.fleurSelectionnee1 != null) {
+        for (Fleur f : this.fleurs) {
+            if (f.getPosition().x == autre.fleurSelectionnee1.getPosition().x &&
+                f.getPosition().y == autre.fleurSelectionnee1.getPosition().y) {
+                this.fleurSelectionnee1 = f;
+                break;
+            }
+        }
+    }
+
+    if (autre.fleurSelectionnee2 != null) {
+        for (Fleur f : this.fleurs) {
+            if (f.getPosition().x == autre.fleurSelectionnee2.getPosition().x &&
+                f.getPosition().y == autre.fleurSelectionnee2.getPosition().y) {
+                this.fleurSelectionnee2 = f;
+                break;
+            }
+        }
+    }
+
+    // ===== AUTRES DONNÉES =====
+    this.nbPions = autre.nbPions;
+    this.nbFleurs = autre.nbFleurs;
+
+    this.joueurs = new Joueur[autre.joueurs.length];
+    for (int i = 0; i < autre.joueurs.length; i++) {
+        this.joueurs[i] = new JoueurHumain(
+            autre.joueurs[i].getNom(),
+            autre.joueurs[i].getTypePion()
+        );
+        this.joueurs[i].getFleursGagnees()
+            .addAll(autre.joueurs[i].getFleursGagnees());
+    }
+
+    this.currentPlayerIndex = autre.currentPlayerIndex;
+
+    this.random = new Random();
+
+    this.avantageInitialApplique = autre.avantageInitialApplique;
+    this.enPhaseSelectionAvantage = autre.enPhaseSelectionAvantage;
+    this.feedbackMessage = autre.feedbackMessage;
+
+    this.partieAbandonnee = autre.partieAbandonnee;
+    this.gagnantParAbandon = autre.gagnantParAbandon;
+
+    this.ia = autre.ia;
+    this.iaOr = autre.iaOr;
+    this.iaArgent = autre.iaArgent;
+
+    this.niveauIA = autre.niveauIA;
+    this.niveauIAOr = autre.niveauIAOr;
+    this.niveauIAArgent = autre.niveauIAArgent;
+
+    this.nomHumainIA = autre.nomHumainIA;
+    this.typeHumainIA = autre.typeHumainIA;
+
+    this.joueurDepartIA = autre.joueurDepartIA;
+    this.joueurDepartIAContreIA = autre.joueurDepartIAContreIA;
+
+    this.iaContreIA = autre.iaContreIA;
+    this.iaEnCours = autre.iaEnCours;
+
+    this.enModeReseau = autre.enModeReseau;
+    this.indexJoueurLocal = autre.indexJoueurLocal;
+
+    this.ecouteurCoupEnvoye = autre.ecouteurCoupEnvoye;
+}
     // =========================================================
     // ================= GETTERS ET SETTERS =====================
     // =========-------------------------------------------------
@@ -276,6 +376,7 @@ public class Jeu implements EtatPlateau {
         niveauIAOr = null;
         niveauIAArgent = null;
         nomHumainIA = null;
+        typeHumainIA = null;
         joueurDepartIA = null;
         joueurDepartIAContreIA = null;
         iaEnCours = false;
@@ -1256,6 +1357,7 @@ public class Jeu implements EtatPlateau {
         NiveauxIA niveauOrReset = niveauIAOr;
         NiveauxIA niveauArgentReset = niveauIAArgent;
         String nomHumainReset = nomHumainIA;
+        Pion.TypePion typeHumainReset = typeHumainIA;
         Pion.TypePion departIAReset = joueurDepartIA;
         Pion.TypePion departIAContreIAReset = joueurDepartIAContreIA;
 
@@ -1268,7 +1370,7 @@ public class Jeu implements EtatPlateau {
         if (resetIAContreIA) {
             GestionIA.configurerIAContreIA(this, niveauOrReset, niveauArgentReset, departIAContreIAReset);
         } else if (resetHumainContreIA) {
-            GestionIA.activerIA(this, niveauIAReset, nomHumainReset, departIAReset);
+            GestionIA.activerIA(this, niveauIAReset, nomHumainReset, departIAReset, typeHumainReset);
         } else {
             initPlayers();
         }
@@ -1311,7 +1413,7 @@ public class Jeu implements EtatPlateau {
     }
 
     // Cherche une fleur sur le plateau par type et coordonnées exactes
-    private Fleur trouverFleurSurPlateau(Fleur.TypeFleur type, int x, int y) {
+    public Fleur trouverFleurSurPlateau(Fleur.TypeFleur type, int x, int y) {
         for (Fleur f : fleurs) {
             if (f.getType() == type && f.getPosition().getX() == x && f.getPosition().getY() == y) {
                 return f;
@@ -1342,7 +1444,7 @@ public class Jeu implements EtatPlateau {
      * @param niveau niveau de difficulté de l'IA.
      */
     public void activerIA(NiveauxIA niveau) {
-        activerIA(niveau, "Humain", Pion.TypePion.OR);
+        activerIA(niveau, "Humain", null);
     }
 
     /**
@@ -1468,5 +1570,24 @@ public class Jeu implements EtatPlateau {
      */
     public void configurerIAContreIA(NiveauxIA niveauOr, NiveauxIA niveauArgent, Pion.TypePion joueurQuiCommence) {
         GestionIA.configurerIAContreIA(this, niveauOr, niveauArgent, joueurQuiCommence);
+    }
+
+    /**
+     * Simule l'effet d'un coup de phase 1 sur ce plateau (modifie l'état).
+     * Utile notamment pour le feedforward graphique.
+     */
+    public void simulerCoup(Fleur fleur1, Fleur fleur2) {
+        ActionsJeu.simulerCoups(this, fleur1, fleur2);
+    }
+
+    public Fleur findFleurDansJeu(Jeu jeu, Fleur f) {
+        for (Fleur fj : jeu.fleurs) {
+            if (fj.getPosition().x == f.getPosition().x &&
+                fj.getPosition().y == f.getPosition().y &&
+                fj.getType() == f.getType()) {
+                return fj;
+            }
+        }
+        return null;
     }
 }

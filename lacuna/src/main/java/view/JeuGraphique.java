@@ -12,7 +12,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import java.util.List;
-
+import java.util.ArrayList;
 import global.Configuration;
 import model.*;
 import model.IA.CoupIA;
@@ -58,6 +58,9 @@ public class JeuGraphique extends JComponent {
     private double facteurVitesse = 1.0;
     private boolean afficherCoupsPossibles = false;
     private Fleur.TypeFleur filtreCouleurCoups = null;
+    private boolean afficherFeedforward = false;
+
+    // Cache des paires 
 
     // Mode réseau
     private Object gestionnaireReseau = null; // ServeurReseau ou ClientReseau
@@ -321,6 +324,19 @@ public void setAfficherSuggestions(boolean afficher) {
      * Met à jour les scores, piles de pions et messages de la partie.
      */
     public void refreshScores() {
+        // Si l'utilisateur change la sélection des fleurs pendant que le feedforward est affiché,
+        // on le masque automatiquement quand il n'y a plus 2 fleurs sélectionnées connectées.
+        if (afficherFeedforward) {
+            Fleur f1 = jeu.getFleurSelectionnee1();
+            Fleur f2 = jeu.getFleurSelectionnee2();
+            boolean ok = (f1 != null && f2 != null && f1.getPosition() != null && f2.getPosition() != null)
+                    && jeu.fleursConnectees(f1, f2);
+            if (!ok) {
+                afficherFeedforward = false;
+                invaliderFeedforwardCache();
+            }
+        }
+
         if (scoreOr != null)
             scoreOr.updateFromGame(jeu.getJoueurs()[0]);
         if (scoreArgent != null)
@@ -358,13 +374,14 @@ public void setAfficherSuggestions(boolean afficher) {
             return;
         }
 
-        if (animation.lancerAnimationSecondePhase())
+        if (animation.lancerAnimationSecondePhase()) {
+            enAttenteAdversaire = false; // phase 2 automatique 
             return;
+        }
 
         if (jeu.estTourIA() && jeu.isEnPhaseSelectionAvantage()) {
-            jeu.jouerAvantageIA();
-            refreshScores();
-            repaint();
+            animation.animerAvantageIA();
+            return;
         }
 
         jeu.lancerIA(coup -> animation.animerPuisJouerCoupIA(coup), () -> {
@@ -406,18 +423,38 @@ public void setAfficherSuggestions(boolean afficher) {
             repaint();
         });
 
-        // Callback de réception : appelé quand l'adversaire joue un coup
+        // callback de réception : appelé quand l'adversaire joue un coup
         java.util.function.Consumer<CoupReseau> reception = coup -> SwingUtilities.invokeLater(() -> {
-            jeu.appliquerCoupReseau(coup);
-            // Après AVANTAGE, l'adversaire joue encore (son COUP) : on reste en attente
-            if (!"AVANTAGE".equals(coup.typeMessage)) {
-                enAttenteAdversaire = false;
+            if ("COUP".equals(coup.typeMessage)) {
+                // Montrer les fleurs choisies par l'adversaire pendant 700ms avant d'appliquer
+                Fleur f1 = jeu.trouverFleurSurPlateau(
+                        model.Fleur.TypeFleur.valueOf(coup.typeFleur1), coup.fleur1X, coup.fleur1Y);
+                Fleur f2 = jeu.trouverFleurSurPlateau(
+                        model.Fleur.TypeFleur.valueOf(coup.typeFleur2), coup.fleur2X, coup.fleur2Y);
+                jeu.setFleurSelectionnee1(f1);
+                jeu.setFleurSelectionnee2(f2);
+                repaint();
+                javax.swing.Timer timer = new javax.swing.Timer(700, e -> {
+                    jeu.setFleurSelectionnee1(null);
+                    jeu.setFleurSelectionnee2(null);
+                    jeu.appliquerCoupReseau(coup);
+                    enAttenteAdversaire = false;
+                    refreshScoresEtTourIA();
+                    if (jeu.isPartieAbandonnee()) afficherGagnantSansAnimation();
+                    repaint();
+                });
+                timer.setRepeats(false);
+                timer.start();
+            } else {
+                // AVANTAGE ou ABANDON : application immédiate
+                jeu.appliquerCoupReseau(coup);
+                if (!"AVANTAGE".equals(coup.typeMessage)) {
+                    enAttenteAdversaire = false;
+                }
+                refreshScoresEtTourIA();
+                if (jeu.isPartieAbandonnee()) afficherGagnantSansAnimation();
+                repaint();
             }
-            refreshScores();
-            if (jeu.isPartieAbandonnee()) {
-                afficherGagnantSansAnimation();
-            }
-            repaint();
         });
 
         if (gestionnaire instanceof ServeurReseau) {
@@ -465,7 +502,7 @@ public void setAfficherSuggestions(boolean afficher) {
         }
 
         Fleur f1 = jeu.getFleurSelectionnee1();
-        Fleur f2 = jeu.getFleurSelectionnee2();
+        Fleur f2 = jeu.getFleurSelectionnee2(); 
 
         if (f1 == null) {
             instructionLabel.setText(jeu.nomJoueurActuelPourAffichage() + " : cliquez sur une fleur pour commencer.");
@@ -669,6 +706,9 @@ public void setAfficherSuggestions(boolean afficher) {
         }
 
         drawPossibleMoves(g2, fleurSz);
+        if (afficherFeedforward) {
+             afficheFeedforward(g2);
+        }
         drawSelection(g2);
 
        
@@ -1018,4 +1058,143 @@ public void setAfficherSuggestions(boolean afficher) {
         g2.setFont(oldFont);
         g2.setStroke(oldStroke);
     }
+
+    // =================== FEEDFORWARD (cache) ===================
+
+    private boolean feedforwardCacheValide = false;
+    private final List<Fleur[]> feedforwardPairesNouvelles = new ArrayList<>();
+
+    private String feedforwardSelectionSignature() {
+        Fleur a = jeu.getFleurSelectionnee1();
+        Fleur b = jeu.getFleurSelectionnee2();
+        if (a == null || b == null || a.getPosition() == null || b.getPosition() == null) {
+            return "";
+        }
+        String s1 = a.getType() + "@" + a.getPosition().x + "," + a.getPosition().y;
+        String s2 = b.getType() + "@" + b.getPosition().x + "," + b.getPosition().y;
+        return (s1.compareTo(s2) <= 0) ? (s1 + "|" + s2) : (s2 + "|" + s1);
+    }
+
+    public void invaliderFeedforwardCache() {
+        feedforwardCacheValide = false;
+        feedforwardPairesNouvelles.clear();
+    }
+
+    public void toggleFeedforward() {
+        afficherFeedforward = !afficherFeedforward;
+        if (!afficherFeedforward) {
+            invaliderFeedforwardCache();
+        } else {
+            // Recalcul au prochain paint (ou au prochain draw) une seule fois
+            invaliderFeedforwardCache();
+        }
+        repaint();
+    }
+
+
+    private boolean memeFleur(Fleur a, Fleur b) {
+    if (a == null || b == null) return false;
+    return a.getType() == b.getType() && a.getPosition().equals(b.getPosition());
+    }
+
+    private void recalculerFeedforward() {
+        // Ne calcule que si les 2 fleurs sont sélectionnées et connectées
+        Fleur s1 = jeu.getFleurSelectionnee1();
+        Fleur s2 = jeu.getFleurSelectionnee2();
+        if (s1 == null || s2 == null || s1.getPosition() == null || s2.getPosition() == null) {
+            invaliderFeedforwardCache();
+            feedforwardCacheValide = true;
+            return;
+        }
+        if (!jeu.fleursConnectees(s1, s2)) {
+            invaliderFeedforwardCache();
+            feedforwardCacheValide = true;
+            return;
+        }
+
+        // (Re)calcule les nouvelles connexions après le "manger" du coup.
+        feedforwardPairesNouvelles.clear();
+
+        EtatJeu etatAvant = EtatJeu.depuisJeu(jeu, jeu.currentPlayerIndex);
+
+        java.util.function.Function<Fleur[], String> signature = (paire) -> {
+            if (paire == null || paire.length < 2 || paire[0] == null || paire[1] == null
+                    || paire[0].getPosition() == null || paire[1].getPosition() == null) {
+                return "";
+            }
+            Fleur a = paire[0];
+            Fleur b = paire[1];
+            String sA = a.getType() + "@" + a.getPosition().x + "," + a.getPosition().y;
+            String sB = b.getType() + "@" + b.getPosition().x + "," + b.getPosition().y;
+            return (sA.compareTo(sB) <= 0) ? (sA + "|" + sB) : (sB + "|" + sA);
+        };
+
+        List<Fleur[]> anciennesPaires = new ArrayList<>();
+        for (int i = 0; i < etatAvant.fleursRestantes.size(); i++) {
+            for (int j = i + 1; j < etatAvant.fleursRestantes.size(); j++) {
+                Fleur f1 = etatAvant.fleursRestantes.get(i);
+                Fleur f2 = etatAvant.fleursRestantes.get(j);
+                if (f1.getType() == f2.getType()
+                        && model.ReglesPlateau.segmentLibre(etatAvant, f1.getPosition(), f2.getPosition(), model.ConstantesJeu.TOLERANCE_SEGMENT)) {
+                    anciennesPaires.add(new Fleur[] { f1, f2 });
+                }
+            }
+        }
+
+        CoupIA coup = new CoupIA(
+                etatAvant.trouverFleur(jeu.getFleurSelectionnee1()),
+                etatAvant.trouverFleur(jeu.getFleurSelectionnee2()),
+                Coordonnees.milieu(jeu.getFleurSelectionnee1().getPosition(), jeu.getFleurSelectionnee2().getPosition()));
+        EtatJeu etatApres = etatAvant.appliquerCoup(coup);
+
+        List<Fleur[]> nouvellesPaires = new ArrayList<>();
+        for (int i = 0; i < etatApres.fleursRestantes.size(); i++) {
+            for (int j = i + 1; j < etatApres.fleursRestantes.size(); j++) {
+                Fleur f1 = etatApres.fleursRestantes.get(i);
+                Fleur f2 = etatApres.fleursRestantes.get(j);
+                if (f1.getType() == f2.getType()
+                        && model.ReglesPlateau.segmentLibre(etatApres, f1.getPosition(), f2.getPosition(), model.ConstantesJeu.TOLERANCE_SEGMENT)) {
+                    nouvellesPaires.add(new Fleur[] { f1, f2 });
+                }
+            }
+        }
+
+        java.util.Set<String> anciennesSignatures = new java.util.HashSet<>();
+        for (Fleur[] pa : anciennesPaires) {
+            anciennesSignatures.add(signature.apply(pa));
+        }
+
+        for (Fleur[] pa : nouvellesPaires) {
+            String sig = signature.apply(pa);
+            if (!anciennesSignatures.contains(sig)) {
+                feedforwardPairesNouvelles.add(pa);
+            }
+        }
+
+        feedforwardCacheValide = true;
+    }
+
+    public void afficheFeedforward(Graphics2D g2) {
+    
+    if (!feedforwardCacheValide) {
+        recalculerFeedforward();
+    }
+        if (jeu.getFleurSelectionnee1() != null && jeu.getFleurSelectionnee2() != null) {
+            g2.setColor(new Color(255, 0, 0, 150));
+            g2.setStroke(new BasicStroke(3));
+
+            for (Fleur[] paire : feedforwardPairesNouvelles) {
+                if ((memeFleur(paire[0], jeu.getFleurSelectionnee1()) && memeFleur(paire[1], jeu.getFleurSelectionnee2())) ||
+                        (memeFleur(paire[1], jeu.getFleurSelectionnee1()) && memeFleur(paire[0], jeu.getFleurSelectionnee2()))) {
+                    continue;
+                }
+                Coordonnees p1 = modelToScreen(paire[0].getPosition().x, paire[0].getPosition().y);
+                Coordonnees p2 = modelToScreen(paire[1].getPosition().x, paire[1].getPosition().y);
+                g2.drawLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
+            }
+        }
+
+    }
 }
+
+

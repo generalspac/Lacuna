@@ -57,7 +57,7 @@ public class Cercle {
         if(p == null) return Double.MAX_VALUE; // ou une autre valeur qui indique une erreur
         
         double distance = centre.distance(p);
-        Configuration.debugeur("Distance au centre %f\n", distance);
+        //Configuration.debugeur("Distance au centre %f\n", distance);
         return distance;
     }
 

@@ -102,6 +102,17 @@ public class EcouteurDeSouris extends MouseAdapter {
             jeuGraphique.setSuggestedFlower(null);
             jeuGraphique.setOtherSuggestedFleurs(null);
             jeuGraphique.refreshScoresEtTourIA();
+        
+            
+            return;
+        }
+
+        if (!game.getCercleDeJeu().contientPoint(modelPos)) {
+            return;
+        }
+
+        if (!game.existeCoupConnecte() && game.placerPionLibreSiAucunCoup(modelPos)) {
+            jeuGraphique.refreshScoresEtTourIA();
         }
 
     }

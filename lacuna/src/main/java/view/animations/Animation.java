@@ -60,6 +60,10 @@ public class Animation {
         iaAnimator.animerPuisJouerCoupIA(coup);
     }
 
+    public void animerAvantageIA() {
+        iaAnimator.animerAvantageIA();
+    }
+
     // -------------------------- ANIMATION : GAGNANT -------------------------- //
 
     public void animerGagnant(int generation) {

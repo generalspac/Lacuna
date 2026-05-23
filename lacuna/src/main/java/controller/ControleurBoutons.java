@@ -67,6 +67,16 @@ public class ControleurBoutons {
         vue.repaint();
     }
 
+        /**
+        * Affiche un feedforward pour la partie en cours.
+        */
+    public void feedforward() {
+        if (vue.jeu.isEnModeReseau()) return;
+
+        vue.toggleFeedforward();
+}
+
+
     /**
      * Renvoie la vue pilotée par ce contrôleur.
      *

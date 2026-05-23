@@ -28,32 +28,53 @@ public final class GestionIA {
      * @param joueurQuiCommence couleur qui commence, ou {@code null} pour un départ aléatoire.
      */
     public static void activerIA(Jeu jeu, NiveauxIA niveau, String nomHumain, Pion.TypePion joueurQuiCommence) {
+        Pion.TypePion typeHumain = jeu.random.nextBoolean() ? Pion.TypePion.OR : Pion.TypePion.ARGENT;
+        activerIA(jeu, niveau, nomHumain, joueurQuiCommence, typeHumain);
+    }
+
+    static void activerIA(Jeu jeu, NiveauxIA niveau, String nomHumain, Pion.TypePion joueurQuiCommence,
+            Pion.TypePion typeHumain) {
 
         jeu.againstIA = true;
         jeu.iaContreIA = false;
         if (niveau == null) {
             niveau = NiveauxIA.FACILE;
         }
-        jeu.ia = niveau.creerIA(1);
+        if (typeHumain == null) {
+            typeHumain = jeu.random.nextBoolean() ? Pion.TypePion.OR : Pion.TypePion.ARGENT;
+        }
+        Pion.TypePion typeIA = autreTypePion(typeHumain);
+        int indexIA = (typeIA == Pion.TypePion.OR) ? 0 : 1;
+
+        jeu.ia = niveau.creerIA(indexIA);
         jeu.iaOr = null;
         jeu.iaArgent = null;
         jeu.niveauIA = niveau;
         jeu.niveauIAOr = null;
         jeu.niveauIAArgent = null;
         jeu.nomHumainIA = nomHumain;
+        jeu.typeHumainIA = typeHumain;
         jeu.joueurDepartIA = joueurQuiCommence;
         jeu.joueurDepartIAContreIA = null;
         jeu.partieAbandonnee = false;
         jeu.gagnantParAbandon = null;
 
-        jeu.joueurs = new Joueur[] {
-                new JoueurHumain(jeu.nomValide(nomHumain, "Humain"), Pion.TypePion.OR),
-                new JoueurIa("IA", Pion.TypePion.ARGENT)
-        };
+        Joueur joueurOr = (typeHumain == Pion.TypePion.OR)
+                ? new JoueurHumain(jeu.nomValide(nomHumain, "Humain"), Pion.TypePion.OR)
+                : new JoueurIa("IA", Pion.TypePion.OR);
+        Joueur joueurArgent = (typeHumain == Pion.TypePion.ARGENT)
+                ? new JoueurHumain(jeu.nomValide(nomHumain, "Humain"), Pion.TypePion.ARGENT)
+                : new JoueurIa("IA", Pion.TypePion.ARGENT);
+
+        jeu.joueurs = new Joueur[] { joueurOr, joueurArgent };
         jeu.choisirJoueurQuiCommence(joueurQuiCommence);
         jeu.iaEnCours = false;
         jeu.setFeedbackMessage("Mode IA activé (" + libelleNiveau(niveau) + "). "
                 + jeu.nomJoueurActuelPourAffichage() + " commence.");
+    }
+
+    private static Pion.TypePion autreTypePion(Pion.TypePion type) {
+        return (type == Pion.TypePion.OR) ? Pion.TypePion.ARGENT : Pion.TypePion.OR;
     }
 
     /**
@@ -275,6 +296,7 @@ public final class GestionIA {
         jeu.niveauIAOr = niveauOr;
         jeu.niveauIAArgent = niveauArgent;
         jeu.nomHumainIA = null;
+        jeu.typeHumainIA = null;
         jeu.joueurDepartIA = null;
         jeu.joueurDepartIAContreIA = joueurQuiCommence;
         jeu.iaEnCours = false;

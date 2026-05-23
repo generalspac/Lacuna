@@ -46,6 +46,12 @@ public class EcouteurDeClavier extends KeyAdapter {
                 Configuration.debugeur("Le bouton A clavier a été pressé\n");
                 controleur.abandonner();
                 break;
+
+            case KeyEvent.VK_F:
+                Configuration.debugeur("Le bouton F clavier a été pressé\n");
+                System.out.println("Affichage du feedforward activé/désactivé");
+                controleur.feedforward();
+                break;
         }
     }
 
