@@ -22,7 +22,16 @@ public class DatabaseManager {
     private static final String NOM_DOSSIER_DONNEES = ".lacuna";
     private static final String NOM_BASE_DONNEES = "lacuna.db";
 
+    private final Path cheminBasePersonnalise;
     private Connection connexion;
+
+    public DatabaseManager() {
+        this.cheminBasePersonnalise = null;
+    }
+
+    public DatabaseManager(Path cheminBasePersonnalise) {
+        this.cheminBasePersonnalise = cheminBasePersonnalise;
+    }
 
     /* ouvre la connexion à la base de données sqlite
      crée le fichier lacuna.db s'il n'existe pas encore
@@ -39,6 +48,18 @@ public class DatabaseManager {
     }
 
     private String urlBaseDonnees() throws SQLException {
+        if (cheminBasePersonnalise != null) {
+            Path parent = cheminBasePersonnalise.toAbsolutePath().getParent();
+            if (parent != null) {
+                try {
+                    Files.createDirectories(parent);
+                } catch (Exception e) {
+                    throw new SQLException("Impossible de créer le dossier de sauvegarde : " + e.getMessage(), e);
+                }
+            }
+            return "jdbc:sqlite:" + cheminBasePersonnalise.toAbsolutePath();
+        }
+
         String dossierUtilisateur = System.getProperty("user.home");
         Path dossierDonnees = (dossierUtilisateur == null || dossierUtilisateur.isBlank())
                 ? Paths.get(NOM_DOSSIER_DONNEES)

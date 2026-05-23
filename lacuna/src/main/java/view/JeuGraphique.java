@@ -692,9 +692,9 @@ public void setAfficherSuggestions(boolean afficher) {
         g2.drawImage(plateauImg, offsetX, offsetY, size, size, null);
 
         // Cercle de jeu
-        g2.setColor(Color.RED);
-        int d = (int) (2 * rayon);
-        g2.drawOval(centerX - (int) rayon, centerY - (int) rayon, d, d);
+        // g2.setColor(Color.RED);
+        // int d = (int) (2 * rayon);
+        // g2.drawOval(centerX - (int) rayon, centerY - (int) rayon, d, d);
 
         // Fleurs
         for (Fleur f : jeu.getFleurs()) {
@@ -1203,4 +1203,3 @@ public void setAfficherSuggestions(boolean afficher) {
 
     }
 }
-
