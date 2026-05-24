@@ -12,7 +12,7 @@ public class IADifficile implements IA {
      * @param indexIA index du joueur contrôlé par cette IA.
      */
     public IADifficile(int indexIA) {
-        minimax = new Minimax(new EvaluateurJeu(true), 6, indexIA);
+        minimax = new Minimax(new EvaluateurJeu(true), 5, indexIA);
 
     }
 

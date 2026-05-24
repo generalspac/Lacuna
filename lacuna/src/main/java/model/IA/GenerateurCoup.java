@@ -129,8 +129,11 @@ public class GenerateurCoup {
         int nbJoueur = nombreFleursDeCouleur(etat, joueur, type);
         int nbAdversaire = nombreFleursDeCouleur(etat, adversaire, type);
 
-        score += progressionMajorite(nbJoueur) * 90;
-        score += progressionMajorite(nbAdversaire) * 70;
+        if (nbJoueur >= 4 || nbAdversaire >= 4) {
+            score -= 400;
+        }
+        score += progressionMajorite(nbJoueur) * 110;
+        score += progressionMajorite(nbAdversaire) * 115;
         score += (int) Math.max(0, 180 - Coordonnees.distance(f1.getPosition(), f2.getPosition()));
         score += scorePhase2Fleur(etat, joueur, f1) + scorePhase2Fleur(etat, joueur, f2);
         return score;

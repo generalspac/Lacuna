@@ -1,6 +1,7 @@
 package model.IA;
 
 import model.Fleur;
+import model.ConstantesJeu;
 import model.Pion;
 import model.ReglesPlateau;
 
@@ -42,10 +43,9 @@ public class EvaluateurJeu {
             couleursJoueur = compterCouleursMajoritaires(etat, indexJoueur);
         }
 
-        int score = (couleursIA - couleursJoueur) * 1000;
+        int score = (couleursIA - couleursJoueur) * 10000;
 
-        score += (nombreFleurs(etat, indexIA) - nombreFleurs(etat, indexJoueur)) * 20;
-        score += (scoreCouleursProchesMajorite(etat, indexIA) - scoreCouleursProchesMajorite(etat, indexJoueur)) * 10;
+        score += (scoreCouleursProchesMajorite(etat, indexIA) - scoreCouleursProchesMajorite(etat, indexJoueur)) * 25;
 
         score += scoreMenaces(etat, indexIA);
 
@@ -74,13 +74,13 @@ public class EvaluateurJeu {
             int nbIA  = nombreFleursDeCouleur(etat, indexIA,type);
 
 
-            if (nbAdversaire == 3) {
-                score -= 500;
+            if (nbAdversaire == 3 && nbIA < 4) {
+                score -= 2500;
             }
 
 
-            if (nbIA == 3) {
-                score += 300;
+            if (nbIA == 3 && nbAdversaire < 4) {
+                score += 2200;
             }
         }
 
@@ -95,20 +95,23 @@ public class EvaluateurJeu {
      * @return score de mobilité.
      */
     public int scoreMobilite(EtatJeu etat, int indexJoueur) {
-        int nombre = 0;
+        int score = 0;
         int taille = etat.fleursRestantes.size();
+        int adversaire = 1 - indexJoueur;
 
         for (int i = 0; i < taille; i++) {
             for (int j = i + 1; j < taille; j++) {
                 Fleur f1 = etat.fleursRestantes.get(i);
                 Fleur f2 = etat.fleursRestantes.get(j);
 
-                if (f1.getType() == f2.getType()) {
-                    nombre++;
+                if (f1.getType() == f2.getType()
+                        && ReglesPlateau.segmentLibre(etat, f1.getPosition(), f2.getPosition(),
+                                ConstantesJeu.TOLERANCE_SEGMENT)) {
+                    score += valeurPaireDisponible(etat, indexJoueur, adversaire, f1.getType());
                 }
             }
         }
-        return nombre * 3;
+        return score;
     }
 
     /**
@@ -136,11 +139,9 @@ public class EvaluateurJeu {
             int nb = nombreFleursDeCouleur(etat, index, type);
 
             if (nb == 3) {
-                score += 40;
+                score += 250;
             } else if (nb == 2) {
-                score += 15;
-            } else if (nb >= 4) {
-                score += 60;
+                score += 70;
             }
         }
 
@@ -161,7 +162,7 @@ public class EvaluateurJeu {
             Pion pionProche = pionLePlusProche(etat, fleur);
 
             if (pionProche != null && pionProche.getType() == etat.typesPionsJoueurs[index]) {
-                score += 8 + valeurCouleurPhase2(etat, index, fleur.getType());
+                score += valeurCouleurPhase2(etat, index, fleur.getType());
             }
         }
 
@@ -202,16 +203,46 @@ public class EvaluateurJeu {
      */
     private int valeurCouleurPhase2(EtatJeu etat, int index, Fleur.TypeFleur type) {
         int nb = nombreFleursDeCouleur(etat, index, type);
+        int nbAdversaire = nombreFleursDeCouleur(etat, 1 - index, type);
+
+        if (nb >= 4 || nbAdversaire >= 4) {
+            return 0;
+        }
         if (nb == 3) {
-            return 45;
+            return 30;
         }
         if (nb == 2) {
-            return 18;
+            return 14;
         }
-        if (nb >= 4) {
-            return 10;
+        if (nb == 1) {
+            return 5;
         }
         return 0;
+    }
+
+    private int valeurPaireDisponible(EtatJeu etat, int index, int adversaire, Fleur.TypeFleur type) {
+        int nb = nombreFleursDeCouleur(etat, index, type);
+        int nbAdversaire = nombreFleursDeCouleur(etat, adversaire, type);
+
+        if (nb >= 4 || nbAdversaire >= 4) {
+            return 0;
+        }
+        if (nb == 3) {
+            return 60;
+        }
+        if (nbAdversaire == 3) {
+            return 55;
+        }
+        if (nb == 2) {
+            return 22;
+        }
+        if (nbAdversaire == 2) {
+            return 15;
+        }
+        if (nb == 1) {
+            return 8;
+        }
+        return 2;
     }
 
     /**
@@ -233,17 +264,6 @@ public class EvaluateurJeu {
         }
 
         return score;
-    }
-
-    /**
-     * Compte les fleurs déjà collectées par un joueur.
-     *
-     * @param etat état analysé.
-     * @param index joueur évalué.
-     * @return nombre de fleurs collectées.
-     */
-    private int nombreFleurs(EtatJeu etat, int index) {
-        return etat.fleursParJoueur[index].size();
     }
 
     /**

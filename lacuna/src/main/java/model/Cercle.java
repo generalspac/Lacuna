@@ -71,7 +71,7 @@ public class Cercle {
     // Cette methode permet de copier le cercle actuel (je suppose qu'elle nous aidera peut être pour le futur)
     // je l'ai rajoutée par intuition ( à l'équipe de voir)
     public Cercle copie(){
-        return new Cercle(centre , rayon );
+        return new Cercle(Coordonnees.copieCoordonnees(centre), rayon);
     }
 
 

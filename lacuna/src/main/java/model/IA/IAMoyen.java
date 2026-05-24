@@ -12,7 +12,7 @@ public class IAMoyen implements IA {
      * @param indexIA index du joueur  IA.
      */
     public IAMoyen(int indexIA) {
-        minimax = new Minimax(new EvaluateurJeu(true), 4, indexIA);
+        minimax = new Minimax(new EvaluateurJeu(true), 3, indexIA);
     }
 
     /**

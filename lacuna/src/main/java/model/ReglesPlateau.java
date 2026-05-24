@@ -34,7 +34,7 @@ public final class ReglesPlateau {
 
     public static boolean positionLibrePourPion(Coordonnees pos, List<Pion> pions, double distanceMin) {
         for (Pion p : pions) {
-            if (p.getPosition() != null && Coordonnees.distance(pos, p.getPosition()) < distanceMin) {
+            if (p.getPosition() != null && objetsSeSuperposent(pos, p.getPosition(), distanceMin)) {
                 return false;
             }
         }

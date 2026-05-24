@@ -19,8 +19,8 @@ Gère la connexion à la base de données sqlite du jeu
 */
 public class DatabaseManager {
 
-    private static final String NOM_DOSSIER_DONNEES = ".lacuna";
-    private static final String NOM_BASE_DONNEES = "lacuna.db";
+    private static final String NOM_DOSSIER_DONNEES = "target/ia-reports";
+    private static final String NOM_BASE_DONNEES = "parties_demo_heuristiques_ia.db";
 
     private final Path cheminBasePersonnalise;
     private Connection connexion;
@@ -49,29 +49,38 @@ public class DatabaseManager {
 
     private String urlBaseDonnees() throws SQLException {
         if (cheminBasePersonnalise != null) {
-            Path parent = cheminBasePersonnalise.toAbsolutePath().getParent();
-            if (parent != null) {
-                try {
-                    Files.createDirectories(parent);
-                } catch (Exception e) {
-                    throw new SQLException("Impossible de créer le dossier de sauvegarde : " + e.getMessage(), e);
-                }
-            }
-            return "jdbc:sqlite:" + cheminBasePersonnalise.toAbsolutePath();
+            return urlDepuisDossierEtNom(
+                    dossierDepuisChemin(cheminBasePersonnalise),
+                    cheminBasePersonnalise.getFileName().toString());
         }
 
-        String dossierUtilisateur = System.getProperty("user.home");
-        Path dossierDonnees = (dossierUtilisateur == null || dossierUtilisateur.isBlank())
-                ? Paths.get(NOM_DOSSIER_DONNEES)
-                : Paths.get(dossierUtilisateur, NOM_DOSSIER_DONNEES);
+        Path dossierDonnees = dossierDepuisNom(NOM_DOSSIER_DONNEES);
+        return urlDepuisDossierEtNom(dossierDonnees, NOM_BASE_DONNEES);
+    }
 
+    private Path dossierDepuisNom(String nomDossier) {
+        String dossierUtilisateur = System.getProperty("user.home");
+
+        if (".lacuna".equals(nomDossier) && dossierUtilisateur != null && !dossierUtilisateur.isBlank()) {
+            return Paths.get(dossierUtilisateur, nomDossier);
+        }
+
+        return Paths.get(nomDossier);
+    }
+
+    private Path dossierDepuisChemin(Path chemin) {
+        Path parent = chemin.toAbsolutePath().getParent();
+        return parent == null ? Paths.get(".") : parent;
+    }
+
+    private String urlDepuisDossierEtNom(Path dossierDonnees, String nomBase) throws SQLException {
         try {
             Files.createDirectories(dossierDonnees);
         } catch (Exception e) {
             throw new SQLException("Impossible de créer le dossier de sauvegarde : " + e.getMessage(), e);
         }
 
-        return "jdbc:sqlite:" + dossierDonnees.resolve(NOM_BASE_DONNEES).toAbsolutePath();
+        return "jdbc:sqlite:" + dossierDonnees.resolve(nomBase).toAbsolutePath();
     }
 
     /* crée les tables nécessaires au jeu si elles n'existent pas encore */
