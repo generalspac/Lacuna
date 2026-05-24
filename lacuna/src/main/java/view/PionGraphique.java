@@ -8,10 +8,12 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.*;
 
 public class PionGraphique extends JComponent {
 
     private Image imagePion;
+    private Image imagePionFloue;
     private final int maxPions = 6;
 
     private final java.util.List<Rectangle> zonesPions = new java.util.ArrayList<>();
@@ -34,16 +36,19 @@ public class PionGraphique extends JComponent {
                     : "pion_argent.png";
 
             imagePion = ImageIO.read(Configuration.ouvre(imageName));
+            imagePionFloue = flouterImage(imagePion);
 
         } catch (Exception e) {
             Configuration.debugeurErreur(
-                    "Erreur lors du chargement des images : " + e.getMessage()
-            );
+                    "Erreur lors du chargement des images : " + e.getMessage());
             System.exit(3);
         }
 
         setFocusable(true);
         setOpaque(false);
+
+        // Timer pour rafraîchir l'affichage (notamment le flou quand le tour change)
+        new Timer(100, e -> repaint()).start();
 
         addMouseListener(new MouseAdapter() {
 
@@ -70,14 +75,12 @@ public class PionGraphique extends JComponent {
                         Point screen = SwingUtilities.convertPoint(
                                 PionGraphique.this,
                                 e.getPoint(),
-                                frame
-                        );
+                                frame);
 
                         dl.startDrag(
                                 imagePion,
                                 typePion,
-                                screen
-                        );
+                                screen);
 
                         dragging = true;
                         draggedIndex = i;
@@ -112,12 +115,29 @@ public class PionGraphique extends JComponent {
                 Point screen = SwingUtilities.convertPoint(
                         PionGraphique.this,
                         e.getPoint(),
-                        frame
-                );
+                        frame);
 
                 dl.updateMouse(screen);
             }
         });
+    }
+
+    private Image flouterImage(Image img) {
+        if (img == null) return null;
+        int w = img.getWidth(null);
+        int h = img.getHeight(null);
+        if (w <= 0 || h <= 0) return img;
+
+        BufferedImage bi = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = bi.createGraphics();
+        g2.drawImage(img, 0, 0, null);
+        g2.dispose();
+
+        float[] matrix = new float[9];
+        for (int i = 0; i < 9; i++) matrix[i] = 1.0f / 9.0f;
+        Kernel kernel = new Kernel(3, 3, matrix);
+        ConvolveOp op = new ConvolveOp(kernel, ConvolveOp.EDGE_NO_OP, null);
+        return op.filter(bi, null);
     }
 
     private DragLayer getDragLayer() {
@@ -139,6 +159,7 @@ public class PionGraphique extends JComponent {
         // fond
         g.setColor(getBackground());
         g.fillRect(0, 0, getWidth(), getHeight());
+        Graphics2D g2 = (Graphics2D) g;
 
         if (imagePion == null)
             return;
@@ -159,28 +180,23 @@ public class PionGraphique extends JComponent {
 
         int gap = 10;
 
-        int maxPossibleSizeByHeight =
-                (height - (maxPions + 1) * gap) / maxPions;
+        int maxPossibleSizeByHeight = (height - (maxPions + 1) * gap) / maxPions;
 
-        int maxPossibleSizeByWidth =
-                (int) (width * 0.35);
+        int maxPossibleSizeByWidth = (int) (width * 0.35);
 
         int size = Math.min(
                 maxPossibleSizeByHeight,
-                maxPossibleSizeByWidth
-        );
+                maxPossibleSizeByWidth);
 
         if (size <= 0)
             size = 10;
 
-        int totalHeight =
-                maxPions * size + (maxPions - 1) * gap;
+        int totalHeight = maxPions * size + (maxPions - 1) * gap;
 
-        int startY =
-                (height - totalHeight) / 2;
+        int startY = (height - totalHeight) / 2;
 
-        // OR à gauche / ARGENT à droite 
-        int startX = (typePion == Pion.TypePion.OR) ? 10: width - size - 10; // pourrait être optimisé en les rendant moins rigides et plus flexible.
+        // OR à gauche / ARGENT à droite
+        int startX = (typePion == Pion.TypePion.OR) ? 10 : width - size - 10; 
 
         zonesPions.clear();
 
@@ -196,7 +212,13 @@ public class PionGraphique extends JComponent {
             if (dragging && i == draggedIndex)
                 continue;
 
-            g.drawImage(imagePion, x, y, size, size, null);
+            if (jeu.getJoueurActuel().getTypePion() == typePion) {
+                g.drawImage(imagePion, x, y, size, size, null);
+            } else {
+                g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.4f));
+                g.drawImage(imagePionFloue, x, y, size, size, null);
+                g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+            }
         }
     }
 }

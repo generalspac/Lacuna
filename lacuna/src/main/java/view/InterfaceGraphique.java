@@ -91,30 +91,130 @@ public class InterfaceGraphique implements Runnable {
         // Affiche la liste des parties en base
         // l'utilisateur choisit puis le jeu se lance
         menu.chargerPartie.addActionListener(e -> {
-            DatabaseManager db = new DatabaseManager();
-            try {
-                db.ouvrirConnexion();
-                List<String> parties = db.listerParties();
-                db.fermerConnexion();
-                if (parties.isEmpty()) {
-                    JOptionPane.showMessageDialog(frame, "Aucune partie sauvegardée.");
-                    return;
-                }
-                String[] options = parties.toArray(new String[0]);
-                String choisi = (String) JOptionPane.showInputDialog(frame, "Choisissez une partie :",
-                        "Charger une partie", JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
-                if (choisi == null)
-                    return;
-                idPartieACharger = Integer.parseInt(choisi.split(" - ")[0]);
-                lancerJeu();
-            } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(frame, "Erreur base de données : " + ex.getMessage());
-            }
+            afficherMenuChargerPartie();
         });
 
         frame.setContentPane(menu);
         frame.revalidate();
         frame.repaint();
+    }
+
+    public void afficherMenuChargerPartie() {
+        DatabaseManager db = new DatabaseManager();
+        List<DatabaseManager.PartieInfo> parties;
+        try {
+            db.ouvrirConnexion();
+            parties = db.listerPartiesObjets();
+            db.fermerConnexion();
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(frame, "Erreur base de données : " + ex.getMessage());
+            return;
+        }
+
+        if (parties.isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Aucune partie sauvegardée.");
+            return;
+        }
+
+        JDialog dialog = new JDialog(frame, "Charger une partie", true);
+        dialog.setSize(600, 700);
+        dialog.setLocationRelativeTo(frame);
+
+        JPanel content = new JPanel() {
+            private Image background;
+            {
+                try {
+                    background = javax.imageio.ImageIO.read(global.Configuration.ouvre("image.png"));
+                } catch (Exception ex) {}
+            }
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                if (background != null) {
+                    g.drawImage(background, 0, 0, getWidth(), getHeight(), this);
+                }
+                g.setColor(new Color(0, 0, 0, 180));
+                g.fillRect(0, 0, getWidth(), getHeight());
+            }
+        };
+        content.setLayout(new BorderLayout());
+
+        JLabel title = new JLabel("PARTIES SAUVEGARDÉES", SwingConstants.CENTER);
+        title.setForeground(Color.WHITE);
+        title.setFont(new Font("Arial", Font.BOLD, 28));
+        title.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+        content.add(title, BorderLayout.NORTH);
+
+        JPanel listPanel = new JPanel();
+        listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
+        listPanel.setOpaque(false);
+
+        for (DatabaseManager.PartieInfo p : parties) {
+            JPanel card = new JPanel() {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2.setColor(new Color(255, 255, 255, 20));
+                    g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
+                    g2.setColor(new Color(255, 255, 255, 50));
+                    g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 15, 15);
+                    g2.dispose();
+                }
+            };
+            card.setOpaque(false);
+            card.setLayout(new BorderLayout(15, 10));
+            card.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
+            card.setMaximumSize(new Dimension(550, 80));
+
+            JPanel textPanel = new JPanel(new GridLayout(2, 1));
+            textPanel.setOpaque(false);
+            
+            JLabel nameLabel = new JLabel(p.nom);
+            nameLabel.setForeground(new Color(255, 210, 90));
+            nameLabel.setFont(new Font("Arial", Font.BOLD, 18));
+            
+            JLabel dateLabel = new JLabel(p.date);
+            dateLabel.setForeground(Color.LIGHT_GRAY);
+            dateLabel.setFont(new Font("Arial", Font.ITALIC, 14));
+            
+            textPanel.add(nameLabel);
+            textPanel.add(dateLabel);
+            
+            card.add(textPanel, BorderLayout.CENTER);
+
+            RoundedButton btnLoad = new RoundedButton("CHARGER");
+            btnLoad.setPreferredSize(new Dimension(120, 35));
+            btnLoad.addActionListener(ev -> {
+                idPartieACharger = p.id;
+                dialog.dispose();
+                lancerJeu();
+            });
+            card.add(btnLoad, BorderLayout.EAST);
+
+            listPanel.add(card);
+            listPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        }
+
+        JScrollPane scroll = new JScrollPane(listPanel);
+        scroll.setOpaque(false);
+        scroll.getViewport().setOpaque(false);
+        scroll.setBorder(null);
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
+        content.add(scroll, BorderLayout.CENTER);
+
+        RoundedButton btnRetour = new RoundedButton("RETOUR");
+        btnRetour.setPreferredSize(new Dimension(200, 45));
+        btnRetour.addActionListener(ev -> dialog.dispose());
+        
+        JPanel footer = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        footer.setOpaque(false);
+        footer.setBorder(BorderFactory.createEmptyBorder(15, 0, 15, 0));
+        footer.add(btnRetour);
+        content.add(footer, BorderLayout.SOUTH);
+
+        dialog.setContentPane(content);
+        dialog.setVisible(true);
     }
 
     public void afficherRegles() {
@@ -422,11 +522,8 @@ public class InterfaceGraphique implements Runnable {
                     }
                 });
 
-                checkAide = new JCheckBox("Aide");
+                checkAide = new RoundedCheckBox("Aide");
                 checkAide.setSelected(false);
-                checkAide.setOpaque(false);
-                checkAide.setForeground(Color.WHITE);
-                checkAide.setFont(new Font("Arial", Font.BOLD, 14));
 
                 checkAide.addActionListener(e -> {
                  

@@ -374,6 +374,35 @@ public class DatabaseManager {
         }
     }
 
+    public static class PartieInfo {
+        public int id;
+        public String nom;
+        public String date;
+
+        public PartieInfo(int id, String nom, String date) {
+            this.id = id;
+            this.nom = nom;
+            this.date = date;
+        }
+    }
+
+    /* retourne la liste des parties sauvegardées sous forme d'objets */
+    public List<PartieInfo> listerPartiesObjets() throws SQLException {
+        List<PartieInfo> parties = new ArrayList<>();
+        Statement stmt = connexion.createStatement();
+        ResultSet rs = stmt.executeQuery("SELECT id, nom, date FROM parties ORDER BY id DESC");
+        while (rs.next()) {
+            parties.add(new PartieInfo(
+                rs.getInt("id"),
+                rs.getString("nom"),
+                rs.getString("date")
+            ));
+        }
+        rs.close();
+        stmt.close();
+        return parties;
+    }
+
     /* retourne la liste des parties sauvegardées avec leur id, nom et date */
     public List<String> listerParties() throws SQLException {
         List<String> parties = new ArrayList<>();
