@@ -243,6 +243,9 @@ public void setAfficherSuggestions(boolean afficher) {
         animCtx.reset();
         jeu.resetFleursSelectionnee1();
         jeu.resetFleursSelectionnee2();
+        if (frame != null && frame.getGlassPane() instanceof DragLayer) {
+            ((DragLayer) frame.getGlassPane()).cancelAnimations();
+        }
         repaint();
     }
 
@@ -1200,5 +1203,4 @@ public void setAfficherSuggestions(boolean afficher) {
 
     }
 }
-
 

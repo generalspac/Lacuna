@@ -58,6 +58,7 @@ public class InterfaceGraphique implements Runnable {
     }
 
     public void afficherMenu() {
+        nettoyerGlassPane();
         menu = new Menu();
         menu.nouvellePartie.addActionListener(new ActionListener() {
             @Override
@@ -518,6 +519,7 @@ public class InterfaceGraphique implements Runnable {
                             "Confirmer", JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.YES_OPTION) {
                         aire.jeu.annulerIAEnCours();
+                        aire.annulerAnimationsVisuelles();
                         afficherMenu();
                     }
                 });
@@ -735,6 +737,13 @@ public class InterfaceGraphique implements Runnable {
             }
         };
         worker.execute();
+    }
+
+    private void nettoyerGlassPane() {
+        if (frame != null && frame.getGlassPane() instanceof DragLayer) {
+            ((DragLayer) frame.getGlassPane()).cancelAnimations();
+            frame.getGlassPane().setVisible(false);
+        }
     }
 
     // Lance la connexion réseau (hôte ou invité) puis démarre le jeu
