@@ -394,9 +394,7 @@ public final class ActionsJeu {
                 Coordonnees pos = new Coordonnees((int) Math.round(centre.getX() + rayon * Math.cos(angle)),
                         (int) Math.round(centre.getY() + rayon * Math.sin(angle)));
                 if (jeu.cercleDeJeu.contientPoint(pos) && ReglesPlateau.positionLibrePourPion(pos, jeu.pions,
-                        ConstantesJeu.DIAMETRE_PION_MODELE + ConstantesJeu.MARGE_COLLISION)
-                        && ReglesPlateau.positionLibrePourFleurs(pos, jeu.fleurs,
-                                ConstantesJeu.DIST_MIN_PION_FLEUR)) {
+                        ConstantesJeu.DIAMETRE_PION_MODELE + ConstantesJeu.MARGE_COLLISION)) {
                     return pos;
                 }
             }

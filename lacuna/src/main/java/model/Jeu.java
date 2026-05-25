@@ -641,16 +641,8 @@ public class Jeu implements EtatPlateau {
             return false;
         }
 
-        // Ajuster la position si trop proche d'une fleur ou d'un pion
-        
-
         if (!cercleDeJeu.contientPoint(pos)) {
             setFeedbackMessage("Impossible : le pion doit être placé à l'intérieur du cercle.");
-            return false;
-        }
-
-        if (!positionLibrePourFleurs(pos)) {
-            setFeedbackMessage("Impossible : le pion est trop proche d'une fleur.");
             return false;
         }
 
@@ -774,10 +766,6 @@ public class Jeu implements EtatPlateau {
 
     private boolean positionLibrePourPion(Coordonnees pos) {
         return !pionTropProcheDunAutre(pos);
-    }
-
-    private boolean positionLibrePourFleurs(Coordonnees pos) {
-        return ReglesPlateau.positionLibrePourFleurs(pos, fleurs, ConstantesJeu.DIST_MIN_PION_FLEUR);
     }
 
     /**

@@ -41,19 +41,6 @@ public final class ReglesPlateau {
         return true;
     }
 
-    public static boolean positionLibrePourFleurs(Coordonnees pos, List<Fleur> fleurs, double distanceMin) {
-        if (fleurs == null || distanceMin <= 0) {
-            return true;
-        }
-
-        for (Fleur fleur : fleurs) {
-            if (fleur.getPosition() != null && objetsSeSuperposent(pos, fleur.getPosition(), distanceMin)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     public static boolean segmentLibre(List<Fleur> fleurs, List<Pion> pions, Coordonnees A, Coordonnees B,
             double toleranceSegment) {
 
@@ -91,21 +78,12 @@ public final class ReglesPlateau {
 
     public static List<Coordonnees> pointsDuSegment(List<Pion> pions, Cercle cercleDeJeu, Coordonnees A, Coordonnees B,
             int nbPointsSegment, double distanceMinPion, double margeExtremitesSegment) {
-        return pointsDuSegment(null, pions, cercleDeJeu, A, B, nbPointsSegment, distanceMinPion,
-             margeExtremitesSegment, 0);
-    }
-
-    public static List<Coordonnees> pointsDuSegment(List<Fleur> fleurs, List<Pion> pions, Cercle cercleDeJeu,
-            Coordonnees A, Coordonnees B, int nbPointsSegment, double distanceMinPion,
-            double margeExtremitesSegment, double distanceMinFleur) {
-
         List<Coordonnees> points = new ArrayList<>();
 
         for (Coordonnees pos : Coordonnees.pointsDuSegment(A, B, nbPointsSegment)) {
 
             // Vérification:le pion peut être placé ici?
             if (positionLibrePourPion(pos, pions, distanceMinPion)
-                    && positionLibrePourFleurs(pos, fleurs, distanceMinFleur)
                     && (cercleDeJeu == null || cercleDeJeu.contientPoint(pos))
                     && horsZoneFleursExtremites(A, B, pos, margeExtremitesSegment)) {
                 points.add(pos);
@@ -117,8 +95,8 @@ public final class ReglesPlateau {
 
     public static List<Coordonnees> pointsDuSegment(EtatPlateau etat, Coordonnees A, Coordonnees B,
             int nbPointsSegment, double distanceMinPion, double margeExtremitesSegment) {
-        return pointsDuSegment(etat.fleursPlateau(), etat.pionsPlateau(), etat.cerclePlateau(), A, B,
-                nbPointsSegment, distanceMinPion, margeExtremitesSegment, ConstantesJeu.DIST_MIN_PION_FLEUR);
+        return pointsDuSegment(etat.pionsPlateau(), etat.cerclePlateau(), A, B,
+                nbPointsSegment, distanceMinPion, margeExtremitesSegment);
     }
 
     public static boolean horsZoneFleursExtremites(Coordonnees A, Coordonnees B, Coordonnees pos,
