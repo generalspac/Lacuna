@@ -945,6 +945,30 @@ public class Jeu implements EtatPlateau {
         historique.clear();
     }
 
+    // Recommence la partie en mode réseau avec une nouvelle graine et un joueur de départ
+    public void recommencerPartieReseau(int graine, boolean hoteCommence) {
+        String nomOrRejouer = joueurs != null && joueurs.length > 0 ? joueurs[0].getNom() : "OR";
+        String nomArgentRejouer = joueurs != null && joueurs.length > 1 ? joueurs[1].getNom() : "ARGENT";
+
+        reinitialiserFleurs(graine);
+        initPions();
+        partieAbandonnee = false;
+        gagnantParAbandon = null;
+        avantageInitialApplique = false;
+        enPhaseSelectionAvantage = false;
+
+        joueurs = new Joueur[] {
+            new JoueurHumain(nomOrRejouer, Pion.TypePion.OR),
+            new JoueurHumain(nomArgentRejouer, Pion.TypePion.ARGENT)
+        };
+        currentPlayerIndex = hoteCommence ? 0 : 1;
+
+        avantageInitialApplique = false;
+        enPhaseSelectionAvantage = false;
+        demarrerPhaseSelectionAvantage();
+        historique.clear();
+    }
+
     /**
      * Sélection visuelle de deux fleurs pour une animation.
      *

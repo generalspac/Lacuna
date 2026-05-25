@@ -66,10 +66,14 @@ public class JeuGraphique extends JComponent {
     private Object gestionnaireReseau = null; // ServeurReseau ou ClientReseau
     private boolean enAttenteAdversaire = false;
 
-    // Panneau phase 2 (slider + skip) — caché en phase 1, affiché quand phase 2
+    // Panneau phase 2 (slider + skip) caché en phase 1, affiché quand phase 2
     // disponible
     private javax.swing.JComponent phase2Panel = null;
     private boolean phase2Affichee = false;
+
+    // Rejouer en mode réseau
+    private boolean rejouerDemandeLocal = false;     // le joueur local a cliqué "Rejouer"
+    private CoupReseau rejouerParamsEnAttente = null; 
 
     private Fleur suggestedFlower = null;
     private java.util.List<Fleur> otherSuggestedFleurs = new java.util.ArrayList<>();
@@ -448,6 +452,15 @@ public void setAfficherSuggestions(boolean afficher) {
                 });
                 timer.setRepeats(false);
                 timer.start();
+            } else if ("REJOUER".equals(coup.typeMessage)) {
+                // le host propose de recommencer la partie avec une nouvelle graine
+                if (rejouerDemandeLocal) {
+                    // L'invité avait déja cliqué "Rejouer" alors démarrer immédiatement
+                    demarrerNouvellePartieReseau(coup.fleur1X, coup.hoteCommence);
+                } else {
+                    // Memoriser les parametres jusquà l'invité répond au dialogue
+                    rejouerParamsEnAttente = coup;
+                }
             } else {
                 // AVANTAGE ou ABANDON : application immédiate
                 jeu.appliquerCoupReseau(coup);
@@ -470,6 +483,41 @@ public void setAfficherSuggestions(boolean afficher) {
         enAttenteAdversaire = (jeu.currentPlayerIndex != indexLocal);
 
         refreshScores();
+        repaint();
+    }
+
+    // Envoie un message réseau via le gestionnaire courant (serveur ou client)
+    private void envoyerMessageReseau(CoupReseau coup) {
+        try {
+            if (gestionnaireReseau instanceof ServeurReseau) {
+                ((ServeurReseau) gestionnaireReseau).envoyerCoup(coup);
+            } else if (gestionnaireReseau instanceof ClientReseau) {
+                ((ClientReseau) gestionnaireReseau).envoyerCoup(coup);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Réinitialise la partie en mode réseau avec la graine et le joueur de départ fournis par le hote
+    private void demarrerNouvellePartieReseau(int graine, boolean hoteCommence) {
+        rejouerDemandeLocal = false;
+        rejouerParamsEnAttente = null;
+        finPartieAffichee = false;
+        phase2Affichee = false;
+
+        animCtx.reset();
+        jeu.recommencerPartieReseau(graine, hoteCommence);
+        animCtx.reset();
+
+        // currentPlayerIndex est positionné par recommencerPartieReseau
+        enAttenteAdversaire = (jeu.currentPlayerIndex != jeu.getIndexJoueurLocal());
+
+        if (phase2Panel != null) {
+            phase2Panel.setVisible(false);
+        }
+
+        refreshScoresEtTourIA();
         repaint();
     }
 
@@ -757,16 +805,42 @@ public void setAfficherSuggestions(boolean afficher) {
                         options[0]);
 
                 if (n == JOptionPane.YES_OPTION) {
-                    finPartieAffichee = false;
-                    // Nettoyer l'état visuel de fin de partie avant de relancer.
-                    // Sinon l'overlay "gagnant" peut rester affiché après recommencer.
-                    animCtx.reset();
-                    jeu.recommencerPartie();
-                    animCtx.reset();
-                    refreshScoresEtTourIA();
+                    if (jeu.isEnModeReseau()) {
+                        // mode réseau : le hote (OR) génere la graine et envoie REJOUER et l'invité (ARGENT) attend l'hote envoie les parametres
+                        rejouerDemandeLocal = true;
+                        if (jeu.getIndexJoueurLocal() == 0) {
+                            // Coté host : génerer les parametres et démarrer imédiatement
+                            int graine = new java.util.Random().nextInt();
+                            boolean hoteCommence = new java.util.Random().nextBoolean();
+                            CoupReseau rejouer = new CoupReseau();
+                            rejouer.typeMessage = "REJOUER";
+                            rejouer.fleur1X = graine;
+                            rejouer.hoteCommence = hoteCommence;
+                            envoyerMessageReseau(rejouer);
+                            demarrerNouvellePartieReseau(graine, hoteCommence);
+                        } else {
+                            // Coté invité : si les parametres de l'hote sont déja arrivé alors démarer
+                            if (rejouerParamsEnAttente != null) {
+                                CoupReseau params = rejouerParamsEnAttente;
+                                rejouerParamsEnAttente = null;
+                                demarrerNouvellePartieReseau(params.fleur1X, params.hoteCommence);
+                            }
+                            // Sinon le callback de réception appellera demarrerNouvellePartieReseau quand le message REJOUER de l'hote arrivera
+                        }
+                    } else {
+                        finPartieAffichee = false;
+                        // Nettoyer l'état visuel de fin de partie avant de relancer
+                        // Sinon l'overlay "gagnant" peut rester affiché après recommencer
+                        animCtx.reset();
+                        jeu.recommencerPartie();
+                        animCtx.reset();
+                        refreshScoresEtTourIA();
+                    }
                 } else {
                     // Menu Principal
                     finPartieAffichee = false;
+                    rejouerDemandeLocal = false;
+                    rejouerParamsEnAttente = null;
                     frame.getGlassPane().setVisible(false);
                     if (quitterAction != null) {
                         quitterAction.run();
