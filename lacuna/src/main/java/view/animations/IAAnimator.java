@@ -1,6 +1,5 @@
 package view.animations;
 
-import javax.swing.Timer;
 
 import model.Fleur;
 import model.Joueur;

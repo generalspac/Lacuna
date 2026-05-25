@@ -6,7 +6,6 @@ import java.util.function.Consumer;
 
 
 // Coté hote : ouvre un ServerSocket et gère les échanges avec l'autre joueur (aka. l'invité)
-
 public class ServeurReseau {
 
     private ServerSocket serverSocket;

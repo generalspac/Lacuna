@@ -14,6 +14,15 @@ public class EvaluateurJeu {
     /**
      * Crée un évaluateur selon le niveau d'IA.
      *
+     * @param utiliserBonus sans les bonus d'anticipation et de mobilité. 
+     */
+    public EvaluateurJeu() {
+        utiliserBonus = false;
+    }
+
+    /**
+     * Crée un évaluateur selon le niveau d'IA.
+     *
      * @param utiliserBonus active les bonus d'anticipation et de mobilité. 
      */
     public EvaluateurJeu(boolean utiliserBonus) {
