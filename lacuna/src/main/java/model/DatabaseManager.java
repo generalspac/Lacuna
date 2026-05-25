@@ -19,8 +19,8 @@ Gère la connexion à la base de données sqlite du jeu
 */
 public class DatabaseManager {
 
-    private static final String NOM_DOSSIER_DONNEES = "target/ia-reports";
-    private static final String NOM_BASE_DONNEES = "parties_demo_heuristiques_ia.db";
+    private static final String NOM_DOSSIER_DONNEES = ".lacuna";
+    private static final String NOM_BASE_DONNEES = "lacuna.db";
 
     private final Path cheminBasePersonnalise;
     private Connection connexion;
@@ -48,14 +48,15 @@ public class DatabaseManager {
     }
 
     private String urlBaseDonnees() throws SQLException {
+        return urlDepuisCheminBase(cheminBaseDonnees());
+    }
+
+    public Path cheminBaseDonnees() {
         if (cheminBasePersonnalise != null) {
-            return urlDepuisDossierEtNom(
-                    dossierDepuisChemin(cheminBasePersonnalise),
-                    cheminBasePersonnalise.getFileName().toString());
+            return cheminBasePersonnalise.toAbsolutePath();
         }
 
-        Path dossierDonnees = dossierDepuisNom(NOM_DOSSIER_DONNEES);
-        return urlDepuisDossierEtNom(dossierDonnees, NOM_BASE_DONNEES);
+        return dossierDepuisNom(NOM_DOSSIER_DONNEES).resolve(NOM_BASE_DONNEES).toAbsolutePath();
     }
 
     private Path dossierDepuisNom(String nomDossier) {
@@ -71,6 +72,10 @@ public class DatabaseManager {
     private Path dossierDepuisChemin(Path chemin) {
         Path parent = chemin.toAbsolutePath().getParent();
         return parent == null ? Paths.get(".") : parent;
+    }
+
+    private String urlDepuisCheminBase(Path cheminBase) throws SQLException {
+        return urlDepuisDossierEtNom(dossierDepuisChemin(cheminBase), cheminBase.getFileName().toString());
     }
 
     private String urlDepuisDossierEtNom(Path dossierDonnees, String nomBase) throws SQLException {

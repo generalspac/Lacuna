@@ -649,6 +649,11 @@ public class Jeu implements EtatPlateau {
             return false;
         }
 
+        if (!positionLibrePourFleurs(pos)) {
+            setFeedbackMessage("Impossible : le pion est trop proche d'une fleur.");
+            return false;
+        }
+
         if (!positionLibrePourPion(pos)) {
             setFeedbackMessage("Impossible : la position est déjà occupée ou trop proche d'un autre objet.");
             return false;
@@ -769,6 +774,10 @@ public class Jeu implements EtatPlateau {
 
     private boolean positionLibrePourPion(Coordonnees pos) {
         return !pionTropProcheDunAutre(pos);
+    }
+
+    private boolean positionLibrePourFleurs(Coordonnees pos) {
+        return ReglesPlateau.positionLibrePourFleurs(pos, fleurs, ConstantesJeu.DIST_MIN_PION_FLEUR);
     }
 
     /**

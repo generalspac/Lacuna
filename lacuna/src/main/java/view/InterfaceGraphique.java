@@ -10,6 +10,7 @@ import java.awt.*;
 import java.awt.event.*;
 
 import controller.ControleurBoutons;
+import controller.EcouteurDeClavier;
 
 import model.IA.NiveauxIA;
 import model.Fleur;
@@ -496,21 +497,24 @@ public class InterfaceGraphique implements Runnable {
                 ControleurBoutons controleurBoutons = new ControleurBoutons(aire);
                 aire.setFocusable(true);
 
-                installerRaccourcisClavier(root, controleurBoutons);
-
                 undoButton = new JButton("Undo");
+                undoButton.setToolTipText("Raccourci : <-");
                 undoButton.addActionListener(e -> controleurBoutons.undo());
 
                 redoButton = new JButton("Redo");
+                redoButton.setToolTipText("Raccourci : ->");
                 redoButton.addActionListener(e -> controleurBoutons.redo());
 
                 resetButton = new JButton("Reset");
+                resetButton.setToolTipText("Raccourci : R");
                 resetButton.addActionListener(e -> controleurBoutons.reset());
 
                 JButton abandonButton = new JButton("Abandonner");
+                abandonButton.setToolTipText("Raccourci : A");
                 abandonButton.addActionListener(e -> controleurBoutons.abandonner());
 
                 feedforwardButton = new JButton("Feedforward");
+                feedforwardButton.setToolTipText("Raccourci : F");
                 feedforwardButton.addActionListener(e -> controleurBoutons.feedforward());
 
                 quitterButton = new JButton("Quitter");
@@ -535,6 +539,7 @@ public class InterfaceGraphique implements Runnable {
                 buttonPanel.add(checkAide);
 
                 JButton gitButton = new JButton("Guide");
+                gitButton.setToolTipText("Raccourci : G");
                 gitButton.addActionListener(e -> {
                     Object[] options = new Object[Fleur.TypeFleur.values().length + 2];
                     options[0] = "Masquer";
@@ -622,8 +627,9 @@ public class InterfaceGraphique implements Runnable {
                 sliderVitesse.setPreferredSize(new Dimension(150, 30));
                 sliderVitesse.setBackground(Color.BLACK);
                 sliderVitesse.setForeground(Color.LIGHT_GRAY);
+                double[] facteursVitessePhase2 = {4.0, 2.0, 1.0, 0.35, 0.12};
                 sliderVitesse.addChangeListener(e -> {
-                    double facteur = Math.pow(2.0, 3 - sliderVitesse.getValue());
+                    double facteur = facteursVitessePhase2[sliderVitesse.getValue() - 1];
                     aire.setFacteurVitesse(facteur);
                 });
 
@@ -677,6 +683,8 @@ public class InterfaceGraphique implements Runnable {
                 root.setFlexGrow(buttonPanel, 0);
                 root.add(phase2Panel);
                 root.setFlexGrow(phase2Panel, 0);
+
+                new EcouteurDeClavier(controleurBoutons).installerSur(root);
 
                 return root;
             }
@@ -909,65 +917,6 @@ public class InterfaceGraphique implements Runnable {
         frame.setContentPane(panel);
         frame.revalidate();
         frame.repaint();
-    }
-
-    private void installerRaccourcisClavier(JComponent cible, ControleurBoutons controleur) {
-        // key Bindings
-        InputMap inputMap = cible.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-        ActionMap actionMap = cible.getActionMap();
-
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0), "undo");
-        actionMap.put("undo", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                controleur.undo();
-            }
-        });
-
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0), "redo");
-        actionMap.put("redo", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                controleur.redo();
-            }
-        });
-
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_R, 0), "reset");
-        actionMap.put("reset", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                controleur.reset();
-            }
-        });
-
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_G, 0), "guides");
-        actionMap.put("guides", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (controleur.getvue().jeu.getFleurSelectionnee1() != null) {
-                    controleur.toggleCoupsPossibles(controleur.getvue().jeu.getFleurSelectionnee1().getType(), false);
-                } else {
-                    controleur.toggleCoupsPossibles(null, false);
-                }
-            }
-        });
-
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_A, 0), "abandon");
-        actionMap.put("abandon", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                controleur.abandonner();
-            }
-        });
-
-        // Touche F : feedforward
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F, 0), "feedforward");
-        actionMap.put("feedforward", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                controleur.feedforward();
-            }
-        });
     }
 
     public void toggleFullscreen() {

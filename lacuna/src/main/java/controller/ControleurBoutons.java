@@ -80,6 +80,17 @@ public class ControleurBoutons {
         vue.toggleFeedforward();
 }
 
+    /**
+     * Affiche les coups possibles via le raccourci clavier.
+     */
+    public void guide() {
+        if (vue.jeu.getFleurSelectionnee1() != null) {
+            toggleCoupsPossibles(vue.jeu.getFleurSelectionnee1().getType(), false);
+        } else {
+            toggleCoupsPossibles(null, false);
+        }
+    }
+
 
     /**
      * Renvoie la vue pilotée par ce contrôleur.

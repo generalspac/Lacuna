@@ -391,11 +391,12 @@ public final class ActionsJeu {
             int nbAngles = (r == 0) ? 1 : 24;
             for (int a = 0; a < nbAngles; a++) {
                 double angle = (2 * Math.PI * a) / nbAngles;
-                Coordonnees pos = new Coordonnees(
-                        (int) Math.round(centre.getX() + rayon * Math.cos(angle)),
+                Coordonnees pos = new Coordonnees((int) Math.round(centre.getX() + rayon * Math.cos(angle)),
                         (int) Math.round(centre.getY() + rayon * Math.sin(angle)));
                 if (jeu.cercleDeJeu.contientPoint(pos) && ReglesPlateau.positionLibrePourPion(pos, jeu.pions,
-                        ConstantesJeu.DIAMETRE_PION_MODELE + ConstantesJeu.MARGE_COLLISION)) {
+                        ConstantesJeu.DIAMETRE_PION_MODELE + ConstantesJeu.MARGE_COLLISION)
+                        && ReglesPlateau.positionLibrePourFleurs(pos, jeu.fleurs,
+                                ConstantesJeu.DIST_MIN_PION_FLEUR)) {
                     return pos;
                 }
             }
@@ -546,4 +547,3 @@ public final class ActionsJeu {
         // On la garde pour compatibilité (aucun effet sur le plateau).
     }
 }
-

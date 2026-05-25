@@ -16,6 +16,7 @@ public final class ConstantesJeu {
     public static final double DIAMETRE_FLEUR_MODELE = DIST_MIN_FLEURS;
     public static final double DIAMETRE_PION_MODELE = 22;
     public static final double MARGE_COLLISION = 2;
+    public static final double DIST_MIN_PION_FLEUR = (DIAMETRE_FLEUR_MODELE + DIAMETRE_PION_MODELE) / 2.0;
 
     public static final int NB_POINTS_SEGMENT = 24; // le nombre de points
     public static final double TOLERANCE_SEGMENT = 12;
