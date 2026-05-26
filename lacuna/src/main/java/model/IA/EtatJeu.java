@@ -28,6 +28,9 @@ public class EtatJeu implements EtatPlateau {
     // Types de pion de chaque joueur
     public Pion.TypePion[] typesPionsJoueurs;
 
+   
+    public Cercle cercleDeJeu;
+
     // Index du joueur courant ( 0 ou 1 )
     public int joueurCourant;
 
@@ -52,11 +55,13 @@ public class EtatJeu implements EtatPlateau {
 
     @Override
     public Cercle cerclePlateau() {
-        return null;
+        return cercleDeJeu;
     }
 
     public static EtatJeu depuisJeu(Jeu jeu, int joueurCourant) {
         EtatJeu etat = new EtatJeu();
+        Cercle cercle = jeu.getCercleDeJeu();
+        etat.cercleDeJeu = cercle == null ? null : cercle.copie();
 
         for (Fleur f : jeu.getFleurs()) {
             etat.fleursRestantes.add(f);
@@ -93,6 +98,7 @@ public class EtatJeu implements EtatPlateau {
             copie.fleursParJoueur[i].addAll(this.fleursParJoueur[i]);
         }
 
+        copie.cercleDeJeu = this.cercleDeJeu == null ? null : this.cercleDeJeu.copie();
         copie.joueurCourant = joueurCourant;
         return copie;
     }
@@ -153,7 +159,7 @@ public class EtatJeu implements EtatPlateau {
         return typesPionsJoueurs[indexJoueur];
     }
 
-    private Fleur trouverFleur(Fleur recherchee) {
+    public Fleur trouverFleur(Fleur recherchee) {
         for (Fleur f : fleursRestantes) {
             if (memeFleur(f, recherchee)) {
                 return f;

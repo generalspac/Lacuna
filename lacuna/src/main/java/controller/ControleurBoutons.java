@@ -23,20 +23,24 @@ public class ControleurBoutons {
      */
     public void undo() {
         if (vue.jeu.isEnModeReseau()) return;
+        if (vue.jeu.isPartieTerminee()) return;
         vue.annulerAnimationsVisuelles();
         vue.jeu.undo();
         vue.refreshScoresEtTourIA();
     }
+
 
     /**
      * Rejoue le dernier coup annulé puis rafraîchit l'affichage.
      */
     public void redo() {
         if (vue.jeu.isEnModeReseau()) return;
+        if (vue.jeu.isPartieTerminee()) return;
         vue.annulerAnimationsVisuelles();
         vue.jeu.redo();
         vue.refreshScoresEtTourIA();
     }
+
 
     /**
      * Recommence la partie courante depuis son état initial.
@@ -66,6 +70,27 @@ public class ControleurBoutons {
         vue.refreshScores();
         vue.repaint();
     }
+
+        /**
+        * Affiche un feedforward pour la partie en cours.
+        */
+    public void feedforward() {
+        if (vue.jeu.isEnModeReseau()) return;
+
+        vue.toggleFeedforward();
+}
+
+    /**
+     * Affiche les coups possibles via le raccourci clavier.
+     */
+    public void guide() {
+        if (vue.jeu.getFleurSelectionnee1() != null) {
+            toggleCoupsPossibles(vue.jeu.getFleurSelectionnee1().getType(), false);
+        } else {
+            toggleCoupsPossibles(null, false);
+        }
+    }
+
 
     /**
      * Renvoie la vue pilotée par ce contrôleur.

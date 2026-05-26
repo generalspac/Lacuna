@@ -1,52 +1,70 @@
 package controller;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
-import global.Configuration;
+import javax.swing.JComponent;
 
+/**
+ * Gère les raccourcis clavier de l'écran de partie.
+ */
 public class EcouteurDeClavier extends KeyAdapter {
-    private ControleurBoutons controleur;
 
-    public  EcouteurDeClavier(ControleurBoutons controleur) {
+    private final ControleurBoutons controleur;
+
+    public EcouteurDeClavier(ControleurBoutons controleur) {
         this.controleur = controleur;
     }
 
-    
 
-    @Override
-    public void keyPressed(KeyEvent e) {
+    public void installerSur(Component composant) {
+        if (composant == null) {
+            return;
+        }
 
-        switch (e.getKeyCode()) {
+        composant.addKeyListener(this);
+        if (composant instanceof JComponent) {
+            composant.setFocusable(true);
+        }
 
-            case KeyEvent.VK_LEFT:
-                Configuration.debugeur("Le bouton  <- a été pressé\n");
-                controleur.undo();
-                break;
-
-            case KeyEvent.VK_RIGHT:
-                Configuration.debugeur("Le bouton -> a été pressé\n");
-                controleur.redo();
-                break;
-
-            case KeyEvent.VK_R:
-                Configuration.debugeur("Le bouton R clavier a été pressé\n");
-                controleur.reset();
-                break;
-
-            case KeyEvent.VK_G:
-                Configuration.debugeur("Le bouton G clavier a été pressé\n");
-                if(controleur.getvue().jeu.getFleurSelectionnee1() != null) {
-                    controleur.toggleCoupsPossibles(controleur.getvue().jeu.getFleurSelectionnee1().getType(), false);
-                } else {
-                    controleur.toggleCoupsPossibles(null, false);
-                }
-                break;
-            case KeyEvent.VK_A:
-                Configuration.debugeur("Le bouton A clavier a été pressé\n");
-                controleur.abandonner();
-                break;
+        if (composant instanceof Container) {
+            for (Component enfant : ((Container) composant).getComponents()) {
+                installerSur(enfant);
+            }
         }
     }
 
+    @Override
+    public void keyPressed(KeyEvent e) {
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_LEFT:
+                controleur.undo();
+                e.consume();
+                break;
+            case KeyEvent.VK_RIGHT:
+                controleur.redo();
+                e.consume();
+                break;
+            case KeyEvent.VK_R:
+                controleur.reset();
+                e.consume();
+                break;
+            case KeyEvent.VK_G:
+                controleur.guide();
+                e.consume();
+                break;
+            case KeyEvent.VK_A:
+                controleur.abandonner();
+                e.consume();
+                break;
+            case KeyEvent.VK_F:
+                controleur.feedforward();
+                e.consume();
+                break;
+            default:
+                break;
+        }
+    }
 }

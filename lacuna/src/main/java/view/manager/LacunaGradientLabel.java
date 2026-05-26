@@ -1,5 +1,5 @@
 
-package view;
+package view.manager;
 
 import javax.swing.*;
 import java.awt.*;

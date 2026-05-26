@@ -1,8 +1,9 @@
-package view;
+package view.component;
 
 import javax.swing.*;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
+
 import java.awt.*;
 
 public class Regles extends JPanel {

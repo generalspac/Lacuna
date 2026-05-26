@@ -3,9 +3,10 @@ package model.IA;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Random;
 
+import model.Coordonnees;
 import model.ConstantesJeu;
+import model.Fleur;
 
 /**
  * Recherche le meilleur coup avec minimax et élagage alpha-bêta.
@@ -15,7 +16,6 @@ public class Minimax {
     private final EvaluateurJeu evaluateur;
     private final int profondeurMax;
     private final int indexIA;
-    private final Random random = new Random();
 
     /**
      * Constructeur minimax pour un niveau IA.
@@ -45,27 +45,62 @@ public class Minimax {
 
         trierCoups(etat, coups, true);
 
-        List<CoupIA> meilleursCoups = new ArrayList<>();
+        CoupIA meilleurCoup = null;
         int meilleurScore = Integer.MIN_VALUE;
+        int meilleurDepartage = Integer.MIN_VALUE;
         int alpha = Integer.MIN_VALUE;
         int beta = Integer.MAX_VALUE;
 
         for (CoupIA coup : coups) {
             EtatJeu suivant = etat.appliquerCoup(coup);
             int score = minimax(suivant, profondeurMax - 1, alpha, beta);
-            if (score > meilleurScore) {
+            int departage = scoreDepartageCoup(etat, coup);
+
+            if (score > meilleurScore || (score == meilleurScore && departage > meilleurDepartage)) {
                 meilleurScore = score;
-                meilleursCoups.clear();
-                meilleursCoups.add(coup);
-            } 
-            else if (score == meilleurScore) {
-                meilleursCoups.add(coup);
+                meilleurDepartage = departage;
+                meilleurCoup = coup;
             }
 
             alpha = Math.max(alpha, meilleurScore);
         }
 
-        return meilleursCoups.get(random.nextInt(meilleursCoups.size()));
+        return meilleurCoup;
+    }
+
+    private int scoreDepartageCoup(EtatJeu etat, CoupIA coup) {
+        if (coup == null || coup.fleur1 == null || coup.fleur2 == null) {
+            return Integer.MIN_VALUE;
+        }
+
+        int joueur = etat.joueurCourant;
+        int adversaire = 1 - joueur;
+        Fleur.TypeFleur type = coup.fleur1.getType();
+        int nbJoueur = nombreFleursDeCouleur(etat, joueur, type);
+        int nbAdversaire = nombreFleursDeCouleur(etat, adversaire, type);
+
+        if (nbJoueur >= 4 || nbAdversaire >= 4) {
+            return -1000;
+        }
+
+        int score = 0;
+        if (nbJoueur + 2 >= 4) {
+            score += 12000;
+        }
+        if (nbAdversaire == 3) {
+            score += 11000;
+        } else if (nbAdversaire == 2) {
+            score += 1800;
+        }
+
+        if (nbJoueur == 2) {
+            score += 1500;
+        } else if (nbJoueur == 1) {
+            score += 350;
+        }
+
+        score += (int) Math.max(0, 180 - Coordonnees.distance(coup.fleur1.getPosition(), coup.fleur2.getPosition()));
+        return score;
     }
 
     /**
@@ -173,6 +208,16 @@ public class Minimax {
         if (coups.size() > limite) {
             coups.subList(limite, coups.size()).clear();
         }
+    }
+
+    private int nombreFleursDeCouleur(EtatJeu etat, int index, Fleur.TypeFleur type) {
+        int compteur = 0;
+        for (Fleur fleur : etat.fleursParJoueur[index]) {
+            if (fleur.getType() == type) {
+                compteur++;
+            }
+        }
+        return compteur;
     }
 
     /**

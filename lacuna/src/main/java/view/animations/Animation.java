@@ -9,8 +9,8 @@ import model.Coordonnees;
 import model.Fleur;
 import model.Joueur;
 import model.IA.CoupIA;
-import view.DragLayer;
 import view.JeuGraphique;
+import view.component.DragLayer;
 
 /**
  * Orchestre toutes les animations visuelles du jeu.
@@ -58,6 +58,10 @@ public class Animation {
      */
     public void animerPuisJouerCoupIA(CoupIA coup) {
         iaAnimator.animerPuisJouerCoupIA(coup);
+    }
+
+    public void animerAvantageIA() {
+        iaAnimator.animerAvantageIA();
     }
 
     // -------------------------- ANIMATION : GAGNANT -------------------------- //

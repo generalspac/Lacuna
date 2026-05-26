@@ -3,27 +3,28 @@ package view;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
-import javax.imageio.ImageIO;
+import javax.swing.Timer;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import java.util.List;
 
-import global.Configuration;
 import model.*;
-import model.IA.CoupIA;
-import model.IA.EtatJeu;
-import model.IA.GenerateurCoup;
-import network.CoupReseau;
-import network.ServeurReseau;
-import network.ClientReseau;
 import controller.EcouteurDeSouris;
 import view.animations.Animation;
 import view.animations.AnimationContext;
 import view.animations.AnimationState;
-import javax.swing.Timer;
+import view.component.DragLayer;
+import view.component.Score;
+import view.manager.GameEndManager;
+import view.manager.ImageManager;
+import view.manager.NetworkController;
+import view.manager.UIUpdater;
+import view.render.FlowerRenderer;
+import view.render.GameRenderer;
+import view.render.MoveRenderer;
+import view.render.OverlayRenderer;
 
 public class JeuGraphique extends JComponent {
 
@@ -37,72 +38,181 @@ public class JeuGraphique extends JComponent {
 
     private Score scoreArgent;
     private Score scoreOr;
-    private JLabel instructionLabel;
-    private JLabel statusLabel;
 
-    private Image rougeImg, bleueImg, jauneImg, verteImg, orangeImg, violetteImg, roseImg;
-    private Image orImg, argentImg;
-    private Image plateauImg;
+    private final UIUpdater uiUpdater;
+    private final ImageManager imageManager;
+    private final GameEndManager gameEndManager;
+
+    private final GameRenderer gameRenderer;
+    private final OverlayRenderer overlayRenderer;
+    private final MoveRenderer moveRenderer;
+    private final FlowerRenderer flowerRenderer;
 
     private EcouteurDeSouris mouse;
     private PionGraphique pileArgent, pileOr;
 
     private final AnimationContext animCtx = new AnimationContext();
-
     private final Animation animation;
 
     private final CoordonneeConverter converter;
 
     private double facteurVitesse = 1.0;
-    private boolean afficherCoupsPossibles = false;
-    private Fleur.TypeFleur filtreCouleurCoups = null;
+    private boolean afficherFeedforward = false;
+
+    // Cache des paires 
 
     // Mode réseau
-    private Object gestionnaireReseau = null; // ServeurReseau ou ClientReseau
-    private boolean enAttenteAdversaire = false;
+    private NetworkController gestionnaireReseau; // ServeurReseau ou ClientReseau
 
-    // Panneau phase 2 (slider + skip) — caché en phase 1, affiché quand phase 2 disponible
-    private javax.swing.JComponent phase2Panel = null;
-    private boolean phase2Affichee = false;
 
-    public void setPhase2Panel(javax.swing.JComponent panel) {
-        this.phase2Panel = panel;
-        this.phase2Affichee = false;
+    private Fleur suggestedFlower = null;
+    private java.util.List<Fleur> otherSuggestedFleurs = new java.util.ArrayList<>();
+
+    public void setAfficherSuggestions(boolean afficher) {
+        jeu.setAfficherSuggestions(afficher);
     }
 
+
+    public void setPhase2Panel(
+        javax.swing.JComponent panel) {
+
+        uiUpdater.setPhase2Panel(panel);
+    }
     // -------------------------- CONSTRUCTEURS --------------------------------- //
 
     public JeuGraphique(JFrame frame) {
-        this(frame, null, null, null, null);
+        this(frame, null, null, null, null, null);
     }
 
-    public JeuGraphique(JFrame frame, Score scoreArgent, Score scoreOr,
-            JLabel instructionLabel, JLabel statusLabel) {
+    public JeuGraphique(
+            JFrame frame,
+            Score scoreArgent,
+            Score scoreOr,
+            JLabel instructionLabel,
+            JLabel statusLabel,
+            Runnable quitterAction) {
+
+        // ---------------- ATTRIBUTS ---------------- //
 
         this.frame = frame;
+
         this.scoreArgent = scoreArgent;
+
         this.scoreOr = scoreOr;
-        this.instructionLabel = instructionLabel;
-        this.statusLabel = statusLabel;
 
-        this.jeu = new Jeu(modelWidth, modelHeight,
-                new Cercle(new Coordonnees(modelWidth / 2, modelHeight / 2),
-                        Math.min(modelWidth, modelHeight) / 2));
+        // ---------------- IMAGES ---------------- //
 
-        this.converter = new CoordonneeConverter(jeu.getCercleDeJeu(), modelWidth, modelHeight);
-        this.animation = new Animation(this, animCtx);
+        imageManager = new ImageManager();
+
+        imageManager.initImages();
+
+        // ---------------- JEU ---------------- //
+
+        this.jeu = new Jeu(
+                modelWidth,
+                modelHeight,
+                new Cercle(
+                        new Coordonnees(
+                                modelWidth / 2,
+                                modelHeight / 2),
+                        Math.min(
+                                modelWidth,
+                                modelHeight) / 2));
+
+        // ---------------- CONVERTER ---------------- //
+
+        this.converter =
+                new CoordonneeConverter(
+                        jeu.getCercleDeJeu(),
+                        modelWidth,
+                        modelHeight);
+    
+
+        // ---------------- ANIMATION ---------------- //
+
+        this.animation =
+                new Animation(
+                        this,
+                        animCtx);
+
+        // ---------------- UI UPDATER ---------------- //
+
+        uiUpdater = new UIUpdater(
+                jeu,
+                scoreArgent,
+                scoreOr,
+                instructionLabel,
+                statusLabel,
+                pileArgent,
+                pileOr,
+                this::repaint);
+
+        // ---------------- RENDERERS ---------------- //
+
+        gameRenderer = new GameRenderer(
+                jeu,
+                imageManager);
+
+        overlayRenderer = new OverlayRenderer(
+                jeu,
+                this,
+                animCtx,
+                converter);
+        
+        moveRenderer = new MoveRenderer(
+                jeu,
+                this);
+
+        flowerRenderer = new FlowerRenderer(
+                jeu,
+                this,
+                imageManager);
+        
+        // ---------------- UI ---------------- //
+        
+        initUI();
+
+        // ---------------- RÉSEAU ---------------- //
+
+        this.gestionnaireReseau =
+                new NetworkController(this);
+
+        gameEndManager = new GameEndManager(
+                jeu,
+                frame,
+                gestionnaireReseau,
+                quitterAction,
+                this::refreshScoresEtTourIA,
+                this::repaint,
+                () -> animCtx.reset());
+
+
+        // ---------------- PANEL ---------------- //
 
         setBackground(Color.WHITE);
+
         setOpaque(true);
+
         setFocusable(true);
 
-        initImages();
-        new Timer(400, e -> repaint()).start();
+        new Timer(
+                33,
+                e -> repaint()).start();
+
+        // ---------------- LISTENERS ---------------- //
+
         initListeners();
     }
 
+
+
     // -------------------------- GETTERS --------------------------------------- //
 
+    /**
+     * Retourne la partie.
+     *
+     * @return partie courante.
+     */
     public Jeu getJeu() {
         return jeu;
     }
@@ -115,6 +225,11 @@ public class JeuGraphique extends JComponent {
         return animation;
     }
 
+    /**
+     * Retourne le contexte animation.
+     *
+     * @return contexte animation.
+     */
     public AnimationContext getAnimCtx() {
         return animCtx;
     }
@@ -122,6 +237,7 @@ public class JeuGraphique extends JComponent {
     public double getFacteurVitesse() {
         return facteurVitesse;
     }
+
 
     public AnimationState getAnimationState() {
         return animCtx.getState();
@@ -141,6 +257,10 @@ public class JeuGraphique extends JComponent {
 
     public Fleur getFleurPhase2Illustree() {
         return animCtx.getFleurPhase2Illustree();
+    }
+
+    public Image getFlowerImage(Fleur.TypeFleur type) {
+        return flowerRenderer.getFlowerImage(type);
     }
 
     public Pion getPionPhase2Illustre() {
@@ -199,6 +319,14 @@ public class JeuGraphique extends JComponent {
         animCtx.clearPhase2();
     }
 
+    public void setSuggestedFlower(Fleur f) {
+        flowerRenderer.setSuggestedFlower(f);
+    }
+
+    public void setOtherSuggestedFleurs(List<Fleur> fleurs) {
+        flowerRenderer.setOtherSuggestedFleurs(fleurs);
+    }
+
     // -------------------------- ÉTAT ANIMATION -------------------------------- //
 
     /**
@@ -217,6 +345,9 @@ public class JeuGraphique extends JComponent {
         animCtx.reset();
         jeu.resetFleursSelectionnee1();
         jeu.resetFleursSelectionnee2();
+        if (frame != null && frame.getGlassPane() instanceof DragLayer) {
+            ((DragLayer) frame.getGlassPane()).cancelAnimations();
+        }
         repaint();
     }
 
@@ -253,7 +384,7 @@ public class JeuGraphique extends JComponent {
      * Termine immédiatement la phase 2 animée.
      */
     public void skipAnimationPhase2() {
-        if (animCtx.getState() == AnimationState.PHASE2)
+        if (animCtx.getState() != AnimationState.PHASE2)
             return;
 
         jeu.attribuerFleursRestantes();
@@ -298,27 +429,20 @@ public class JeuGraphique extends JComponent {
      * Met à jour les scores, piles de pions et messages de la partie.
      */
     public void refreshScores() {
-        if (scoreOr != null)
-            scoreOr.updateFromGame(jeu.getJoueurs()[0]);
-        if (scoreArgent != null)
-            scoreArgent.updateFromGame(jeu.getJoueurs()[1]);
-        if (pileArgent != null)
-            pileArgent.repaint();
-        if (pileOr != null)
-            pileOr.repaint();
 
-        if (phase2Panel != null && !phase2Affichee && jeu.estSecondePhaseDisponible()) {
-            phase2Affichee = true;
-            phase2Panel.setVisible(true);
-            phase2Panel.revalidate();
+        uiUpdater.refreshScores();
+
+        if (jeu.getFleurSelectionnee1() == null) {
+
+            suggestedFlower = null;
+
+            otherSuggestedFleurs.clear();
         }
-
-        updateInstructionText();
-        updateStatusMessage();
     }
 
     /**
-     * Met l'interface à jour puis lance le tour IA si le joueur courant en a besoin.
+     * Met l'interface à jour puis lance le tour IA si le joueur courant en a
+     * besoin.
      */
     public void refreshScoresEtTourIA() {
         refreshScores();
@@ -328,13 +452,13 @@ public class JeuGraphique extends JComponent {
             return;
         }
 
-        if (animation.lancerAnimationSecondePhase())
+        if (animation.lancerAnimationSecondePhase()) {
             return;
+        }
 
         if (jeu.estTourIA() && jeu.isEnPhaseSelectionAvantage()) {
-            jeu.jouerAvantageIA();
-            refreshScores();
-            repaint();
+            animation.animerAvantageIA();
+            return;
         }
 
         jeu.lancerIA(coup -> animation.animerPuisJouerCoupIA(coup), () -> {
@@ -347,143 +471,19 @@ public class JeuGraphique extends JComponent {
     }
 
     public boolean isEnAttenteAdversaire() {
-        return enAttenteAdversaire;
+        return gestionnaireReseau.isEnAttenteAdversaire();
     }
 
-    // Configure le mode réseau : relie le gestionnaire (ServeurReseau ou ClientReseau) au jeu
-    public void installerReseau(Object gestionnaire, Pion.TypePion typeLocal) {
-        this.gestionnaireReseau = gestionnaire;
-        int indexLocal = (typeLocal == Pion.TypePion.OR) ? 0 : 1;
-
-        jeu.setEnModeReseau(true);
-        jeu.setIndexJoueurLocal(indexLocal);
-
-        // Callback d'envoi : appelé par Jeu quand le joueur local joue un coup
-        jeu.setEcouteurCoupEnvoye(coup -> {
-            try {
-                if (gestionnaire instanceof ServeurReseau) {
-                    ((ServeurReseau) gestionnaire).envoyerCoup(coup);
-                } else if (gestionnaire instanceof ClientReseau) {
-                    ((ClientReseau) gestionnaire).envoyerCoup(coup);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            // On attend uniquement après un COUP (l'AVANTAGE ne change pas le tour)
-            enAttenteAdversaire = "COUP".equals(coup.typeMessage);
-            refreshScores(); // met à jour les grilles de fleurs collectées
-            repaint();
-        });
-
-        // Callback de réception : appelé quand l'adversaire joue un coup
-        java.util.function.Consumer<CoupReseau> reception = coup -> SwingUtilities.invokeLater(() -> {
-            jeu.appliquerCoupReseau(coup);
-            // Après AVANTAGE, l'adversaire joue encore (son COUP) : on reste en attente
-            if (!"AVANTAGE".equals(coup.typeMessage)) {
-                enAttenteAdversaire = false;
-            }
-            refreshScores();
-            if (jeu.isPartieAbandonnee()) {
-                afficherGagnantSansAnimation();
-            }
-            repaint();
-        });
-
-        if (gestionnaire instanceof ServeurReseau) {
-            ((ServeurReseau) gestionnaire).setEcouteur(reception);
-        } else if (gestionnaire instanceof ClientReseau) {
-            ((ClientReseau) gestionnaire).setEcouteur(reception);
-        }
-
-        // Si l'adversaire commence, on attend son coup d'entrée de jeu
-        enAttenteAdversaire = (jeu.currentPlayerIndex != indexLocal);
-
-        refreshScores();
-        repaint();
-    }
-
-    private void updateInstructionText() {
-        if (instructionLabel == null)
-            return;
-
-        if (animCtx.isEnCours()) {
-            instructionLabel.setText("Animation en cours… Vous pouvez utiliser Undo, Redo ou Reset.");
-            return;
-        }
-
-        if (jeu.isIAEnCours()) {
-            instructionLabel.setText(jeu.nomJoueurActuelPourAffichage()
-                    + " réfléchit… Vous pouvez utiliser Undo, Redo ou Reset.");
-            return;
-        }
-
-        if (jeu.estTourIA()) {
-            instructionLabel.setText("Tour de " + jeu.nomJoueurActuelPourAffichage() + "…");
-            return;
-        }
-
-        if (jeu.isEnModeReseau() && enAttenteAdversaire) {
-            instructionLabel.setText("Tour du joueur distant (" + jeu.getJoueurActuel().getTypePion() + ")…");
-            return;
-        }
-
-        if (jeu.isEnPhaseSelectionAvantage()) {
-            instructionLabel.setText(jeu.nomJoueurActuelPourAffichage()
-                    + " : choisissez une fleur pour votre avantage");
-            return;
-        }
-
-        Fleur f1 = jeu.getFleurSelectionnee1();
-        Fleur f2 = jeu.getFleurSelectionnee2();
-
-        if (f1 == null) {
-            instructionLabel.setText(jeu.nomJoueurActuelPourAffichage() + " : cliquez sur une fleur pour commencer.");
-        } else if (f2 == null) {
-            instructionLabel
-                    .setText(jeu.nomJoueurActuelPourAffichage() + " : sélectionnez une seconde fleur du même type.");
-        } else if (jeu.fleursConnectees(f1, f2)) {
-            instructionLabel.setText("Fleurs connectees : un pion sera place en cliquant.");
-        } else {
-            instructionLabel.setText("Fleurs non Connectee : choisissez une autre seconde fleur.");
-        }
-    }
-
-    private void updateStatusMessage() {
-        if (statusLabel == null)
-            return;
-        String message = jeu.getFeedbackMessage();
-        statusLabel.setText((message == null || message.trim().isEmpty())
-                ? "En attente d'une action…"
-                : message);
-    }
-
-    // ------------------ AFFICHAGE / MASQUAGE DES COUPS POSSIBLES -------------- //
-
+    // Configure le mode réseau : relie le gestionnaire (ServeurReseau ou
+    // ClientReseau) au jeu
     /**
-     * Active ou masque l'affichage des coups possibles pour guider le joueur.
+     * Configure le mode réseau.
      *
-     * @param couleur couleur filtrée, ou {@code null} pour toutes les couleurs.
-     * @param masquer {@code true} pour cacher l'aide.
+     * @param gestionnaire gestionnaire réseau.
+     * @param typeLocal type local.
      */
-    public void afficherCoupsPossibles(Fleur.TypeFleur couleur, boolean masquer) {
-        if (masquer) {
-            afficherCoupsPossibles = false;
-            filtreCouleurCoups = null;
-            jeu.setFeedbackMessage("Affichage des coups possibles masqué.");
-        } else {
-            if (afficherCoupsPossibles && filtreCouleurCoups == couleur) {
-                afficherCoupsPossibles = false;
-                filtreCouleurCoups = null;
-                jeu.setFeedbackMessage("Affichage des coups possibles masqué.");
-            } else {
-                afficherCoupsPossibles = true;
-                filtreCouleurCoups = couleur;
-                String label = (couleur == null) ? "toutes les couleurs" : couleur.name().toLowerCase();
-                jeu.setFeedbackMessage("Affichage des coups possibles pour " + label + ".");
-            }
-        }
-        repaint();
-        updateStatusMessage();
+    public void installerReseau(Object gestionnaire, Pion.TypePion typeLocal) {
+        gestionnaireReseau.installerReseau(gestionnaire, typeLocal);
     }
 
     // -------------------------- UTILITAIRES ----------------------------------- //
@@ -507,28 +507,7 @@ public class JeuGraphique extends JComponent {
     }
 
     protected Fleur getHighlightedFlower() {
-        return null;
-    }
-
-    public Image getFlowerImage(Fleur.TypeFleur type) {
-        switch (type) {
-            case ROUGE:
-                return rougeImg;
-            case BLEUE:
-                return bleueImg;
-            case JAUNE:
-                return jauneImg;
-            case VERTE:
-                return verteImg;
-            case ORANGE:
-                return orangeImg;
-            case VIOLETTE:
-                return violetteImg;
-            case ROSE:
-                return roseImg;
-            default:
-                return null;
-        }
+        return suggestedFlower;
     }
 
     public Point pointScorePourJoueur(Joueur joueur, int decalage, DragLayer layer) {
@@ -540,28 +519,24 @@ public class JeuGraphique extends JComponent {
 
     // -------------------------- INITIALISATION -------------------------------- //
 
-    private void initImages() {
-        try {
-            rougeImg = load("fleur_rouge.png");
-            bleueImg = load("fleur_bleue.png");
-            jauneImg = load("fleur_jaune.png");
-            verteImg = load("fleur_verte.png");
-            orangeImg = load("fleur_orange.png");
-            violetteImg = load("fleur_violette.png");
-            roseImg = load("fleur_rose.png");
-            orImg = load("pion_or.png");
-            argentImg = load("pion_argent.png");
-            plateauImg = load("plateau.png");
-        } catch (Exception e) {
-            Configuration.debugeurErreur("Erreur chargement images : " + e.getMessage());
-            System.exit(3);
-        }
-    }
+    /**
+     * Initialise les composants de l'interface.
+     */
+    private void initUI() {
 
-    private Image load(String name) throws Exception {
-        return ImageIO.read(Configuration.ouvre(name));
-    }
+        // ---------------- PILES ---------------- //
 
+        pileOr = new PionGraphique(
+                frame,
+                jeu,
+                Pion.TypePion.OR);
+
+        pileArgent = new PionGraphique(
+                frame,
+                jeu,
+                Pion.TypePion.ARGENT);
+    }
+    
     private void initListeners() {
         mouse = new EcouteurDeSouris(this);
         addMouseListener(mouse);
@@ -577,7 +552,7 @@ public class JeuGraphique extends JComponent {
 
                 boolean coupJoue = false;
                 if (!animCtx.isEnCours() && !jeu.isIAEnCours()
-                        && !jeu.estTourIA() && !enAttenteAdversaire
+                        && !jeu.estTourIA() && !gestionnaireReseau.isEnAttenteAdversaire()
                         && !jeu.isPartieTerminee()) {
                     Coordonnees model = screenToModel(e.getX(), e.getY());
                     coupJoue = jeu.placerPionDepuisDrag(model, payload);
@@ -599,340 +574,134 @@ public class JeuGraphique extends JComponent {
 
     @Override
     protected void paintComponent(Graphics g) {
+
         super.paintComponent(g);
+
         Graphics2D g2 = (Graphics2D) g;
 
-        // Met à jour les dimensions du converter à chaque repaint
-        converter.setDimensions(getWidth(), getHeight());
+        // ---------------- DIMENSIONS ---------------- //
+
+        converter.setDimensions(
+                getWidth(),
+                getHeight());
 
         int size = converter.size();
+
         int offsetX = converter.offsetX();
+
         int offsetY = converter.offsetY();
-        int centerX = converter.centerX();
-        int centerY = converter.centerY();
-        double rayon = converter.rayonScreen();
+
         int fleurSz = converter.fleurSize();
 
         jeu.setMarge(fleurSz / 2.0);
 
-        // Fond
+        // ---------------- FOND ---------------- //
+
         g2.setColor(getBackground());
-        g2.fillRect(0, 0, getWidth(), getHeight());
-        g2.drawImage(plateauImg, offsetX, offsetY, size, size, null);
 
-        // Cercle de jeu
-        g2.setColor(Color.RED);
-        int d = (int) (2 * rayon);
-        g2.drawOval(centerX - (int) rayon, centerY - (int) rayon, d, d);
+        g2.fillRect(
+                0,
+                0,
+                getWidth(),
+                getHeight());
 
-        // Fleurs
-        for (Fleur f : jeu.getFleurs()) {
-            if (f == null)
-                continue;
-            Image img = getFlowerImage(f.getType());
-            if (img == null)
-                continue;
-            Coordonnees p = modelToScreen(f.getPosition().x, f.getPosition().y);
-            g2.drawImage(img, p.getX() - fleurSz / 2, p.getY() - fleurSz / 2,
-                    fleurSz, fleurSz, null);
+        gameRenderer.drawBoard(
+                g2,
+                offsetX,
+                offsetY,
+                size);
+
+        // ---------------- FLEURS ---------------- //
+
+        gameRenderer.drawFlowers(
+                g2,
+                this::modelToScreen,
+                fleurSz);
+
+        // ---------------- COUPS ---------------- //
+
+        moveRenderer.drawPossibleMoves(
+                g2,
+                fleurSz);
+
+        if (afficherFeedforward) {
+            moveRenderer.afficheFeedforward(g2);
         }
 
-        drawPossibleMoves(g2, fleurSz);
-        drawSelection(g2);
-        drawAnimatedCercle(g2, getHighlightedFlower());
-        drawPhase2Illustration(g2);
-        drawPions(g2, fleurSz);
-        if (enAttenteAdversaire) drawAttenteAdversaireOverlay(g2);
-        drawWinnerOverlay(g2);
-    }
+        overlayRenderer.drawSelection(g2);
 
+        // ---------------- SUGGESTIONS ---------------- //
+
+        if (jeu.isAfficherSuggestions()) {
+
+            flowerRenderer.drawAnimatedCercle(
+                    g2,
+                    getHighlightedFlower(),
+                    Color.GREEN);
+
+            for (Fleur f : otherSuggestedFleurs) {
+
+                flowerRenderer.drawAnimatedCercle(
+                        g2,
+                        f,
+                        Color.WHITE);
+            }
+
+        } else if (this instanceof JeuTutoriel) {
+
+            flowerRenderer.drawAnimatedCercle(
+                    g2,
+                    getHighlightedFlower(),
+                    Color.GREEN);
+        }
+
+        // ---------------- PHASE 2 ---------------- //
+
+        overlayRenderer.drawPhase2Illustration(g2);
+
+        // ---------------- PIONS ---------------- //
+        gameRenderer.drawPions(
+                g2,
+                this::modelToScreen,
+                fleurSz);
+
+        // ---------------- RÉSEAU ---------------- //
+
+        if (gestionnaireReseau.isEnAttenteAdversaire()) {
+
+            overlayRenderer.drawAttenteAdversaireOverlay(g2);
+        }
+
+        // ---------------- FIN ---------------- //
+
+        overlayRenderer.drawWinnerOverlay(g2);
+
+        verifierFinDePartie();
+    }
     // -------------------------- SOUS-MÉTHODES DE DESSIN ----------------------- //
 
     /**
-     * Dessine la sélection courante du joueur humain.
-     *
-     * @param g2 contexte graphique Swing.
+     * Vérifie la fin de partie.
      */
-    private void drawSelection(Graphics2D g2) {
-        Fleur f1 = jeu.getFleurSelectionnee1();
-        Fleur f2 = jeu.getFleurSelectionnee2();
-        boolean deuxFleurs = f1 != null && f2 != null;
-        boolean connectees = deuxFleurs && jeu.fleursConnectees(f1, f2);
+    private void verifierFinDePartie() {
 
-        g2.setColor(connectees || !deuxFleurs || animCtx.isSelectionIAVisuelle()
-                ? Color.YELLOW
-                : Color.RED);
-        g2.setStroke(new BasicStroke(3));
-        drawSelectionMarker(g2, f1);
-        drawSelectionMarker(g2, f2);
-
-        if (deuxFleurs) {
-            Coordonnees p1 = modelToScreen(f1.getPosition().x, f1.getPosition().y);
-            Coordonnees p2 = modelToScreen(f2.getPosition().x, f2.getPosition().y);
-            Stroke old = g2.getStroke();
-            if (!connectees && !animCtx.isSelectionIAVisuelle()) {
-                g2.setStroke(new BasicStroke(4, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND,
-                        1f, new float[] { 10f, 8f }, 0f));
-            }
-            g2.drawLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
-            g2.setStroke(old);
-        }
+        gameEndManager.verifierFinDePartie(
+                animCtx.isEnCours());
     }
+    // =================== FEEDFORWARD (cache) ===================
 
-    /**
-     * Dessine le marqueur autour d'une fleur sélectionnée.
-     *
-     * @param g2 contexte graphique Swing.
-     * @param f fleur à entourer.
-     */
-    private void drawSelectionMarker(Graphics2D g2, Fleur f) {
-        if (f == null || f.getPosition() == null)
-            return;
-        Coordonnees p = modelToScreen(f.getPosition().x, f.getPosition().y);
-        int sz = Math.max(24, (int) (converter.size() * 0.065));
-        g2.drawOval(p.getX() - sz / 2, p.getY() - sz / 2, sz, sz);
-    }
-
-    protected void drawAnimatedCercle(Graphics2D g2, Fleur f) {
-
-        if (f == null || f.getPosition() == null)
-            return;
-
-        Coordonnees p = modelToScreen(
-                f.getPosition().x,
-                f.getPosition().y);
-
-        int maxSz = Math.max(30, (int) (converter.size() * 0.08));
-
-        // Taille fixe (pas de pulse)
-        int sz = maxSz;
-
-        // Clignotement ON/OFF basé sur le temps
-        boolean visible = (System.currentTimeMillis() / 300) % 2 == 0;
-
-        if (!visible)
-            return; // invisible = OFF
-
-        Stroke oldStroke = g2.getStroke();
-        Color oldColor = g2.getColor();
-
-        // Cercle blanc simple
-        g2.setStroke(new BasicStroke(
-                4,
-                BasicStroke.CAP_ROUND,
-                BasicStroke.JOIN_ROUND));
-
-        g2.setColor(Color.WHITE);
-
-        g2.drawOval(
-                p.getX() - sz / 2,
-                p.getY() - sz / 2,
-                sz,
-                sz);
-
-        g2.setStroke(oldStroke);
-        g2.setColor(oldColor);
-    }
-
-    /**
-     * Dessine les aides visuelles de la phase 2 avec des marqueurs discrets.
-     *
-     * @param g2 contexte graphique Swing.
-     */
-    private void drawPhase2Illustration(Graphics2D g2) {
-        Fleur fleurIllu = animCtx.getFleurPhase2Illustree();
-        Pion pionIllu = animCtx.getPionPhase2Illustre();
-        if (fleurIllu == null || pionIllu == null
-                || fleurIllu.getPosition() == null || pionIllu.getPosition() == null)
-            return;
-
-        Coordonnees fp = modelToScreen(fleurIllu.getPosition().x, fleurIllu.getPosition().y);
-        Coordonnees pp = modelToScreen(pionIllu.getPosition().x, pionIllu.getPosition().y);
-        Stroke oldStroke = g2.getStroke();
-        Color oldColor = g2.getColor();
-
-        Pion pionCompare = animCtx.getPionPhase2Compare();
-        boolean compare = pionCompare != null && pionCompare.getPosition() != null;
-
-        int rayonFleur = Math.max(13, (int) (converter.fleurSize() * 0.55));
-        int rayonPion = Math.max(15, (int) (converter.fleurSize() * 0.62));
-        int rayonCompare = Math.max(13, (int) (converter.fleurSize() * 0.55));
-
-        g2.setStroke(new BasicStroke(3, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND,
-                1f, new float[] { 12f, 8f }, 0f));
-
-        if (compare) {
-            Coordonnees pc = modelToScreen(pionCompare.getPosition().x, pionCompare.getPosition().y);
-            float pulse = (float) (Math.sin(animCtx.getPhase2ComparePulse() * 0.8) * 0.5 + 0.5);
-            int alphaG = 190 + (int) (50 * pulse);
-            int alphaC = 115 + (int) (65 * (1.0 - pulse));
-            g2.setColor(new Color(255, 255, 255, alphaC));
-            g2.drawLine(fp.getX(), fp.getY(), pc.getX(), pc.getY());
-            g2.setColor(new Color(255, 215, 0, alphaG));
-            g2.drawLine(fp.getX(), fp.getY(), pp.getX(), pp.getY());
-            g2.setStroke(new BasicStroke(3));
-            g2.setColor(new Color(255, 255, 255, alphaC));
-            g2.drawOval(pc.getX() - rayonCompare, pc.getY() - rayonCompare,
-                    rayonCompare * 2, rayonCompare * 2);
-            g2.setColor(new Color(255, 215, 0, alphaG));
-            g2.drawOval(pp.getX() - rayonPion, pp.getY() - rayonPion,
-                    rayonPion * 2, rayonPion * 2);
+    public void toggleFeedforward() {
+        afficherFeedforward = !afficherFeedforward;
+        if (!afficherFeedforward) {
+            moveRenderer.invaliderFeedforwardCache();
         } else {
-            g2.setColor(new Color(255, 215, 0, 230));
-            g2.drawLine(fp.getX(), fp.getY(), pp.getX(), pp.getY());
-            g2.setStroke(new BasicStroke(3));
-            g2.drawOval(pp.getX() - rayonPion, pp.getY() - rayonPion,
-                    rayonPion * 2, rayonPion * 2);
+            // Recalcul au prochain paint (ou au prochain draw) une seule fois
+            moveRenderer.invaliderFeedforwardCache();
         }
-
-        g2.setColor(new Color(255, 215, 0, 230));
-        g2.setStroke(new BasicStroke(3));
-        g2.drawOval(fp.getX() - rayonFleur, fp.getY() - rayonFleur,
-                rayonFleur * 2, rayonFleur * 2);
-        g2.setStroke(oldStroke);
-        g2.setColor(oldColor);
+        repaint();
     }
 
-    private void drawPossibleMoves(Graphics2D g2, int fleurSize) {
-        if (!afficherCoupsPossibles)
-            return;
-
-        if (jeu.estTourIA()) {
-            drawAICandidateMoves(g2);
-            return;
-        }
-
-        Fleur f1 = jeu.getFleurSelectionnee1();
-        Fleur f2 = jeu.getFleurSelectionnee2();
-        List<Fleur[]> paires = jeu.pairesConnectees(filtreCouleurCoups);
-
-        g2.setColor(new Color(0, 255, 255, 170));
-        g2.setStroke(new BasicStroke(2));
-        for (Fleur[] paire : paires) {
-            Coordonnees p1 = modelToScreen(paire[0].getPosition().x, paire[0].getPosition().y);
-            Coordonnees p2 = modelToScreen(paire[1].getPosition().x, paire[1].getPosition().y);
-            g2.drawLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
-        }
-
-        if (f1 != null && f2 != null && jeu.fleursConnectees(f1, f2)) {
-            Coordonnees p1 = modelToScreen(f1.getPosition().x, f1.getPosition().y);
-            Coordonnees p2 = modelToScreen(f2.getPosition().x, f2.getPosition().y);
-            Stroke old = g2.getStroke();
-            Color oldC = g2.getColor();
-            g2.setColor(new Color(255, 255, 255, 230));
-            g2.setStroke(new BasicStroke(4));
-            g2.drawLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
-            g2.setColor(oldC);
-            g2.setStroke(old);
-        }
-    }
-
-    /**
-     * Dessine les coups que le générateur IA considère comme candidats.
-     *
-     * @param g2 contexte graphique Swing.
-     */
-    private void drawAICandidateMoves(Graphics2D g2) {
-        List<CoupIA> coups = GenerateurCoup.genererCoups(EtatJeu.depuisJeu(jeu, jeu.currentPlayerIndex));
-
-        Stroke oldStroke = g2.getStroke();
-        Color oldColor = g2.getColor();
-        g2.setStroke(new BasicStroke(2));
-
-        for (CoupIA coup : coups) {
-            if (coup == null || coup.fleur1 == null || coup.fleur2 == null || coup.position == null) {
-                continue;
-            }
-            if (filtreCouleurCoups != null && coup.fleur1.getType() != filtreCouleurCoups) {
-                continue;
-            }
-
-            Coordonnees p1 = modelToScreen(coup.fleur1.getPosition().x, coup.fleur1.getPosition().y);
-            Coordonnees p2 = modelToScreen(coup.fleur2.getPosition().x, coup.fleur2.getPosition().y);
-            Coordonnees pion = modelToScreen(coup.position.x, coup.position.y);
-
-            g2.setColor(new Color(0, 255, 255, 145));
-            g2.drawLine(p1.getX(), p1.getY(), p2.getX(), p2.getY());
-            g2.setColor(new Color(255, 255, 255, 210));
-            g2.fillOval(pion.getX() - 4, pion.getY() - 4, 8, 8);
-        }
-
-        g2.setStroke(oldStroke);
-        g2.setColor(oldColor);
-    }
-
-    private void drawPions(Graphics2D g2, int size) {
-        for (Pion p : jeu.getPions()) {
-            if (p.getPosition() == null)
-                continue;
-            Image img = (p.getType() == Pion.TypePion.OR) ? orImg : argentImg;
-            Coordonnees pos = modelToScreen(p.getPosition().x, p.getPosition().y);
-            g2.drawImage(img, pos.getX() - size / 2, pos.getY() - size / 2,
-                    size, size, null);
-        }
-    }
-
-    // Overlay semi-transparent affiché pendant qu'on attend le coup de l'adversaire
-    private void drawAttenteAdversaireOverlay(Graphics2D g2) {
-        Color oldColor = g2.getColor();
-        Font  oldFont  = g2.getFont();
-
-        g2.setColor(new Color(0, 0, 0, 130));
-        g2.fillRect(0, 0, getWidth(), getHeight());
-
-        String texte = "En attente de l'adversaire…";
-        g2.setFont(oldFont.deriveFont(Font.BOLD, 26f));
-        g2.setColor(Color.WHITE);
-        FontMetrics fm = g2.getFontMetrics();
-        g2.drawString(texte, (getWidth() - fm.stringWidth(texte)) / 2, getHeight() / 2);
-
-        g2.setColor(oldColor);
-        g2.setFont(oldFont);
-    }
-
-    private void drawWinnerOverlay(Graphics2D g2) {
-        Joueur gagnant = animCtx.getGagnantAnime();
-        int pulse = animCtx.getWinnerPulse();
-        if (gagnant == null && pulse <= 0)
-            return;
-
-        String texte = (gagnant == null)
-                ? "ÉGALITÉ !"
-                : jeu.nomJoueurPourAffichage(gagnant) + " GAGNE !";
-        int alpha = Math.min(210, 70 + pulse * 8);
-        int w = Math.min(getWidth() - 60, 420);
-        int h = 100;
-        int x = (getWidth() - w) / 2;
-        int y = 28;
-
-        Color oldColor = g2.getColor();
-        Font oldFont = g2.getFont();
-        Stroke oldStroke = g2.getStroke();
-
-        g2.setColor(new Color(0, 0, 0, alpha));
-        g2.fillRoundRect(x, y, w, h, 28, 28);
-        g2.setColor(new Color(255, 215, 0, 230));
-        g2.setStroke(new BasicStroke(4));
-        g2.drawRoundRect(x, y, w, h, 28, 28);
-
-        float taille = 30f + (float) (Math.sin(pulse * 0.7) * 4.0);
-        g2.setFont(oldFont.deriveFont(Font.BOLD, taille));
-        FontMetrics fm = g2.getFontMetrics();
-        g2.setColor(Color.WHITE);
-        g2.drawString(texte,
-                x + (w - fm.stringWidth(texte)) / 2,
-                y + (h + fm.getAscent()) / 2 - 10);
-
-        g2.setFont(oldFont.deriveFont(Font.BOLD, 14f));
-        String detail = "Couleurs gagnées : " + jeu.getJoueurs()[0].nbCouleursGagnees()
-                + " - " + jeu.getJoueurs()[1].nbCouleursGagnees();
-        FontMetrics fm2 = g2.getFontMetrics();
-        g2.drawString(detail,
-                x + (w - fm2.stringWidth(detail)) / 2,
-                y + h - 18);
-
-        g2.setColor(oldColor);
-        g2.setFont(oldFont);
-        g2.setStroke(oldStroke);
+    public void afficherCoupsPossibles(Fleur.TypeFleur couleur, boolean masquer) {
+        moveRenderer.afficherCoupsPossibles(couleur, masquer);
     }
 }

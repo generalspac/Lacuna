@@ -3,6 +3,9 @@ package model;
 import java.util.ArrayList;
 import java.util.List;
 
+import model.IA.CoupIA;
+import model.IA.EtatJeu;
+
 /**
  * Regroupe les actions concrètes du plateau.
  *
@@ -121,9 +124,10 @@ public final class ActionsJeu {
         if (jeu.partieAbandonnee) {
             return false;
         }
+        double rayonClicFleur = ConstantesJeu.DIAMETRE_FLEUR_MODELE / 2.0 + ConstantesJeu.MARGE_COLLISION;
         for (Fleur f : jeu.fleurs) {
 
-            if (Coordonnees.distance(pos, f.getPosition()) < 10) {
+            if (Coordonnees.distance(pos, f.getPosition()) <= rayonClicFleur) {
 
                 // Phase de sélection d'avantage initial
                 if (jeu.enPhaseSelectionAvantage) {
@@ -162,7 +166,7 @@ public final class ActionsJeu {
                 return true;
             }
         }
-        jeu.setFeedbackMessage("Aucune fleur touchée. Cliquez sur une fleur visible dans le cercle.");
+        jeu.setFeedbackMessage("Aucune fleur touchée. Cliquez sur une fleur visible.");
         return false;
     }
 
@@ -387,8 +391,7 @@ public final class ActionsJeu {
             int nbAngles = (r == 0) ? 1 : 24;
             for (int a = 0; a < nbAngles; a++) {
                 double angle = (2 * Math.PI * a) / nbAngles;
-                Coordonnees pos = new Coordonnees(
-                        (int) Math.round(centre.getX() + rayon * Math.cos(angle)),
+                Coordonnees pos = new Coordonnees((int) Math.round(centre.getX() + rayon * Math.cos(angle)),
                         (int) Math.round(centre.getY() + rayon * Math.sin(angle)));
                 if (jeu.cercleDeJeu.contientPoint(pos) && ReglesPlateau.positionLibrePourPion(pos, jeu.pions,
                         ConstantesJeu.DIAMETRE_PION_MODELE + ConstantesJeu.MARGE_COLLISION)) {
@@ -453,12 +456,11 @@ public final class ActionsJeu {
             return false;
         }
 
-        if (!jeu.cercleDeJeu.contientPoint(pos)) {
-            jeu.setFeedbackMessage("Placement invalide : le pion doit rester dans le cercle.");
-            return false;
-        }
-
         if (!existeCoupConnecte(jeu)) {
+            if (!jeu.cercleDeJeu.contientPoint(pos)) {
+                jeu.setFeedbackMessage("Placement invalide : le pion doit rester dans le cercle.");
+                return false;
+            }
             return placerPionLibreSiAucunCoup(jeu, pos);
         }
 
@@ -508,5 +510,38 @@ public final class ActionsJeu {
         }
 
         return false;
+    }
+
+    
+
+    /*public static void simulerCoups(Jeu jeu, Fleur f1, Fleur f2) {
+            // Simule les coups possibles pour une paire de fleurs donnée
+            //etat plateau apres le coup
+            Jeu copie = new Jeu(jeu);
+
+            Fleur cf1 = copie.findFleurDansJeu(copie, f1);
+            Fleur cf2 = copie.findFleurDansJeu(copie, f2);
+
+            if (cf1 == null || cf2 == null) return;
+
+            Coordonnees pos = new Coordonnees(0, 0);
+            List<Coordonnees> points = pointsDuSegment(copie, cf1.getPosition(), cf2.getPosition());
+
+            if (!points.isEmpty()) {
+                pos = points.get(0);
+            }
+
+            copie.jouerCoup(
+                copie.getJoueurActuel(),
+                copie.getPionLibre(jeu.getJoueurActuel().getTypePion()),
+                pos,
+                cf1,
+                cf2
+            );
+                    }*/
+    public static void simulerCoups(Jeu jeu, Fleur f1, Fleur f2) {
+        // NOTICE_______: cette méthode ne sert plus au feedforward graphique.
+        // Le feedforward doit être calculé à partir de EtatJeu directement.
+        // On la garde pour compatibilité (aucun effet sur le plateau).
     }
 }

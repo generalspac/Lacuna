@@ -8,7 +8,9 @@ public final class ConstantesJeu {
 
     public static final int NB_JOUEURS = 2;
     public static final int MAX_PIONS_PAR_JOUEUR = 6;
-    public static final int NB_COULEURS = 6;
+    public static final int NB_COULEURS = Fleur.TypeFleur.values().length;
+    public static final int NB_FLEURS_PAR_COULEUR = 7;
+    public static final int NB_FLEURS = NB_COULEURS * NB_FLEURS_PAR_COULEUR;
 
     public static final double DIST_MIN_FLEURS = 30; // distance min entre les fleurs
     public static final double DIAMETRE_FLEUR_MODELE = DIST_MIN_FLEURS;

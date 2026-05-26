@@ -1,4 +1,4 @@
-package view;
+package view.component;
 
 import javax.swing.*;
 import java.awt.*;
@@ -57,6 +57,14 @@ public class DragLayer extends JComponent {
         mouse = null;
         payload = null;
         repaint();
+    }
+
+    public void cancelAnimations() {
+        animations.clear();
+        if (animationTimer != null) {
+            animationTimer.stop();
+        }
+        clear();
     }
 
     public boolean hasAnimations() {

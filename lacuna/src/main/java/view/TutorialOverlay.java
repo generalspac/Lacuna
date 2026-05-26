@@ -5,6 +5,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 import global.Configuration;
+import view.component.RoundedButton;
 
 public class TutorialOverlay extends JPanel {
 
@@ -46,7 +47,7 @@ public class TutorialOverlay extends JPanel {
         };
         box.setLayout(null);
         box.setOpaque(false);
-        box.setBounds(200, 150, 900, 400);
+        box.setBounds(200, 150, 950, 400);
 
         // =========================
         // AVATAR
@@ -85,7 +86,7 @@ public class TutorialOverlay extends JPanel {
         backButton = new RoundedButton("Retour");
         skipButton = new RoundedButton("Passer");
         nextButton = new RoundedButton("Continuer");
-        backMenu = new RoundedButton("Menu");
+        backMenu = new RoundedButton("Quitter");
 
         int btnW = 160;
         int btnH = 45;
@@ -130,6 +131,7 @@ public class TutorialOverlay extends JPanel {
         resetButtons();
         nextButton.setVisible(true);
         skipButton.setVisible(true);
+        if (onBackMenu != null) backMenu.setVisible(true);
         
         titleLabel.setText(title.toUpperCase());
         

@@ -34,7 +34,7 @@ public final class ReglesPlateau {
 
     public static boolean positionLibrePourPion(Coordonnees pos, List<Pion> pions, double distanceMin) {
         for (Pion p : pions) {
-            if (p.getPosition() != null && Coordonnees.distance(pos, p.getPosition()) < distanceMin) {
+            if (p.getPosition() != null && objetsSeSuperposent(pos, p.getPosition(), distanceMin)) {
                 return false;
             }
         }
@@ -78,7 +78,6 @@ public final class ReglesPlateau {
 
     public static List<Coordonnees> pointsDuSegment(List<Pion> pions, Cercle cercleDeJeu, Coordonnees A, Coordonnees B,
             int nbPointsSegment, double distanceMinPion, double margeExtremitesSegment) {
-
         List<Coordonnees> points = new ArrayList<>();
 
         for (Coordonnees pos : Coordonnees.pointsDuSegment(A, B, nbPointsSegment)) {
@@ -96,8 +95,8 @@ public final class ReglesPlateau {
 
     public static List<Coordonnees> pointsDuSegment(EtatPlateau etat, Coordonnees A, Coordonnees B,
             int nbPointsSegment, double distanceMinPion, double margeExtremitesSegment) {
-        return pointsDuSegment(etat.pionsPlateau(), etat.cerclePlateau(), A, B, nbPointsSegment,
-                distanceMinPion, margeExtremitesSegment);
+        return pointsDuSegment(etat.pionsPlateau(), etat.cerclePlateau(), A, B,
+                nbPointsSegment, distanceMinPion, margeExtremitesSegment);
     }
 
     public static boolean horsZoneFleursExtremites(Coordonnees A, Coordonnees B, Coordonnees pos,

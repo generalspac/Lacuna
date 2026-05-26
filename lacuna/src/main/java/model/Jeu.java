@@ -13,24 +13,22 @@ import model.IA.NiveauxIA;
 import model.IA.CoupIA;
 import network.CoupReseau;
 
-
-
 // Classe principale du modèle: garde l'état de la partie
 // Elle délègue aussi les règles
 public class Jeu implements EtatPlateau {
 
     // =========================================================
-    // ===================== ATTRIBUTS 
+    // ===================== ATTRIBUTS
     // =====================================
     Cercle cercleDeJeu; // le cercle du jeu
     ArrayList<Pion> pions; // contient tous les pions actuel dans le cercle
     ArrayList<Fleur> fleurs;
     Fleur fleurSelectionnee1; // la fleur que le joueur a touché ( pour le moment on suppose que c'est la
-                                      // fleur la plus proche du point de clic )
+                              // fleur la plus proche du point de clic )
     Fleur fleurSelectionnee2; // la fleur que le joueur a touché ( pour le moment on suppose que c'est la
-                                      // fleur la plus proche du point de clic )
+                              // fleur la plus proche du point de clic )
     int nbPions = 12; // nombre de pions
-    int nbFleurs = 49; // nombre de fleurs
+    int nbFleurs = ConstantesJeu.NB_FLEURS; // nombre de fleurs;
 
     private static final double DIST_MIN_FLEURS = ConstantesJeu.DIST_MIN_FLEURS; // distance min entre les fleurs
     private static final double DIAMETRE_FLEUR_MODELE = ConstantesJeu.DIAMETRE_FLEUR_MODELE;
@@ -39,7 +37,7 @@ public class Jeu implements EtatPlateau {
     private static final int NB_JOUEURS = ConstantesJeu.NB_JOUEURS;
     private static final int MAX_PIONS_PAR_JOUEUR = ConstantesJeu.MAX_PIONS_PAR_JOUEUR;
     private static final int NB_COULEURS = ConstantesJeu.NB_COULEURS;
-
+    private static final int NB_FLEURS_PAR_COULEUR = ConstantesJeu.NB_FLEURS_PAR_COULEUR;
 
     private static final int NB_POINTS_SEGMENT = ConstantesJeu.NB_POINTS_SEGMENT; // le nombre de points
     private static final double TOLERANCE_DROP_SEGMENT = ConstantesJeu.TOLERANCE_DROP_SEGMENT;
@@ -55,8 +53,10 @@ public class Jeu implements EtatPlateau {
     private int HEIGHT = 30;
 
     public boolean againstIA = false;
+    private boolean afficherSuggestions = false;
 
-    ///////// pour la marge (afin que les fleurs ne sortent pas du cercle----centre du cerlce)//////////
+    ///////// pour la marge (afin que les fleurs ne sortent pas du cercle----centre
+    ///////// du cerlce)//////////
     ////////// vu qu'on dessine les fleurs avec le format dans view (hauteur *
     ///////// largeur )
     ///////// avec hauteur == largeur, alors la view va nous envoyer la taille qu'on
@@ -77,7 +77,6 @@ public class Jeu implements EtatPlateau {
     boolean partieAbandonnee = false;
     Joueur gagnantParAbandon = null;
 
-
     ///////////////// IA /////////////////
     IA ia;
     IA iaOr;
@@ -86,6 +85,7 @@ public class Jeu implements EtatPlateau {
     NiveauxIA niveauIAOr;
     NiveauxIA niveauIAArgent;
     String nomHumainIA;
+    Pion.TypePion typeHumainIA;
     Pion.TypePion joueurDepartIA;
     Pion.TypePion joueurDepartIAContreIA;
     boolean iaContreIA = false;
@@ -139,6 +139,101 @@ public class Jeu implements EtatPlateau {
         demarrerPhaseSelectionAvantage();
     }
 
+    public Jeu(Jeu autre) {
+
+        this.cercleDeJeu = autre.cercleDeJeu;
+
+        // ===== COPIE DES PIONS =====
+        this.pions = new ArrayList<>();
+        for (Pion p : autre.pions) {
+            this.pions.add(
+                    new Pion(
+                            p.getType(),
+                            p.getPosition() == null ? null
+                                    : new Coordonnees(p.getPosition().getX(), p.getPosition().getY())));
+        }
+
+        // ===== COPIE DES FLEURS =====
+        this.fleurs = new ArrayList<>();
+        for (Fleur f : autre.fleurs) {
+            Coordonnees pos = f.getPosition();
+
+            this.fleurs.add(
+                    new Fleur(
+                            f.getType(),
+                            new Coordonnees(pos.x, pos.y)));
+        }
+
+        // ===== RECALAGE DES FLEURS SÉLECTIONNÉES =====
+        this.fleurSelectionnee1 = null;
+        this.fleurSelectionnee2 = null;
+
+        if (autre.fleurSelectionnee1 != null) {
+            for (Fleur f : this.fleurs) {
+                if (f.getPosition().x == autre.fleurSelectionnee1.getPosition().x &&
+                        f.getPosition().y == autre.fleurSelectionnee1.getPosition().y) {
+                    this.fleurSelectionnee1 = f;
+                    break;
+                }
+            }
+        }
+
+        if (autre.fleurSelectionnee2 != null) {
+            for (Fleur f : this.fleurs) {
+                if (f.getPosition().x == autre.fleurSelectionnee2.getPosition().x &&
+                        f.getPosition().y == autre.fleurSelectionnee2.getPosition().y) {
+                    this.fleurSelectionnee2 = f;
+                    break;
+                }
+            }
+        }
+
+        // ===== AUTRES DONNÉES =====
+        this.nbPions = autre.nbPions;
+        this.nbFleurs = autre.nbFleurs;
+
+        this.joueurs = new Joueur[autre.joueurs.length];
+        for (int i = 0; i < autre.joueurs.length; i++) {
+            this.joueurs[i] = new JoueurHumain(
+                    autre.joueurs[i].getNom(),
+                    autre.joueurs[i].getTypePion());
+            this.joueurs[i].getFleursGagnees()
+                    .addAll(autre.joueurs[i].getFleursGagnees());
+        }
+
+        this.currentPlayerIndex = autre.currentPlayerIndex;
+
+        this.random = new Random();
+
+        this.avantageInitialApplique = autre.avantageInitialApplique;
+        this.enPhaseSelectionAvantage = autre.enPhaseSelectionAvantage;
+        this.feedbackMessage = autre.feedbackMessage;
+
+        this.partieAbandonnee = autre.partieAbandonnee;
+        this.gagnantParAbandon = autre.gagnantParAbandon;
+
+        this.ia = autre.ia;
+        this.iaOr = autre.iaOr;
+        this.iaArgent = autre.iaArgent;
+
+        this.niveauIA = autre.niveauIA;
+        this.niveauIAOr = autre.niveauIAOr;
+        this.niveauIAArgent = autre.niveauIAArgent;
+
+        this.nomHumainIA = autre.nomHumainIA;
+        this.typeHumainIA = autre.typeHumainIA;
+
+        this.joueurDepartIA = autre.joueurDepartIA;
+        this.joueurDepartIAContreIA = autre.joueurDepartIAContreIA;
+
+        this.iaContreIA = autre.iaContreIA;
+        this.iaEnCours = autre.iaEnCours;
+
+        this.enModeReseau = autre.enModeReseau;
+        this.indexJoueurLocal = autre.indexJoueurLocal;
+
+        this.ecouteurCoupEnvoye = autre.ecouteurCoupEnvoye;
+    }
     // =========================================================
     // ================= GETTERS ET SETTERS =====================
     // =========-------------------------------------------------
@@ -224,6 +319,14 @@ public class Jeu implements EtatPlateau {
         return indexJoueurLocal;
     }
 
+    public void setAfficherSuggestions(boolean afficher) {
+        this.afficherSuggestions = afficher;
+    }
+
+    public boolean isAfficherSuggestions() {
+        return afficherSuggestions;
+    }
+
     public void setIndexJoueurLocal(int indexJoueurLocal) {
         this.indexJoueurLocal = indexJoueurLocal;
     }
@@ -244,7 +347,6 @@ public class Jeu implements EtatPlateau {
         currentPlayerIndex = (currentPlayerIndex - 1 + NB_JOUEURS) % NB_JOUEURS;
     }
 
-
     // Configuration des jeoueurs qui commencent
     // On donne à chacun son nom
     public void configurerHumainVsHumain(String nomOr, String nomArgent, Pion.TypePion joueurQuiCommence) {
@@ -257,6 +359,7 @@ public class Jeu implements EtatPlateau {
         niveauIAOr = null;
         niveauIAArgent = null;
         nomHumainIA = null;
+        typeHumainIA = null;
         joueurDepartIA = null;
         joueurDepartIAContreIA = null;
         iaEnCours = false;
@@ -390,7 +493,8 @@ public class Jeu implements EtatPlateau {
                     new JoueurHumain("Joueur 2", Pion.TypePion.ARGENT)
             };
             currentPlayerIndex = random.nextInt(getNbJoueurs());
-            setFeedbackMessage(feedbackMessage + " Le joueur qui commence est : " + getJoueurActuel().getNom() + " (" + getJoueurActuel().getTypePion() + ").") ;
+            setFeedbackMessage(feedbackMessage + " Le joueur qui commence est : " + getJoueurActuel().getNom() + " ("
+                    + getJoueurActuel().getTypePion() + ").");
         }
     }
 
@@ -400,7 +504,7 @@ public class Jeu implements EtatPlateau {
         fleurs.clear();
 
         for (Fleur.TypeFleur type : Fleur.TypeFleur.values()) {
-            for (int i = 0; i < 7; i++) { //CHAQUE COULEUR À 6 PIONS    
+            for (int i = 0; i < NB_FLEURS_PAR_COULEUR; i++) {
                 Coordonnees pos = genererPositionAleatoire(fleurs);
                 fleurs.add(new Fleur(type, pos));
             }
@@ -471,7 +575,7 @@ public class Jeu implements EtatPlateau {
     }
 
     // =========================================================
-    // ================= LOGIQUE DU JEU////////////////////////// 
+    // ================= LOGIQUE DU JEU//////////////////////////
 
     public void appliquerAvantageAvecFleur(Fleur fleurChoisie) {
         if (enPhaseSelectionAvantage && !avantageInitialApplique && fleurs.contains(fleurChoisie)) {
@@ -484,7 +588,8 @@ public class Jeu implements EtatPlateau {
             enPhaseSelectionAvantage = false;
 
             // Émettre l'avantage réseau si c'est le joueur local qui vient de jouer
-            if (enModeReseau && !applicationCoupDistant && currentPlayerIndex == indexJoueurLocal && ecouteurCoupEnvoye != null) {
+            if (enModeReseau && !applicationCoupDistant && currentPlayerIndex == indexJoueurLocal
+                    && ecouteurCoupEnvoye != null) {
                 CoupReseau coup = new CoupReseau();
                 coup.typeMessage = "AVANTAGE";
                 coup.pionNull = true;
@@ -517,13 +622,14 @@ public class Jeu implements EtatPlateau {
     }
 
     /**
-     * Place un pion sur le plateau après les vérifications communes.
+     * Place un pion sur le plateau après les vérifications communes et ajustement
+     * de position si nécessaire.
      *
      * @param pion pion libre à placer.
-     * @param pos position modèle souhaitée.
+     * @param pos  position modèle souhaitée.
      * @return {@code true} si le pion a bien été placé.
      */
-    public boolean placePion(Pion pion, Coordonnees pos) {
+    public boolean placePion(Pion pion, Coordonnees pos, Fleur... fleursAIgnorer) {
 
         if (partieAbandonnee) {
             setFeedbackMessage("La partie est terminée : un joueur a abandonné.");
@@ -541,7 +647,7 @@ public class Jeu implements EtatPlateau {
         }
 
         if (!positionLibrePourPion(pos)) {
-            setFeedbackMessage("Impossible : la position est déjà occupée ou trop proche d'un autre pion.");
+            setFeedbackMessage("Impossible : la position est déjà occupée ou trop proche d'un autre objet.");
             return false;
         }
 
@@ -551,20 +657,29 @@ public class Jeu implements EtatPlateau {
     }
 
     /**
+     * 
+     * A REVOIR : cette fonction est appelée après ajustement de la position, elle
+     * vérifie si la position finale est valide pour le pion.
+     * Ajuste la position d'un pion s'il chevauche une fleur ou un autre
+     * pion. Tente de le décaler légèrement pour qu'il soit côte à côte.
+     */
+  
+
+    /**
      * Applique un coup complet de phase 1.
      *
      * Le coup place le pion, collecte les deux fleurs, l'enregistre dans
      * l'historique et passe au joueur suivant.
      *
      * @param joueur joueur qui joue.
-     * @param pion pion libre du joueur.
-     * @param pos position validée pour le pion.
-     * @param f1 première fleur collectée.
-     * @param f2 seconde fleur collectée.
+     * @param pion   pion libre du joueur.
+     * @param pos    position validée pour le pion.
+     * @param f1     première fleur collectée.
+     * @param f2     seconde fleur collectée.
      */
     public void jouerCoup(Joueur joueur, Pion pion, Coordonnees pos, Fleur f1, Fleur f2) {
 
-        if (!placePion(pion, pos))
+        if (!placePion(pion, pos, f1, f2))
             return;
 
         if (!mangerFleurs(joueur, f1, f2)) {
@@ -574,7 +689,8 @@ public class Jeu implements EtatPlateau {
 
         historique.enregistrerAction(pion, f1, f2, joueur);
 
-        if (enModeReseau && !applicationCoupDistant && currentPlayerIndex == indexJoueurLocal && ecouteurCoupEnvoye != null) {
+        if (enModeReseau && !applicationCoupDistant && currentPlayerIndex == indexJoueurLocal
+                && ecouteurCoupEnvoye != null) {
             CoupReseau coup = new CoupReseau();
             coup.typeMessage = "COUP";
             coup.typePion = pion.getType().name();
@@ -603,7 +719,8 @@ public class Jeu implements EtatPlateau {
     }
 
     /**
-     * Joue avec les fleurs sélectionnées en utilisant le clic comme préférence de placement.
+     * Joue avec les fleurs sélectionnées en utilisant le clic comme préférence de
+     * placement.
      *
      * @param clic position modèle du clic.
      * @return {@code true} si le coup a été joué.
@@ -615,8 +732,8 @@ public class Jeu implements EtatPlateau {
     /**
      * Trouve l'emplacement libre du segment le plus proche du clic.
      *
-     * @param A première extrémité du segment.
-     * @param B seconde extrémité du segment.
+     * @param A    première extrémité du segment.
+     * @param B    seconde extrémité du segment.
      * @param clic position modèle visée par le joueur.
      * @return position jouable, ou {@code null} si aucune n'existe.
      */
@@ -636,11 +753,17 @@ public class Jeu implements EtatPlateau {
     /* ============= fonctions auxiliares ================= */
 
     /**
-     * Vérifie qu'un pion peut occuper cette position sans toucher un autre pion.
+     * Vérifie qu'un pion peut occuper cette position sans chevaucher un autre objet
+     * (fleur ou pion). Autorise le "côte à côte".
      *
-     * @param pos position modèle testée.
+     * @param pos            position modèle testée.
+     * @param pion           pion à placer (pour l'ignorer lors du test de
+     *                       proximité).
+     * @param fleursAIgnorer fleurs à ne pas considérer comme obstacles (ex: celles
+     *                       du coup en cours).
      * @return {@code true} si la position est libre.
      */
+
     private boolean positionLibrePourPion(Coordonnees pos) {
         return !pionTropProcheDunAutre(pos);
     }
@@ -649,8 +772,8 @@ public class Jeu implements EtatPlateau {
      * Donne deux fleurs au joueur et les retire du plateau.
      *
      * @param joueur joueur qui reçoit les fleurs.
-     * @param f1 première fleur.
-     * @param f2 seconde fleur.
+     * @param f1     première fleur.
+     * @param f2     seconde fleur.
      * @return {@code true} si les fleurs étaient valides et présentes.
      */
     public boolean mangerFleurs(Joueur joueur, Fleur f1, Fleur f2) {
@@ -695,7 +818,8 @@ public class Jeu implements EtatPlateau {
     /**
      * Indique si la partie peut passer en phase 2.
      *
-     * @return {@code true} quand tous les pions sont posés et qu'il reste des fleurs.
+     * @return {@code true} quand tous les pions sont posés et qu'il reste des
+     *         fleurs.
      */
     public boolean estSecondePhaseDisponible() {
         return Phase2.estSecondePhaseDisponible(fleurs, pions);
@@ -752,7 +876,7 @@ public class Jeu implements EtatPlateau {
 
     public void setFleurSelectionnee1(Fleur fleur) {
         this.fleurSelectionnee1 = fleur;
-    }   
+    }
 
     public void setFleurSelectionnee2(Fleur fleur) {
         this.fleurSelectionnee2 = fleur;
@@ -770,6 +894,67 @@ public class Jeu implements EtatPlateau {
     public void resetFleursSelectionnee2() {
         fleurSelectionnee2 = null;
 
+    }
+
+    public void recommencerPartie() {
+        if (isEnModeReseau())
+            return;
+        annulerIAEnCours();
+        boolean recommencerIAContreIA = iaContreIA;
+        boolean recommencerHumainContreIA = againstIA && ia != null;
+        NiveauxIA niveauIARejouer = niveauIA;
+        NiveauxIA niveauOrRejouer = niveauIAOr;
+        NiveauxIA niveauArgentRejouer = niveauIAArgent;
+        String nomHumainRejouer = nomHumainIA;
+        Pion.TypePion typeHumainRejouer = typeHumainIA;
+        Pion.TypePion departIARejouer = joueurDepartIA;
+        Pion.TypePion departIAContreIARejouer = joueurDepartIAContreIA;
+        String nomOrRejouer = joueurs != null && joueurs.length > 0 ? joueurs[0].getNom() : "OR";
+        String nomArgentRejouer = joueurs != null && joueurs.length > 1 ? joueurs[1].getNom() : "ARGENT";
+
+        initFleurs();
+        initPions();
+        partieAbandonnee = false;
+        gagnantParAbandon = null;
+        avantageInitialApplique = false;
+        enPhaseSelectionAvantage = false;
+
+        if (recommencerIAContreIA) {
+            GestionIA.configurerIAContreIA(this, niveauOrRejouer, niveauArgentRejouer, departIAContreIARejouer);
+        } else if (recommencerHumainContreIA) {
+            GestionIA.activerIA(this, niveauIARejouer, nomHumainRejouer, departIARejouer, typeHumainRejouer);
+        } else {
+            configurerHumainVsHumain(nomOrRejouer, nomArgentRejouer, null);
+        }
+
+        avantageInitialApplique = false;
+        enPhaseSelectionAvantage = false;
+        demarrerPhaseSelectionAvantage();
+        historique.clear();
+    }
+
+    // Recommence la partie en mode réseau avec une nouvelle graine et un joueur de départ
+    public void recommencerPartieReseau(int graine, boolean hoteCommence) {
+        String nomOrRejouer = joueurs != null && joueurs.length > 0 ? joueurs[0].getNom() : "OR";
+        String nomArgentRejouer = joueurs != null && joueurs.length > 1 ? joueurs[1].getNom() : "ARGENT";
+
+        reinitialiserFleurs(graine);
+        initPions();
+        partieAbandonnee = false;
+        gagnantParAbandon = null;
+        avantageInitialApplique = false;
+        enPhaseSelectionAvantage = false;
+
+        joueurs = new Joueur[] {
+            new JoueurHumain(nomOrRejouer, Pion.TypePion.OR),
+            new JoueurHumain(nomArgentRejouer, Pion.TypePion.ARGENT)
+        };
+        currentPlayerIndex = hoteCommence ? 0 : 1;
+
+        avantageInitialApplique = false;
+        enPhaseSelectionAvantage = false;
+        demarrerPhaseSelectionAvantage();
+        historique.clear();
     }
 
     /**
@@ -812,6 +997,166 @@ public class Jeu implements EtatPlateau {
      */
     public List<Coordonnees> coupsPossibles(Fleur.TypeFleur type) {
         return ActionsJeu.coupsPossibles(this, type);
+    }
+
+    // fonction pour recuperer une fleur en donnant juste ses coordonnees
+    private Fleur recupererFleur(Coordonnees position) {
+        if (position == null) {
+            return null;
+        }
+
+        for (Fleur fleur : fleurs) {
+            Coordonnees positionFleur = fleur.getPosition();
+            if (positionFleur != null && positionFleur.equals(position)) {
+                return fleur;
+            }
+        }
+
+        return null;
+    }
+
+    public List<Fleur> recupererAutresFleursMemeType(Fleur base, Fleur aIgnorer) {
+        List<Fleur> result = new ArrayList<>();
+        if (base == null)
+            return result;
+
+        for (Fleur f : fleurs) {
+            if (f.getType() == base.getType() && !memeFleur(f, base) && !memeFleur(f, aIgnorer)
+                    && fleursConnectees(base, f)) {
+                result.add(f);
+            }
+        }
+        return result;
+    }
+
+    // Permet de choisir la 2nd meilleure fleur, pour mieux avantager
+    // le joueur
+    public Fleur choisirDeuxiemeMeilleurFleur(Fleur fleurSelectionnee1) {
+        if (fleurSelectionnee1 == null || fleurSelectionnee1.getPosition() == null) {
+            return null;
+        }
+
+        Fleur premiereFleur = recupererFleur(fleurSelectionnee1.getPosition());
+        if (premiereFleur == null) {
+            return null;
+        }
+
+        Fleur meilleureFleur = null;
+        int meilleurScore = Integer.MIN_VALUE;
+
+        for (Fleur[] paire : pairesConnectees(premiereFleur.getType())) {
+            Fleur candidate = autreFleurDeLaPaire(paire, premiereFleur);
+            if (candidate == null) {
+                continue;
+            }
+
+            int score = scoreDeuxiemeFleur(premiereFleur, candidate);
+            if (score > meilleurScore) {
+                meilleurScore = score;
+                meilleureFleur = candidate;
+            }
+        }
+
+        return meilleureFleur;
+    }
+
+    private Fleur autreFleurDeLaPaire(Fleur[] paire, Fleur fleur) {
+        if (paire == null || paire.length < 2) {
+            return null;
+        }
+        if (memeFleur(paire[0], fleur)) {
+            return paire[1];
+        }
+        if (memeFleur(paire[1], fleur)) {
+            return paire[0];
+        }
+        return null;
+    }
+
+    private int scoreDeuxiemeFleur(Fleur premiereFleur, Fleur deuxiemeFleur) {
+        int joueur = currentPlayerIndex;
+        int adversaire = (currentPlayerIndex + 1) % NB_JOUEURS;
+        Fleur.TypeFleur type = premiereFleur.getType();
+
+        int score = 0;
+        score += progressionMajorite(joueurs[joueur].nbFleursDeCouleur(type)) * 90;
+        score += progressionMajorite(joueurs[adversaire].nbFleursDeCouleur(type)) * 70;
+        score += (int) Math.max(0,
+                180 - Coordonnees.distance(premiereFleur.getPosition(), deuxiemeFleur.getPosition()));
+        score += scorePhase2Fleur(joueur, premiereFleur);
+        score += scorePhase2Fleur(joueur, deuxiemeFleur);
+        score += meilleurePositionSurPaire(premiereFleur, deuxiemeFleur);
+
+        return score;
+    }
+
+    private int progressionMajorite(int fleursDejaGagnees) {
+        int apresCoup = fleursDejaGagnees + 2;
+        if (apresCoup >= 4) {
+            return 8;
+        }
+        if (apresCoup == 3) {
+            return 4;
+        }
+        if (apresCoup == 2) {
+            return 1;
+        }
+        return 0;
+    }
+
+    private int scorePhase2Fleur(int indexJoueur, Fleur fleur) {
+        Pion pionProche = ReglesPlateau.pionLePlusProche(this, fleur);
+        if (pionProche == null) {
+            return 0;
+        }
+        if (pionProche.getType() == joueurs[indexJoueur].getTypePion()) {
+            return -25;
+        }
+        return 35;
+    }
+
+    private int meilleurePositionSurPaire(Fleur premiereFleur, Fleur deuxiemeFleur) {
+        List<Coordonnees> positions = pointsDuSegment(premiereFleur.getPosition(), deuxiemeFleur.getPosition());
+        if (positions.isEmpty()) {
+            return 0;
+        }
+
+        int meilleurScore = Integer.MIN_VALUE;
+        for (Coordonnees position : positions) {
+            meilleurScore = Math.max(meilleurScore, scorePositionPion(position, premiereFleur, deuxiemeFleur));
+        }
+        return meilleurScore;
+    }
+
+    private int scorePositionPion(Coordonnees position, Fleur premiereFleur, Fleur deuxiemeFleur) {
+        int score = 0;
+        Coordonnees milieu = Coordonnees.milieu(premiereFleur.getPosition(), deuxiemeFleur.getPosition());
+        score -= (int) Coordonnees.distance(position, milieu);
+
+        Pion.TypePion typeJoueur = getJoueurActuel().getTypePion();
+        for (Fleur fleur : fleurs) {
+            if (memeFleur(fleur, premiereFleur) || memeFleur(fleur, deuxiemeFleur)) {
+                continue;
+            }
+
+            double distanceNouveauPion = Coordonnees.distance(position, fleur.getPosition());
+            Pion pionProche = ReglesPlateau.pionLePlusProche(this, fleur);
+            if (pionProche == null
+                    || distanceNouveauPion < Coordonnees.distance(pionProche.getPosition(), fleur.getPosition())) {
+                score += 12;
+            } else if (pionProche.getType() == typeJoueur) {
+                score += 3;
+            }
+        }
+
+        return score;
+    }
+
+    private boolean memeFleur(Fleur a, Fleur b) {
+        return a != null && b != null
+                && a.getType() == b.getType()
+                && a.getPosition() != null
+                && a.getPosition().equals(b.getPosition());
     }
 
     /**
@@ -858,7 +1203,7 @@ public class Jeu implements EtatPlateau {
     /**
      * Applique le dépôt d'un pion depuis la pile graphique.
      *
-     * @param pos position modèle du dépôt.
+     * @param pos     position modèle du dépôt.
      * @param payload information portée par le drag, normalement un type de pion.
      * @return {@code true} si le dépôt a joué un coup.
      */
@@ -912,7 +1257,7 @@ public class Jeu implements EtatPlateau {
         }
         Configuration.debugeur("#\n");
     }
-//////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////
 
     public Map<Fleur.TypeFleur, Integer> getScore(Joueur joueur) {
         return ScoreJeu.getScore(joueur);
@@ -940,6 +1285,7 @@ public class Jeu implements EtatPlateau {
         NiveauxIA niveauOrReset = niveauIAOr;
         NiveauxIA niveauArgentReset = niveauIAArgent;
         String nomHumainReset = nomHumainIA;
+        Pion.TypePion typeHumainReset = typeHumainIA;
         Pion.TypePion departIAReset = joueurDepartIA;
         Pion.TypePion departIAContreIAReset = joueurDepartIAContreIA;
 
@@ -952,7 +1298,7 @@ public class Jeu implements EtatPlateau {
         if (resetIAContreIA) {
             GestionIA.configurerIAContreIA(this, niveauOrReset, niveauArgentReset, departIAContreIAReset);
         } else if (resetHumainContreIA) {
-            GestionIA.activerIA(this, niveauIAReset, nomHumainReset, departIAReset);
+            GestionIA.activerIA(this, niveauIAReset, nomHumainReset, departIAReset, typeHumainReset);
         } else {
             initPlayers();
         }
@@ -974,7 +1320,8 @@ public class Jeu implements EtatPlateau {
         try {
             if ("AVANTAGE".equals(coup.typeMessage)) {
                 Fleur f = trouverFleurSurPlateau(Fleur.TypeFleur.valueOf(coup.typeFleur1), coup.fleur1X, coup.fleur1Y);
-                if (f != null) appliquerAvantageAvecFleur(f);
+                if (f != null)
+                    appliquerAvantageAvecFleur(f);
 
             } else if ("COUP".equals(coup.typeMessage)) {
                 Pion pion = getPionLibre(Pion.TypePion.valueOf(coup.typePion));
@@ -994,7 +1341,7 @@ public class Jeu implements EtatPlateau {
     }
 
     // Cherche une fleur sur le plateau par type et coordonnées exactes
-    private Fleur trouverFleurSurPlateau(Fleur.TypeFleur type, int x, int y) {
+    public Fleur trouverFleurSurPlateau(Fleur.TypeFleur type, int x, int y) {
         for (Fleur f : fleurs) {
             if (f.getType() == type && f.getPosition().getX() == x && f.getPosition().getY() == y) {
                 return f;
@@ -1015,9 +1362,6 @@ public class Jeu implements EtatPlateau {
         historique.chargerPartie(this, cheminFichier);
     }
 
-
-
-
     // ==============-------------------------===========================================
     // ========================= (IA) ==========================
     // =========================================================///////////////////
@@ -1028,15 +1372,16 @@ public class Jeu implements EtatPlateau {
      * @param niveau niveau de difficulté de l'IA.
      */
     public void activerIA(NiveauxIA niveau) {
-        activerIA(niveau, "Humain", Pion.TypePion.OR);
+        activerIA(niveau, "Humain", null);
     }
 
     /**
      * Active une partie humain contre IA.
      *
-     * @param niveau niveau de difficulté de l'IA.
-     * @param nomHumain nom affiché pour le joueur humain.
-     * @param joueurQuiCommence couleur qui commence, ou {@code null} pour un départ aléatoire.
+     * @param niveau            niveau de difficulté de l'IA.
+     * @param nomHumain         nom affiché pour le joueur humain.
+     * @param joueurQuiCommence couleur qui commence, ou {@code null} pour un départ
+     *                          aléatoire.
      */
     public void activerIA(NiveauxIA niveau, String nomHumain, Pion.TypePion joueurQuiCommence) {
         GestionIA.activerIA(this, niveau, nomHumain, joueurQuiCommence);
@@ -1093,7 +1438,6 @@ public class Jeu implements EtatPlateau {
         GestionIA.jouerCoupIA(this, coup);
     }
 
-
     /**
      * Invalide le calcul IA en cours et remet le drapeau d'activité à zéro.
      */
@@ -1103,7 +1447,7 @@ public class Jeu implements EtatPlateau {
     }
 
     /**
-     * Produit un libellé  pour un joueur.
+     * Produit un libellé pour un joueur.
      *
      * @param joueur joueur à afficher.
      * @return nom lisible dans l'interface.
@@ -1137,7 +1481,8 @@ public class Jeu implements EtatPlateau {
      * Lance le calcul du tour IA et délègue l'application du coup à l'appelant.
      *
      * @param actionQuandCoupPret action appelée avec le coup choisi.
-     * @param callbackFin action appelée après la remise à zéro du calcul IA.
+     * @param callbackFin         action appelée après la remise à zéro du calcul
+     *                            IA.
      */
     public void lancerIA(Consumer<CoupIA> actionQuandCoupPret, Runnable callbackFin) {
         GestionIA.lancerIA(this, actionQuandCoupPret, callbackFin);
@@ -1146,11 +1491,31 @@ public class Jeu implements EtatPlateau {
     /**
      * Configure une partie IA contre IA observable depuis l'interface ou les tests.
      *
-     * @param niveauOr niveau de l'IA qui joue les pions OR.
-     * @param niveauArgent niveau de l'IA qui joue les pions ARGENT.
-     * @param joueurQuiCommence couleur qui commence, ou {@code null} pour un départ aléatoire.
+     * @param niveauOr          niveau de l'IA qui joue les pions OR.
+     * @param niveauArgent      niveau de l'IA qui joue les pions ARGENT.
+     * @param joueurQuiCommence couleur qui commence, ou {@code null} pour un départ
+     *                          aléatoire.
      */
     public void configurerIAContreIA(NiveauxIA niveauOr, NiveauxIA niveauArgent, Pion.TypePion joueurQuiCommence) {
         GestionIA.configurerIAContreIA(this, niveauOr, niveauArgent, joueurQuiCommence);
+    }
+
+    /**
+     * Simule l'effet d'un coup de phase 1 sur ce plateau (modifie l'état).
+     * Utile notamment pour le feedforward graphique.
+     */
+    public void simulerCoup(Fleur fleur1, Fleur fleur2) {
+        ActionsJeu.simulerCoups(this, fleur1, fleur2);
+    }
+
+    public Fleur findFleurDansJeu(Jeu jeu, Fleur f) {
+        for (Fleur fj : jeu.fleurs) {
+            if (fj.getPosition().x == f.getPosition().x &&
+                    fj.getPosition().y == f.getPosition().y &&
+                    fj.getType() == f.getType()) {
+                return fj;
+            }
+        }
+        return null;
     }
 }

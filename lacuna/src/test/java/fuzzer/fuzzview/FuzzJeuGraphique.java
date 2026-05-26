@@ -6,7 +6,6 @@ import model.Cercle;
 import model.Coordonnees;
 import model.Fleur;
 import model.Jeu;
-import model.Pion;
 import view.CoordonneeConverter;
 import view.animations.AnimationContext;
 import view.animations.AnimationState;

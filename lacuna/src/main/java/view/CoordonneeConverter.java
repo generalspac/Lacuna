@@ -24,9 +24,7 @@ public class CoordonneeConverter {
         this.componentHeight = componentHeight;
     }
 
-    // =========================================================
     // ==================== MISE À JOUR ========================
-    // =========================================================
 
     /** À appeler à chaque redimensionnement du composant. */
     public void setDimensions(int width, int height) {
