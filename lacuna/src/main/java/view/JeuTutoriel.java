@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 
 import model.*;
+import view.component.PionGraphique;
 import view.component.RoundedButton;
 
 public class JeuTutoriel extends JeuGraphique {

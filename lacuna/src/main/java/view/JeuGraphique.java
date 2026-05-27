@@ -16,6 +16,7 @@ import view.animations.Animation;
 import view.animations.AnimationContext;
 import view.animations.AnimationState;
 import view.component.DragLayer;
+import view.component.PionGraphique;
 import view.component.Score;
 import view.manager.GameEndManager;
 import view.manager.ImageManager;

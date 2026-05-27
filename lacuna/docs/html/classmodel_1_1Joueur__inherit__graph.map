@@ -1,0 +1,7 @@
+<map id="model.Joueur" name="model.Joueur">
+<area shape="rect" id="Node000001" title=" " alt="" coords="73,5,243,311"/>
+<area shape="rect" id="Node000002" href="$classmodel_1_1JoueurHumain.html" title=" " alt="" coords="5,359,156,424"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="105,325,94,359,89,358,100,323"/>
+<area shape="rect" id="Node000003" href="$classmodel_1_1JoueurIa.html" title=" " alt="" coords="181,359,293,424"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="217,323,228,358,223,359,212,325"/>
+</map>

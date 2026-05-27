@@ -7,7 +7,7 @@ import javax.swing.JPanel;
 import model.Fleur;
 import global.Configuration;
 import model.Jeu;
-import view.PionGraphique;
+import view.component.PionGraphique;
 import view.component.Score;
 
 /**

@@ -102,6 +102,22 @@ run_fuzzer() {
     eval $CMD
 }
 
+generate_docs() {
+
+    echo "[INFO] Génération de la documentation Doxygen"
+
+    if ! command -v doxygen &> /dev/null; then
+
+        echo "[ERREUR] Doxygen n'est pas installé"
+        exit 1
+    fi
+
+    doxygen Doxyfile
+
+    echo "[INFO] Documentation générée dans docs/html/index.html"
+}
+
+
 if [ $# -eq 0 ]; then
     run_game
     exit 0
@@ -118,6 +134,10 @@ do
 
         test)
             ACTION="test_all"
+            ;;
+
+        doc)
+            ACTION="doc"
             ;;
 
         test=*)
@@ -162,6 +182,10 @@ case $ACTION in
 
     mvn)
         run_game_maven
+        ;;
+
+    doc)
+        generate_docs
         ;;
 
     test_all)

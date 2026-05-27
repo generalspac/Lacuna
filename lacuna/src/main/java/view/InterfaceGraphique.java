@@ -1,7 +1,5 @@
 package view;
 
-import model.DatabaseManager;
-import model.Pion;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -12,6 +10,8 @@ import java.awt.event.*;
 import controller.ControleurBoutons;
 import controller.EcouteurDeClavier;
 
+import model.DatabaseManager;
+import model.Pion;
 import model.IA.NiveauxIA;
 import model.Fleur;
 import network.CoupReseau;
@@ -19,13 +19,17 @@ import network.ServeurReseau;
 import view.component.DragLayer;
 import view.component.FlexPanel;
 import view.component.Menu;
+import view.component.PionGraphique;
 import view.component.Regles;
 import view.component.RoundedButton;
 import view.component.RoundedCheckBox;
 import view.component.RoundedTextField;
 import view.component.Score;
+
 import network.ClientReseau;
 import java.util.concurrent.CountDownLatch;
+
+import global.ParametresPartie;
 
 public class InterfaceGraphique implements Runnable {
 
@@ -42,17 +46,6 @@ public class InterfaceGraphique implements Runnable {
     private boolean hoteCommencea = false; // true si OR (hôte) commence
     private ParametresPartie parametresPresets = null; // bypass du dialogue de config
     private int graineReseau = 0; // graine partagée pour synchroniser les plateaux
-    
-
-    private static class ParametresPartie {
-        String mode;
-        String nomOr;
-        String nomArgent;
-        String nomHumain;
-        NiveauxIA niveauOr;
-        NiveauxIA niveauArgent;
-        Pion.TypePion joueurQuiCommence;
-    }
 
     @Override
     public void run() {
@@ -293,11 +286,11 @@ public class InterfaceGraphique implements Runnable {
         } else if (idPartieACharger >= 0) {
             // chargement depuis la DB on baypasse la fenetre de configuration de jeu
             parametres = new ParametresPartie();
-            parametres.mode = "Humain vs Humain";
-            parametres.joueurQuiCommence = null;
-            parametres.nomOr = "";
-            parametres.nomArgent = "";
-            parametres.nomHumain = "";
+            parametres.setMode("Humain vs Humain");
+            parametres.setJoueurQuiCommence(null);
+            parametres.setNomOr("");
+            parametres.setNomArgent("");
+            parametres.setNomHumain("");
         } else {
             // Dans le nouveau flux, on affiche le menu de choix de mode
             afficherMenuNouvellePartie();
@@ -309,7 +302,7 @@ public class InterfaceGraphique implements Runnable {
     public void lancerJeu(ParametresPartie parametres) {
         if (parametres == null)
             return;
-        String choix = parametres.mode;
+        String choix = parametres.getMode();
 
         // Afficher un écran de chargement temporaire
         JPanel loadingPanel = new JPanel(new BorderLayout());
@@ -472,21 +465,21 @@ public class InterfaceGraphique implements Runnable {
                 // Appliquer les choix de départ faits dans le menu.
                 switch (choix) {
                     case "IA Facile":
-                        aire.jeu.activerIA(NiveauxIA.FACILE, parametres.nomHumain, parametres.joueurQuiCommence);
+                        aire.jeu.activerIA(NiveauxIA.FACILE, parametres.getNomHumain(), parametres.getJoueurQuiCommence());
                         break;
                     case "IA Moyenne":
-                        aire.jeu.activerIA(NiveauxIA.MOYEN, parametres.nomHumain, parametres.joueurQuiCommence);
+                        aire.jeu.activerIA(NiveauxIA.MOYEN, parametres.getNomHumain(), parametres.getJoueurQuiCommence());
                         break;
                     case "IA Difficile":
-                        aire.jeu.activerIA(NiveauxIA.DIFFICILE, parametres.nomHumain, parametres.joueurQuiCommence);
+                        aire.jeu.activerIA(NiveauxIA.DIFFICILE, parametres.getNomHumain(), parametres.getJoueurQuiCommence());
                         break;
                     case "IA vs IA":
-                        aire.jeu.configurerIAContreIA(parametres.niveauOr, parametres.niveauArgent,
-                                parametres.joueurQuiCommence);
+                        aire.jeu.configurerIAContreIA(parametres.getNiveauOr(), parametres.getNiveauArgent(),
+                                parametres.getJoueurQuiCommence());
                         break;
                     default:
-                        aire.jeu.configurerHumainVsHumain(parametres.nomOr, parametres.nomArgent,
-                                parametres.joueurQuiCommence);
+                        aire.jeu.configurerHumainVsHumain(parametres.getNomOr(), parametres.getNomArgent(),
+                                parametres.getJoueurQuiCommence());
                         break;
                 }
 
@@ -831,11 +824,11 @@ public class InterfaceGraphique implements Runnable {
                         hoteCommencea = hoteCommence;
                         graineReseau = graineFinal;
                         parametresPresets = new ParametresPartie();
-                        parametresPresets.mode = "Réseau";
-                        parametresPresets.nomOr = "Hôte";
-                        parametresPresets.nomArgent = "Invité";
-                        parametresPresets.nomHumain = "";
-                        parametresPresets.joueurQuiCommence = null;
+                        parametresPresets.setMode("Réseau");
+                        parametresPresets.setNomOr("Hôte");
+                        parametresPresets.setNomArgent("Invité");
+                        parametresPresets.setNomHumain("");
+                        parametresPresets.setJoueurQuiCommence(null);
                         lancerJeu();
                     } catch (Exception e) {
                         JOptionPane.showMessageDialog(frame, "Erreur réseau : " + e.getMessage());
@@ -900,11 +893,11 @@ public class InterfaceGraphique implements Runnable {
             hoteCommencea = init.hoteCommence;
             graineReseau = init.fleur1X;
             parametresPresets = new ParametresPartie();
-            parametresPresets.mode = "Réseau";
-            parametresPresets.nomOr = "Hôte";
-            parametresPresets.nomArgent = "Invité";
-            parametresPresets.nomHumain = "";
-            parametresPresets.joueurQuiCommence = null;
+            parametresPresets.setMode("Réseau");
+            parametresPresets.setNomOr("Hôte");
+            parametresPresets.setNomArgent("Invité");
+            parametresPresets.setNomHumain("");
+            parametresPresets.setJoueurQuiCommence(null);
             lancerJeu();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(frame, "Erreur réseau : " + e.getMessage());
@@ -1117,10 +1110,10 @@ public class InterfaceGraphique implements Runnable {
             lancer.setBounds(180, 420, 250, 50);
             lancer.addActionListener(ev -> {
                 ParametresPartie p = new ParametresPartie();
-                p.mode = "IA vs IA";
-                p.niveauOr = convertirNiveauIA(listeOr.getSelectedValue());
-                p.niveauArgent = convertirNiveauIA(listeArgent.getSelectedValue());
-                p.joueurQuiCommence = null;
+                p.setMode("IA vs IA");
+                p.setNiveauOr(convertirNiveauIA(listeOr.getSelectedValue()));
+                p.setNiveauArgent(convertirNiveauIA(listeArgent.getSelectedValue()));
+                p.setJoueurQuiCommence(null);
                 dialog.dispose();
                 lancerJeu(p);
             });
@@ -1252,204 +1245,40 @@ public class InterfaceGraphique implements Runnable {
         });
     }
 
-    public void afficherMenuNomsPvP() {
+    private void afficherConfigurationPvP() {
 
-        JPanel panel = creerPanelMenu();
-        panel.setLayout(new GridBagLayout());
+        PvPConfigView view = new PvPConfigView(frame);
 
-        // ================= CARTE CENTRALE =================
-
-        JPanel card = new JPanel();
-        card.setOpaque(false);
-        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(255, 255, 255, 40), 2),
-                BorderFactory.createEmptyBorder(35, 50, 35, 50)));
-
-        // ================= TITRE =================
-
-        JLabel titre = new JLabel("DUEL JOUEURS");
-        titre.setForeground(Color.WHITE);
-        titre.setFont(new Font("Arial", Font.BOLD, 36));
-        titre.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        // ================= CHAMPS NOMS =================
-
-        JLabel labelJ1 = new JLabel("Joueur 1");
-        labelJ1.setForeground(new Color(255, 210, 90));
-        labelJ1.setFont(new Font("Arial", Font.BOLD, 22));
-        labelJ1.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        RoundedTextField fieldJ1 = new RoundedTextField("Nom optionnel", 15);
-        fieldJ1.setMaximumSize(new Dimension(320, 45));
-        fieldJ1.setFont(new Font("Arial", Font.PLAIN, 18));
-        fieldJ1.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        JLabel labelJ2 = new JLabel("Joueur 2");
-        labelJ2.setForeground(new Color(180, 220, 255));
-        labelJ2.setFont(new Font("Arial", Font.BOLD, 22));
-        labelJ2.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        RoundedTextField fieldJ2 = new RoundedTextField("Nom optionnel", 15);
-        fieldJ2.setMaximumSize(new Dimension(320, 45));
-        fieldJ2.setFont(new Font("Arial", Font.PLAIN, 18));
-        fieldJ2.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        // ================= CHOIX COULEUR =================
-
-        JLabel couleurTitre = new JLabel("Couleur du Joueur 1");
-        couleurTitre.setForeground(Color.WHITE);
-        couleurTitre.setFont(new Font("Arial", Font.BOLD, 20));
-        couleurTitre.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        JPanel couleurPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 25, 0));
-        couleurPanel.setOpaque(false);
-
-        JRadioButton rbOr = new JRadioButton("OR");
-        rbOr.setOpaque(false);
-        rbOr.setSelected(true);
-        rbOr.setForeground(new Color(255, 210, 90));
-        rbOr.setFont(new Font("Arial", Font.BOLD, 18));
-
-        JRadioButton rbArgent = new JRadioButton("ARGENT");
-        rbArgent.setOpaque(false);
-        rbArgent.setForeground(new Color(180, 220, 255));
-        rbArgent.setFont(new Font("Arial", Font.BOLD, 18));
-
-        ButtonGroup bgCouleur = new ButtonGroup();
-        bgCouleur.add(rbOr);
-        bgCouleur.add(rbArgent);
-
-        couleurPanel.add(rbOr);
-        couleurPanel.add(rbArgent);
-
-        // ================= QUI COMMENCE =================
-
-        JLabel commenceTitre = new JLabel("Qui commence ?");
-        commenceTitre.setForeground(Color.WHITE);
-        commenceTitre.setFont(new Font("Arial", Font.BOLD, 20));
-        commenceTitre.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        JPanel commencePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
-        commencePanel.setOpaque(false);
-
-        JRadioButton rbRandom = new JRadioButton("Aléatoire");
-        rbRandom.setOpaque(false);
-        rbRandom.setSelected(true);
-        rbRandom.setForeground(Color.WHITE);
-        rbRandom.setFont(new Font("Arial", Font.BOLD, 17));
-
-        JRadioButton rbStartOr = new JRadioButton("OR");
-        rbStartOr.setOpaque(false);
-        rbStartOr.setForeground(new Color(255, 210, 90));
-        rbStartOr.setFont(new Font("Arial", Font.BOLD, 17));
-
-        JRadioButton rbStartArgent = new JRadioButton("ARGENT");
-        rbStartArgent.setOpaque(false);
-        rbStartArgent.setForeground(new Color(180, 220, 255));
-        rbStartArgent.setFont(new Font("Arial", Font.BOLD, 17));
-
-        ButtonGroup bgCommence = new ButtonGroup();
-        bgCommence.add(rbRandom);
-        bgCommence.add(rbStartOr);
-        bgCommence.add(rbStartArgent);
-
-        commencePanel.add(rbRandom);
-        commencePanel.add(rbStartOr);
-        commencePanel.add(rbStartArgent);
-
-        // ================= BOUTONS =================
-
-        RoundedButton jouer = creerBoutonMenu("LANCER");
-        RoundedButton retour = creerBoutonMenu("RETOUR");
-
-        jouer.setAlignmentX(Component.CENTER_ALIGNMENT);
-        retour.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        jouer.setMaximumSize(new Dimension(260, 55));
-        retour.setMaximumSize(new Dimension(260, 55));
-
-        // ================= ACTIONS =================
-
-        jouer.addActionListener(e -> {
+        view.jouer.addActionListener(e -> {
 
             ParametresPartie p = new ParametresPartie();
 
             p.mode = "Humain vs Humain";
 
-            // Attribution couleurs
-            if (rbOr.isSelected()) {
+            if (view.rbOr.isSelected()) {
 
-                p.nomOr = fieldJ1.getText().trim();
-                p.nomArgent = fieldJ2.getText().trim();
-
-            } else {
-
-                p.nomOr = fieldJ2.getText().trim();
-                p.nomArgent = fieldJ1.getText().trim();
-            }
-
-            // Qui commence
-            if (rbStartOr.isSelected()) {
-
-                p.joueurQuiCommence = Pion.TypePion.OR;
-
-            } else if (rbStartArgent.isSelected()) {
-
-                p.joueurQuiCommence = Pion.TypePion.ARGENT;
+                p.nomOr = view.fieldJ1.getText().trim();
+                p.nomArgent = view.fieldJ2.getText().trim();
 
             } else {
 
-                p.joueurQuiCommence = Math.random() < 0.5
-                        ? Pion.TypePion.OR
-                        : Pion.TypePion.ARGENT;
+                p.nomOr = view.fieldJ2.getText().trim();
+                p.nomArgent = view.fieldJ1.getText().trim();
             }
+
+            p.joueurQuiCommence =
+                    view.getJoueurQuiCommence();
 
             lancerJeu(p);
         });
 
-        retour.addActionListener(e -> afficherMenuNouvellePartie());
+        view.retour.addActionListener(
+                e -> afficherMenuNouvellePartie());
 
-        // ================= AJOUTS =================
+        frame.setContentPane(view);
 
-        card.add(titre);
-
-        card.add(Box.createRigidArea(new Dimension(0, 30)));
-
-        card.add(labelJ1);
-        card.add(Box.createRigidArea(new Dimension(0, 8)));
-        card.add(fieldJ1);
-
-        card.add(Box.createRigidArea(new Dimension(0, 22)));
-
-        card.add(labelJ2);
-        card.add(Box.createRigidArea(new Dimension(0, 8)));
-        card.add(fieldJ2);
-
-        card.add(Box.createRigidArea(new Dimension(0, 28)));
-
-        card.add(couleurTitre);
-        card.add(Box.createRigidArea(new Dimension(0, 10)));
-        card.add(couleurPanel);
-
-        card.add(Box.createRigidArea(new Dimension(0, 28)));
-
-        card.add(commenceTitre);
-        card.add(Box.createRigidArea(new Dimension(0, 10)));
-        card.add(commencePanel);
-
-        card.add(Box.createRigidArea(new Dimension(0, 35)));
-
-        card.add(jouer);
-
-        card.add(Box.createRigidArea(new Dimension(0, 12)));
-
-        card.add(retour);
-
-        panel.add(card);
-
-        frame.setContentPane(panel);
         frame.revalidate();
+
         frame.repaint();
     }
 
@@ -1567,14 +1396,14 @@ public class InterfaceGraphique implements Runnable {
     private void lancerJeuIA(NiveauxIA niveau, String nom, Pion.TypePion quiCommence) {
         ParametresPartie p = new ParametresPartie();
         if (niveau == NiveauxIA.FACILE)
-            p.mode = "IA Facile";
+            p.setMode("IA Facile");
         else if (niveau == NiveauxIA.MOYEN)
-            p.mode = "IA Moyenne";
+            p.setMode("IA Moyenne");
         else if (niveau == NiveauxIA.DIFFICILE)
-            p.mode = "IA Difficile";
+            p.setMode("IA Difficile");
 
-        p.nomHumain = nom;
-        p.joueurQuiCommence = quiCommence;
+        p.setNomHumain(nom);
+        p.setJoueurQuiCommence(quiCommence);
         lancerJeu(p);
     }
 
