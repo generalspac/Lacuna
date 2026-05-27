@@ -1,92 +1,224 @@
 # Lacuna
 
-Jeu Lacuna avec implémentation IA
+Lacuna est une adaptation du jeu de société **Lacuna** réalisée en Java avec une interface graphique Swing.
 
-## Compilation
+Le projet propose plusieurs modes de jeu :
 
-placer vous dans le repertoire "main_files"
+- Humain vs Humain
+- Joueur vs IA
+- IA vs IA
+- Mode Réseau
 
-Donnez le droit d'execution au fichier compile.sh
+Le jeu inclut également :
 
-Lancer le fichier compile.sh (il fait la compilation )
+- un système de sauvegarde SQLite,
+- des animations graphiques,
+- des tests unitaires Maven,
+- du fuzzing avec Jazzer,
+- une documentation automatique avec Doxygen.
 
-pour lancer il suffit de taper la commande :
+---
 
+# Technologies utilisées
+
+- Java
+- Swing
+- Maven
+- SQLite
+- Doxygen
+- Graphviz
+- Jazzer
+
+---
+
+# Structure du projet
+
+```text
+src/
+ ├── main/java/
+ │    ├── controller/
+ │    ├── global/
+ │    ├── model/
+ │    ├── network/
+ │    ├── view/
+ │    └── main/
+ │
+ └── main/resources/
 ```
-java -cp bin main.Lacuna
+
+---
+
+# Compilation et exécution
+
+## Avec NetBeans
+
+Le projet peut être ouvert directement avec NetBeans.
+
+Il suffit ensuite de :
+
+1. Ouvrir le projet
+2. Compiler
+3. Exécuter `main.Lacuna`
+
+---
+
+## Sans NetBeans
+
+Si vous utilisez uniquement le terminal, vous devez installer :
+
+- Java
+- Maven
+
+### Installation Maven (Linux)
+
+```bash
+sudo apt install maven
 ```
 
-ou lancer le fichier run.sh en lui donnant les droit d'execution
+### Vérification
 
+```bash
+mvn -version
+```
 
-# Faycal
+---
 
--IHM avec layan (ne pas oublier le compte rendu pour l'audit et le projet final)
--Ajout de retour au menu lorsqu'on abandonne la partie 
+# Script principal
 
-# Tout le monde
+Le projet utilise le script :
 
--Jouer au jeu et vérifier les bugs 
-- Pour les bugs que vous pouvez resoudre, si vous les resolvez, 
-    supprimez les dans la partie bugs(en bas) et faites le savoir dans le groupe
+```bash
+./run.sh
+```
 
-# Niels & oury
+Pensez à rendre le script exécutable :
 
-- Tester les IA et faire le rapport 
+```bash
+chmod +x run.sh
+```
 
+---
 
-# Layan
+# Lancer le jeu
 
-- IHM
+## Compilation classique
 
-# Souleymane
--Tests 
--REfactorisation
+```bash
+./run.sh
+```
 
-# Iyed
-Instructions pour tester le réseau : 
+---
 
-Sur Terminal 1 :
-1. Lancer run.sh
-2. Choisir le mode multi-joueurs
-3. Choisir le role Hote(attendre un joueur)
-4. Confirmer le port d'écoute 
-5. Choisir le joueur qui commence (hote ou invité)
-6. Attendre que l'adversaire connecte 
+## Compilation avec Maven
 
-Sur Terminal 2 :
-1. Lancer run.sh
-2. Choisir le mode multi-joueurs 
-3. Choisir le role invité(se connecté)
-4. Confirmer IP et port (Cliquer tout simplement sur OK )
+```bash
+./run.sh mvn
+```
 
------------------------------------------------------------------------
+---
 
-Qlqs remarques : 
-1. On a pas undo, redo, save et restart en mode multi-joueurs réseau comme dans tout les jeux en ligne quoi !
-2. J'ai masqué le boutton skip et le slider de vitesse dans la phase 1 car c'est inutile 
+# Tests
 
+## Tous les tests
 
-# BUGS
- --en appuyant sur une fleur pour placer un pion, il se place exactement à la place de la fleur après l'avoir 
- --- collectée. Or que le pion doit être entre les 2 fleurs collectés
+```bash
+./run.sh test
+```
 
-# oury
-    -refaire une factorisation des variables globales utilisées par le modèle et generateurCoup ia
-        -peut être créer une autre classe (evite la duplication)
-    
+## Un test spécifique
 
-    tests IA : 
-    
-        sudo apt install sqlite3
+```bash
+./run.sh test=NomDuTest
+```
 
-        sqlite3 lacuna.db "DELETE FROM resultats_ia;"
-        
-        ./run.sh
+Exemple :
 
-        javac -cp "lib/sqlite-jdbc.jar:target/classes" -d target/test-classes src/test/java/testsmodel/TestsIAVsIA.java && java -cp "target/test-classes:target/classes:lib/sqlite-jdbc.jar" testsmodel.TestsIAVsIA
+```bash
+./run.sh test=JeuTest
+```
 
-        sqlite3 lacuna.db "SELECT * FROM resultats_ia;"
-    
+---
 
+# Fuzzing
 
+## Lancer le fuzzer par défaut
+
+```bash
+./run.sh fuzz
+```
+
+## Lancer un fuzzer spécifique
+
+```bash
+./run.sh fuzz=NomFuzzer
+```
+
+Exemple :
+
+```bash
+./run.sh fuzz=FuzzJeu
+```
+
+## Utiliser un dictionnaire
+
+```bash
+./run.sh fuzz dict=jeu.dict
+```
+
+---
+
+# Génération de la documentation
+
+La documentation est générée avec Doxygen.
+
+## Installation de Doxygen
+
+```bash
+sudo apt install doxygen
+```
+
+## Installation de Graphviz (optionnel)
+
+Graphviz permet de générer les graphes UML et les dépendances entre classes.
+
+```bash
+sudo apt install graphviz
+```
+
+---
+
+## Générer la documentation
+
+```bash
+./run.sh doc
+```
+
+La documentation sera générée dans :
+
+```text
+docs/html/index.html
+```
+
+Ouvrir ensuite :
+
+```bash
+xdg-open docs/html/index.html
+```
+
+---
+
+# Auteurs
+
+Projet universitaire réalisé dans le cadre du semestre S6 par
+
+ADAM Fayçal
+
+AUAUVRE Niels
+
+BAH Thierno Souleymane
+
+BARRY Mamadou Oury
+
+CHALLAK Layan
+
+JOUINI Iyed.
