@@ -97,7 +97,10 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a463c6ce6851bb82846e87662635bcae6" id="r_a463c6ce6851bb82846e87662635bcae6"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a463c6ce6851bb82846e87662635bcae6">WinnerAnimator</a> (<a class="el" href="classview_1_1JeuGraphique.html">JeuGraphique</a> view, <a class="el" href="classview_1_1animations_1_1AnimationContext.html">AnimationContext</a> ctx)</td></tr>
 <tr class="memitem:a36e86bdd2fc4bfd5920184463033d046" id="r_a36e86bdd2fc4bfd5920184463033d046"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a36e86bdd2fc4bfd5920184463033d046">animerGagnant</a> (int generation)</td></tr>
 </table>
-<a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>-------------------&mdash; ANIMATION GAGNANT ---------------------&mdash; //</p>
+<p>Gère l'animation de fin de partie affichant le joueur gagnant avec un effet visuel pulsé. </p>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a463c6ce6851bb82846e87662635bcae6" name="a463c6ce6851bb82846e87662635bcae6"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a463c6ce6851bb82846e87662635bcae6">&#9670;&#160;</a></span>WinnerAnimator()</h2>
 
@@ -116,6 +119,14 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Crée le gestionnaire d'animation du gagnant.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">view</td><td>Vue graphique principale </td></tr>
+    <tr><td class="paramname">ctx</td><td>Contexte partagé des animations </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -134,6 +145,14 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Lance l'animation de victoire du joueur gagnant.</p>
+<p>L'animation applique un effet pulsé temporaire avant de remettre le système d'animation à l'état neutre.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">generation</td><td>Génération d'animation actuelle </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

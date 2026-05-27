@@ -108,7 +108,16 @@ Static Public Member Functions</h2></td></tr>
 Static Public Attributes</h2></td></tr>
 <tr class="memitem:ad7601d22bb32ef4cf98a88f28c743624" id="r_ad7601d22bb32ef4cf98a88f28c743624"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="enumglobal_1_1Configuration_1_1Mode.html">Mode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad7601d22bb32ef4cf98a88f28c743624">mode</a> = <a class="el" href="enumglobal_1_1Configuration_1_1Mode.html#a15756cb84b326925273f60195c20f3ae">Mode.GRAPHIQUE</a></td></tr>
 </table>
-<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>-------------------&mdash; CONFIGURATION ---------------------&mdash; //</p>
+<p>Classe utilitaire globale contenant :</p><ul>
+<li>les constantes du projet</li>
+<li>les méthodes de chargement des ressources</li>
+<li>les outils de débogage</li>
+<li>le mode d'affichage du jeu</li>
+</ul>
+<p>Cette classe est statique et ne doit jamais être instanciée. </p>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
 <a id="ad953c26ed98be889a5875ca27d4ace2f" name="ad953c26ed98be889a5875ca27d4ace2f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad953c26ed98be889a5875ca27d4ace2f">&#9670;&#160;</a></span>debugeur()</h2>
 
@@ -135,6 +144,14 @@ Static Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Affiche un message de debug standard.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">message</td><td>Message à afficher</td></tr>
+    <tr><td class="paramname">args</td><td>Arguments de formatage </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -164,6 +181,14 @@ Static Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Affiche un message d'erreur.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">message</td><td>Message d'erreur</td></tr>
+    <tr><td class="paramname">args</td><td>Arguments de formatage </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -189,6 +214,14 @@ Static Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Ouvre une ressource située dans le dossier images.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>Chemin relatif du fichier à ouvrir</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Flux du fichier chargé </dd></dl>
 
 </div>
 </div>
@@ -218,6 +251,15 @@ Static Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Ouvre une ressource depuis un dossier spécifique.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">path</td><td>Dossier contenant la ressource</td></tr>
+    <tr><td class="paramname">name</td><td>Nom du fichier</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Flux du fichier chargé </dd></dl>
 
 </div>
 </div>
@@ -243,6 +285,18 @@ Static Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Configure le niveau d'affichage des messages.</p>
+<p>Options disponibles :</p><ul>
+<li>0 : aucun affichage</li>
+<li>1 : erreurs uniquement</li>
+<li>autre : tout afficher</li>
+</ul>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">option</td><td>Niveau de debug souhaité </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -266,6 +320,7 @@ Static Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p><a class="el" href="enumglobal_1_1Configuration_1_1Mode.html">Mode</a> actuel du jeu. </p>
 
 </div>
 </div>

@@ -108,7 +108,14 @@ Public Member Functions</h2></td></tr>
 Protected Member Functions</h2></td></tr>
 <tr class="memitem:adc73c16e1e9dccbd2fc908efa839d68b" id="r_adc73c16e1e9dccbd2fc908efa839d68b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adc73c16e1e9dccbd2fc908efa839d68b">paintComponent</a> (Graphics g)</td></tr>
 </table>
-<a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Composant graphique affichant le score d'un joueur.</p>
+<p>Cette vue affiche :</p><ul>
+<li>le pion du joueur,</li>
+<li>les fleurs collectées,</li>
+<li>les majorités obtenues via une étoile. </li>
+</ul>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="abe1df736900a99608eea6befe7278287" name="abe1df736900a99608eea6befe7278287"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#abe1df736900a99608eea6befe7278287">&#9670;&#160;</a></span>Score()</h2>
 
@@ -123,6 +130,13 @@ Protected Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Crée un composant de score pour un joueur.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">type</td><td>Type du joueur </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -149,6 +163,18 @@ Protected Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Dessine le composant graphique du score.</p>
+<p>Cette méthode affiche :</p><ul>
+<li>le pion du joueur,</li>
+<li>les fleurs collectées,</li>
+<li>les majorités via une étoile.</li>
+</ul>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">g</td><td>Contexte graphique </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -170,6 +196,14 @@ Protected Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Définit le nombre de fleurs pour un type donné.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">type</td><td>Type de fleur </td></tr>
+    <tr><td class="paramname">count</td><td>Nombre de fleurs </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -187,6 +221,13 @@ Protected Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Met à jour le score à partir des données d'un joueur.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">joueur</td><td><a class="el" href="classmodel_1_1Joueur.html">Joueur</a> à analyser </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -204,6 +245,13 @@ Protected Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Met à jour tous les scores affichés.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">newCounts</td><td>Nouvelle répartition des fleurs </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

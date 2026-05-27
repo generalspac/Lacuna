@@ -76,12 +76,12 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "ActionsJeu_8java.html",
-"classmodel_1_1Fleur.html#ac89c055f3216d34346f30bb2ad814dd3",
-"classmodel_1_1Jeu.html#aa5b328c11c2eadca6fb1e153f906fae7",
-"classtestsmodel_1_1TestsJeu.html#a50488a7e899d65c66548a02819d19c91",
-"classview_1_1PvPConfigView.html#a9ed52e7ac8af4ed1fe0393c8ae116286",
-"classview_1_1manager_1_1ImageManager.html#ae87535cec40f8a2bf7f577371124ec36",
-"hierarchy.html"
+"classmodel_1_1DatabaseManager.html#a424ecb3bb788235813962cd84d63465a",
+"classmodel_1_1Jeu.html#a889f90ff53867b66eb9fafd970ffc0ae",
+"classtestsmodel_1_1TestsCoordonnees.html#ac6261aed5a4410e9815abf8eae75ffa7",
+"classview_1_1JeuTutoriel.html",
+"classview_1_1manager_1_1GameEndManager.html#ac129e5cc7a44e46e6343866d0e0f7635",
+"functions_func_p.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronization';

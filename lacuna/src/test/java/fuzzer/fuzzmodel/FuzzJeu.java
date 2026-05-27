@@ -8,8 +8,21 @@ import model.Fleur;
 import model.Jeu;
 import model.Pion;
 
+/**
+ * Fuzz test de la classe {@link Jeu}.
+ *
+ * Objectif :
+ * - Tester la robustesse du moteur de jeu face à des séquences d’actions aléatoires
+ * - Vérifier la cohérence des règles (coups, sélection, placement, undo/redo)
+ * - Détecter les états incohérents dans les entités du jeu
+ */
 public class FuzzJeu {
 
+    /**
+     * Point d’entrée du fuzzing Jazzer.
+     *
+     * @param data Fournisseur de données fuzzées utilisées pour générer des scénarios de jeu aléatoires
+     */
     public static void fuzzerTestOneInput(FuzzedDataProvider data) {
 
         
@@ -52,7 +65,8 @@ public class FuzzJeu {
         }
 
         
-        // Undo / Redo aléatoires        
+        // Undo / Redo aléatoires
+        
         int nbUndo = data.consumeInt(0, 5);
         for (int i = 0; i < nbUndo; i++) {
             jeu.undo();

@@ -91,6 +91,9 @@ $(function(){initNavTree('classview_1_1TutorialOverlay.html','','classview_1_1Tu
   <div class="headertitle"><div class="title">view.TutorialOverlay Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Interface d’affichage du tutoriel en surimpression.  
+ <a href="#details">More...</a></p>
 <div class="dynheader">
 Inheritance diagram for view.TutorialOverlay:</div>
 <div class="dyncontent">
@@ -109,7 +112,15 @@ Public Member Functions</h2></td></tr>
 Protected Member Functions</h2></td></tr>
 <tr class="memitem:ac58b8960c1adae79c2c578a57309466a" id="r_ac58b8960c1adae79c2c578a57309466a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac58b8960c1adae79c2c578a57309466a">paintComponent</a> (Graphics g)</td></tr>
 </table>
-<a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Interface d’affichage du tutoriel en surimpression. </p>
+<p>Cette classe affiche une fenêtre modale semi-transparente contenant :</p><ul>
+<li>un avatar</li>
+<li>un titre</li>
+<li>un message HTML formaté</li>
+<li>des boutons de navigation (suivant, retour, skip, menu) </li>
+</ul>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a17cff64a11683f0e8f27302385d0e9cb" name="a17cff64a11683f0e8f27302385d0e9cb"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a17cff64a11683f0e8f27302385d0e9cb">&#9670;&#160;</a></span>TutorialOverlay()</h2>
 
@@ -124,6 +135,8 @@ Protected Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Constructeur de l’overlay tutoriel.</p>
+<p>Initialise la fenêtre semi-transparente, la boîte de dialogue et les boutons de navigation. </p>
 
 </div>
 </div>
@@ -150,6 +163,7 @@ Protected Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Dessine le fond semi-transparent de l’overlay. </p>
 
 </div>
 </div>
@@ -167,6 +181,13 @@ Protected Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Affiche ou masque le bouton retour.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">visible</td><td>visibilité du bouton </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -184,6 +205,13 @@ Protected Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Change le texte du bouton "Suivant".</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">text</td><td>nouveau texte </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -201,6 +229,13 @@ Protected Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Affiche ou masque le bouton "Passer".</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">visible</td><td>visibilité du bouton </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -242,6 +277,18 @@ Protected Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Affiche un message de tutoriel avec les actions associées.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">title</td><td>titre du message </td></tr>
+    <tr><td class="paramname">message</td><td>contenu HTML du message </td></tr>
+    <tr><td class="paramname">onNext</td><td>action bouton suivant </td></tr>
+    <tr><td class="paramname">onBack</td><td>action bouton retour </td></tr>
+    <tr><td class="paramname">onSkip</td><td>action bouton skip </td></tr>
+    <tr><td class="paramname">onBackMenu</td><td>action quitter tutoriel </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

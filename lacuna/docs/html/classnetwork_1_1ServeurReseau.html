@@ -99,7 +99,16 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ad2d4cca90c9ab332d6d1ce48e69768b3" id="r_ad2d4cca90c9ab332d6d1ce48e69768b3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad2d4cca90c9ab332d6d1ce48e69768b3">setEcouteur</a> (Consumer&lt; <a class="el" href="classnetwork_1_1CoupReseau.html">CoupReseau</a> &gt; ecouteur)</td></tr>
 <tr class="memitem:aa9b5054eb753f7afacd5ba16f0527423" id="r_aa9b5054eb753f7afacd5ba16f0527423"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa9b5054eb753f7afacd5ba16f0527423">fermer</a> ()</td></tr>
 </table>
-<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>------------------&mdash; SERVEUR RÉSEAU -----------------------&mdash; //</p>
+<p>Gère la connexion côté hôte dans une partie réseau.</p>
+<p>Cette classe permet :</p><ul>
+<li>d’ouvrir un serveur socket</li>
+<li>d’attendre la connexion d’un joueur distant</li>
+<li>d’envoyer des messages réseau</li>
+<li>de recevoir les coups du client </li>
+</ul>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
 <a id="a672a72958a5076b660733e971c4ec4d6" name="a672a72958a5076b660733e971c4ec4d6"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a672a72958a5076b660733e971c4ec4d6">&#9670;&#160;</a></span>demarrer()</h2>
 
@@ -114,6 +123,20 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Ouvre le serveur réseau sur le port donné puis attend la connexion d’un client.</p>
+<p>La connexion est gérée dans un thread dédié.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">port</td><td>Port utilisé par le serveur</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">IOException</td><td>Erreur lors de la création du serveur </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -131,6 +154,19 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Envoie un coup au joueur distant.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">coup</td><td>Coup réseau à envoyer</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">IOException</td><td>Erreur lors de l’envoi </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -148,6 +184,7 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Ferme proprement toutes les connexions réseau. </p>
 
 </div>
 </div>
@@ -165,6 +202,13 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Définit le callback appelé lors de la réception d’un message.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ecouteur</td><td>Fonction exécutée à chaque réception </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

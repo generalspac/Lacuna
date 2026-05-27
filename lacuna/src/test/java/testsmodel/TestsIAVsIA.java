@@ -22,6 +22,11 @@ import model.IA.EtatJeu;
 import model.IA.IA;
 import model.IA.NiveauxIA;
 
+/**
+ * Classe de tests et d'expérimentation des IA contre IA.
+ * Génère des rapports statistiques, des bases de données de parties,
+ * et permet d'inspecter les comportements des heuristiques.
+ */
 public class TestsIAVsIA {
 
     private static final int NB_PARTIES_PAR_SCENARIO = 50;

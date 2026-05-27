@@ -106,7 +106,14 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:ade1f7fd277c84f795797016f7ef04e1e" id="r_ade1f7fd277c84f795797016f7ef04e1e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ade1f7fd277c84f795797016f7ef04e1e">paintComponent</a> (Graphics g)</td></tr>
 <tr class="memitem:aca8045b7a2cb7c459b9b23535a43533a" id="r_aca8045b7a2cb7c459b9b23535a43533a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aca8045b7a2cb7c459b9b23535a43533a">paintBorder</a> (Graphics g)</td></tr>
 </table>
-<a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Champ de texte personnalisé avec coins arrondis.</p>
+<p>Ce composant gère :</p><ul>
+<li>un fond arrondi,</li>
+<li>une bordure personnalisée,</li>
+<li>un texte indicatif (placeholder). </li>
+</ul>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a205edb545a5f508d4c8d2dcb960b2372" name="a205edb545a5f508d4c8d2dcb960b2372"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a205edb545a5f508d4c8d2dcb960b2372">&#9670;&#160;</a></span>RoundedTextField()</h2>
 
@@ -125,6 +132,14 @@ Protected Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Crée un champ de texte arrondi.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">placeholder</td><td>Texte indicatif affiché si le champ est vide </td></tr>
+    <tr><td class="paramname">radius</td><td>Rayon des coins arrondis </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -151,6 +166,13 @@ Protected Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Dessine la bordure arrondie du champ.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">g</td><td>Contexte graphique </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -176,6 +198,18 @@ Protected Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Dessine le composant personnalisé.</p>
+<p>Cette méthode affiche :</p><ul>
+<li>le fond arrondi,</li>
+<li>le texte saisi,</li>
+<li>le placeholder si le champ est vide.</li>
+</ul>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">g</td><td>Contexte graphique </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

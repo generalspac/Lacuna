@@ -71,7 +71,7 @@
 <!-- Node3 -->
 <g id="Node000003" class="node">
 <title>Node3</title>
-<g id="a_Node000003"><a xlink:href="classview_1_1JeuTutoriel.html" target="_top" xlink:title=" ">
+<g id="a_Node000003"><a xlink:href="classview_1_1JeuTutoriel.html" target="_top" xlink:title="Version tutorielle du jeu avec progression guidée.">
 <polygon fill="white" stroke="transparent" points="155.5,-124 19.5,-124 19.5,0 155.5,0 155.5,-124"/>
 <text text-anchor="start" x="49" y="-112" font-family="Helvetica,sans-Serif" font-size="10.00">view.JeuTutoriel</text>
 <text text-anchor="start" x="85.5" y="-97" font-family="Helvetica,sans-Serif" font-size="10.00"> </text>

@@ -1447,5 +1447,141 @@ public class InterfaceGraphique implements Runnable {
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         return panel;
     }
+
+    // A Supprimer probablement après
+    private void afficherMenuNomsPvP() {
+
+        JPanel panel = creerPanelMenu();
+        panel.setLayout(new GridBagLayout());
+
+        JPanel card = new JPanel();
+        card.setOpaque(false);
+        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(255, 255, 255, 40), 2),
+                BorderFactory.createEmptyBorder(35, 50, 35, 50)));
+
+        // ================= TITRE =================
+        JLabel titre = new JLabel("JOUEUR VS JOUEUR");
+        titre.setForeground(Color.WHITE);
+        titre.setFont(new Font("Arial", Font.BOLD, 36));
+        titre.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // ================= NOM JOUEUR OR =================
+        JLabel labelOr = new JLabel("Joueur OR");
+        labelOr.setForeground(new Color(255, 200, 50));
+        labelOr.setFont(new Font("Arial", Font.BOLD, 22));
+        labelOr.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        RoundedTextField fieldOr = new RoundedTextField("Nom joueur OR", 15);
+        fieldOr.setMaximumSize(new Dimension(320, 45));
+        fieldOr.setFont(new Font("Arial", Font.PLAIN, 18));
+        fieldOr.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // ================= NOM JOUEUR ARGENT =================
+        JLabel labelArgent = new JLabel("Joueur ARGENT");
+        labelArgent.setForeground(new Color(180, 220, 255));
+        labelArgent.setFont(new Font("Arial", Font.BOLD, 22));
+        labelArgent.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        RoundedTextField fieldArgent = new RoundedTextField("Nom joueur ARGENT", 15);
+        fieldArgent.setMaximumSize(new Dimension(320, 45));
+        fieldArgent.setFont(new Font("Arial", Font.PLAIN, 18));
+        fieldArgent.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // ================= QUI COMMENCE =================
+        JLabel commenceTitre = new JLabel("Qui commence ?");
+        commenceTitre.setForeground(Color.WHITE);
+        commenceTitre.setFont(new Font("Arial", Font.BOLD, 20));
+        commenceTitre.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        JPanel commencePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
+        commencePanel.setOpaque(false);
+
+        JRadioButton rbRandom = new JRadioButton("Aléatoire");
+        JRadioButton rbOr = new JRadioButton("OR");
+        JRadioButton rbArgent = new JRadioButton("ARGENT");
+
+        rbRandom.setOpaque(false);
+        rbOr.setOpaque(false);
+        rbArgent.setOpaque(false);
+
+        rbRandom.setForeground(Color.WHITE);
+        rbOr.setForeground(new Color(255, 200, 50));
+        rbArgent.setForeground(new Color(180, 220, 255));
+
+        rbRandom.setSelected(true);
+
+        ButtonGroup group = new ButtonGroup();
+        group.add(rbRandom);
+        group.add(rbOr);
+        group.add(rbArgent);
+
+        commencePanel.add(rbRandom);
+        commencePanel.add(rbOr);
+        commencePanel.add(rbArgent);
+
+        // ================= BOUTONS =================
+        RoundedButton lancer = creerBoutonMenu("LANCER");
+        RoundedButton retour = creerBoutonMenu("RETOUR");
+
+        lancer.addActionListener(e -> {
+
+            String nomOr = fieldOr.getText().trim();
+            String nomArgent = fieldArgent.getText().trim();
+
+            if (nomOr.isEmpty()) nomOr = "Joueur OR";
+            if (nomArgent.isEmpty()) nomArgent = "Joueur ARGENT";
+
+            Pion.TypePion quiCommence = null;
+
+            if (rbOr.isSelected()) {
+                quiCommence = Pion.TypePion.OR;
+            } else if (rbArgent.isSelected()) {
+                quiCommence = Pion.TypePion.ARGENT;
+            } // sinon null = aléatoire
+
+            ParametresPartie p = new ParametresPartie();
+            p.setMode("Humain vs Humain");
+            p.setNomOr(nomOr);
+            p.setNomArgent(nomArgent);
+            p.setJoueurQuiCommence(quiCommence);
+
+            lancerJeu(p);
+        });
+
+        retour.addActionListener(e -> afficherMenuNouvellePartie());
+
+        // ================= ASSEMBLAGE =================
+        card.add(titre);
+        card.add(Box.createRigidArea(new Dimension(0, 25)));
+
+        card.add(labelOr);
+        card.add(Box.createRigidArea(new Dimension(0, 8)));
+        card.add(fieldOr);
+
+        card.add(Box.createRigidArea(new Dimension(0, 20)));
+
+        card.add(labelArgent);
+        card.add(Box.createRigidArea(new Dimension(0, 8)));
+        card.add(fieldArgent);
+
+        card.add(Box.createRigidArea(new Dimension(0, 25)));
+
+        card.add(commenceTitre);
+        card.add(Box.createRigidArea(new Dimension(0, 10)));
+        card.add(commencePanel);
+
+        card.add(Box.createRigidArea(new Dimension(0, 35)));
+        card.add(lancer);
+        card.add(Box.createRigidArea(new Dimension(0, 10)));
+        card.add(retour);
+
+        panel.add(card);
+
+        frame.setContentPane(panel);
+        frame.revalidate();
+        frame.repaint();
+    }
 }
 

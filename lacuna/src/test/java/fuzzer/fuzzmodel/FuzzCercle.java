@@ -5,11 +5,18 @@ import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import model.Cercle;
 import model.Coordonnees;
 
-
-
+/**
+ * Fuzz test de la classe {@link Cercle}.
+ * Vérifie la robustesse des calculs géométriques et des méthodes associées
+ * face à des entrées aléatoires générées par Jazzer.
+ */
 public class FuzzCercle {
 
-
+    /**
+     * Point d’entrée du fuzzing Jazzer.
+     *
+     * @param data Fournisseur de données fuzzées (coordonnées et rayon)
+     */
     public static void fuzzerTestOneInput(
             FuzzedDataProvider data
     ) {

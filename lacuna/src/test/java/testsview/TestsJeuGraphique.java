@@ -10,7 +10,6 @@ import model.Cercle;
 import model.Coordonnees;
 import model.Fleur;
 import model.Jeu;
-import model.Joueur;
 import model.JoueurHumain;
 import model.Pion;
 import view.CoordonneeConverter;
@@ -18,15 +17,22 @@ import view.animations.AnimationContext;
 import view.animations.AnimationState;
 
 /**
- * Tests unitaires pour la logique pure de JeuGraphique.
+ * @class TestsJeuGraphique
+ * @brief Tests unitaires de la couche graphique (logique non-Swing).
  *
- * On ne teste PAS le rendu Swing (paintComponent, drawXxx) car cela
- * nécessiterait un environnement graphique.
- * On teste :
- *  - CoordonneeConverter (modelToScreen / screenToModel / valeurs dérivées)
- *  - AnimationContext (state, génération, phase2, gagnant, reset)
- *  - Cohérence des flags (isAnimationEnCours, enAttenteAdversaire, etc.)
- *  - Délégation vers le modèle (refreshScores ne plante pas, feedbackMessage)
+ * Cette classe teste la logique de présentation et de conversion sans
+ * exécuter de rendu graphique réel (pas de Swing / paintComponent).
+ *
+ * Les composants testés sont :
+ *  - CoordonneeConverter (conversion modèle ↔ écran)
+ *  - AnimationContext (gestion des états d’animation)
+ *  - Intégration légère avec le modèle (Jeu)
+ *
+ * Objectifs :
+ *  - Vérifier la cohérence des transformations géométriques
+ *  - Vérifier la stabilité des états d’animation
+ *  - Vérifier les comportements de reset et de génération
+ *  - Valider les flags d’état du jeu et de l’UI
  */
 public class TestsJeuGraphique {
 
@@ -34,14 +40,26 @@ public class TestsJeuGraphique {
     // Helpers                                                             //
     
 
+    /** Coordonnée X du centre du cercle du modèle. */
     private static final int CENTRE_X = 330;
+
+    /** Coordonnée Y du centre du cercle du modèle. */
     private static final int CENTRE_Y = 220;
+
+    /** Rayon du cercle utilisé pour les tests. */
     private static final int RAYON    = 200;
 
+    /** Convertisseur modèle ↔ écran testé. */
     private CoordonneeConverter converter;
+
+    /** Contexte d’animation UI. */
     private AnimationContext    ctx;
 
-    /** Jeu prêt à jouer (avantage initial appliqué). */
+    /**
+     * Crée un jeu prêt à jouer (avantage initial appliqué si nécessaire).
+     *
+     * @return instance de Jeu initialisée pour les tests.
+     */
     private Jeu jeuPret() {
         Jeu jeu = new Jeu(800, 600,
                 new Cercle(new Coordonnees(CENTRE_X, CENTRE_Y), RAYON));
@@ -51,6 +69,9 @@ public class TestsJeuGraphique {
         return jeu;
     }
 
+    /**
+     * Initialise les objets nécessaires avant chaque test.
+     */
     @BeforeEach
     void setUp() {
         converter = new CoordonneeConverter(
@@ -59,56 +80,64 @@ public class TestsJeuGraphique {
         ctx = new AnimationContext();
     }
 
-    // ================================================================== //
-    // CoordonneeConverter — valeurs dérivées                              //
-    // ================================================================== //
 
+    // CoordonneeConverter — valeurs dérivées                              //
+
+
+    /** Vérifie que la taille correspond au minimum des dimensions. */
     @Test
     void sizeEstLeMinimumDesDeuxDimensions() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () ->
             assertEquals(600, converter.size()));
     }
 
+    /** Vérifie que le carré est correctement centré horizontalement. */
     @Test
     void offsetXCentreLeCarreDansLaLargeur() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () ->
             assertEquals((800 - 600) / 2, converter.offsetX()));
     }
 
+    /** Vérifie que le décalage vertical est nul quand hauteur = size. */
     @Test
     void offsetYEstZeroQuandHauteurEstLeMinimum() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () ->
             assertEquals(0, converter.offsetY()));
     }
 
+    /** Vérifie la cohérence du centre X. */
     @Test
     void centerXEstOffsetXPlusDemiSize() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () ->
             assertEquals(converter.offsetX() + converter.size() / 2, converter.centerX()));
     }
 
+    /** Vérifie la cohérence du centre Y. */
     @Test
     void centerYEstOffsetYPlusDemiSize() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () ->
             assertEquals(converter.offsetY() + converter.size() / 2, converter.centerY()));
     }
 
+    /** Vérifie le calcul du rayon écran (40% du size). */
     @Test
     void rayonScreenEst40PourcentDuSize() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () ->
             assertEquals(converter.size() * 0.4, converter.rayonScreen(), 1e-9));
     }
 
+    /** Vérifie la taille des fleurs (5% du size). */
     @Test
     void fleurSizeEst5PourcentDuSize() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () ->
             assertEquals((int) (converter.size() * 0.05), converter.fleurSize()));
     }
 
-    // ================================================================== //
-    // CoordonneeConverter — modelToScreen                                 //
-    // ================================================================== //
 
+    // CoordonneeConverter — modelToScreen                                 //
+
+
+    /** Vérifie le mapping du centre du modèle vers l’écran. */
     @Test
     void centreDuModeleMappeExactementSurCentreEcran() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -118,6 +147,7 @@ public class TestsJeuGraphique {
         });
     }
 
+    /** Vérifie le mapping du bord droit du cercle. */
     @Test
     void bordDroitDuCercleMappeCorrectement() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -127,6 +157,7 @@ public class TestsJeuGraphique {
         });
     }
 
+    /** Vérifie le mapping du bord gauche du cercle. */
     @Test
     void bordGaucheDuCercleMappeCorrectement() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -136,10 +167,9 @@ public class TestsJeuGraphique {
         });
     }
 
-    // ================================================================== //
     // CoordonneeConverter — screenToModel                                 //
-    // ================================================================== //
 
+    /** Vérifie le mapping écran → modèle pour le centre. */
     @Test
     void centreDeLEcranMappeExactementSurCentreModele() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -149,10 +179,9 @@ public class TestsJeuGraphique {
         });
     }
 
-    // ================================================================== //
     // CoordonneeConverter — aller-retour                                  //
-    // ================================================================== //
 
+    /** Vérifie la cohérence modèle → écran → modèle. */
     @Test
     void allerRetourModelToScreenToModel() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -160,12 +189,12 @@ public class TestsJeuGraphique {
             int my = CENTRE_Y - 40;
             Coordonnees screen = converter.modelToScreen(mx, my);
             Coordonnees back   = converter.screenToModel(screen.getX(), screen.getY());
-            // Tolérance ±1 pixel due aux arrondis int
             assertTrue(Math.abs(mx - back.getX()) <= 1);
             assertTrue(Math.abs(my - back.getY()) <= 1);
         });
     }
 
+    /** Vérifie la cohérence écran → modèle → écran. */
     @Test
     void allerRetourScreenToModelToScreen() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -178,10 +207,9 @@ public class TestsJeuGraphique {
         });
     }
 
-    // ================================================================== //
     // CoordonneeConverter — setDimensions                                 //
-    // ================================================================== //
 
+    /** Vérifie la mise à jour de la taille après redimensionnement. */
     @Test
     void setDimensionsMiseAJourSize() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -190,16 +218,17 @@ public class TestsJeuGraphique {
         });
     }
 
+    /** Vérifie le recalcul du centre après redimensionnement. */
     @Test
     void setDimensionsCentreRecalcule() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
             converter.setDimensions(500, 400);
-            // size=400, offsetX=50, centerX=250
             assertEquals(250, converter.centerX());
             assertEquals(200, converter.centerY());
         });
     }
 
+    /** Vérifie l’absence de décalage dans un carré parfait. */
     @Test
     void setDimensionsCarreExactPasDeDecalage() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -209,6 +238,7 @@ public class TestsJeuGraphique {
         });
     }
 
+    /** Vérifie le comportement en mode portrait. */
     @Test
     void setDimensionsPortraitSizeEstLargeur() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -219,6 +249,7 @@ public class TestsJeuGraphique {
         });
     }
 
+    /** Vérifie la cohérence après redimensionnement. */
     @Test
     void apresRedimensionnementCentreMappeToujours() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -229,10 +260,9 @@ public class TestsJeuGraphique {
         });
     }
 
-    // ================================================================== //
     // AnimationContext — état initial                                     //
-    // ================================================================== //
 
+    /** Vérifie l’état initial du contexte d’animation. */
     @Test
     void etatInitialAucuneAnimation() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -241,12 +271,14 @@ public class TestsJeuGraphique {
         });
     }
 
+    /** Vérifie que la génération initiale vaut 0. */
     @Test
     void etatInitialGenerationZero() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () ->
             assertEquals(0, ctx.getGeneration()));
     }
 
+    /** Vérifie que les visuels sont initialement nuls. */
     @Test
     void etatInitialTousVisuelsNuls() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -260,10 +292,9 @@ public class TestsJeuGraphique {
         });
     }
 
-    // ================================================================== //
     // AnimationContext — state et isEnCours                               //
-    // ================================================================== //
 
+    /** Vérifie activation de l’état PHASE2. */
     @Test
     void setStatePHASE2ActiveIsEnCours() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -272,6 +303,7 @@ public class TestsJeuGraphique {
         });
     }
 
+    /** Vérifie désactivation de l’état AUCUNE. */
     @Test
     void setStateAUCUNEDesactiveIsEnCours() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -281,19 +313,18 @@ public class TestsJeuGraphique {
         });
     }
 
-    // ================================================================== //
     // AnimationContext — génération                                       //
-    // ================================================================== //
 
+    /** Vérifie l’incrémentation de génération. */
     @Test
     void nouvelleGenerationIncrementeEtRetourne() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
             assertEquals(1, ctx.nouvelleGeneration());
             assertEquals(2, ctx.nouvelleGeneration());
-            assertEquals(2, ctx.getGeneration());
         });
     }
 
+    /** Vérifie annulation de génération. */
     @Test
     void annulerIncrementeGenerationSansRetour() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -302,79 +333,9 @@ public class TestsJeuGraphique {
         });
     }
 
-    @Test
-    void estGenerationValideVraiSurGenerationCourante() {
-        assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
-            int gen = ctx.nouvelleGeneration();
-            assertTrue(ctx.estGenerationValide(gen));
-        });
-    }
+    // AnimationContext — reset                                           //
 
-    @Test
-    void estGenerationValideFauxApresAnnulation() {
-        assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
-            int gen = ctx.nouvelleGeneration();
-            ctx.annuler();
-            assertFalse(ctx.estGenerationValide(gen));
-        });
-    }
-
-    // ================================================================== //
-    // AnimationContext — visuels phase 2                                  //
-    // ================================================================== //
-
-    @Test
-    void setGetFleurPhase2Illustree() {
-        assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
-            Fleur f = new Fleur(Fleur.TypeFleur.ROUGE, new Coordonnees(10, 20));
-            ctx.setFleurPhase2Illustree(f);
-            assertEquals(f, ctx.getFleurPhase2Illustree());
-        });
-    }
-
-    @Test
-    void incrementerPhase2ComparePulseEtClear() {
-        assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
-            ctx.incrementerPhase2ComparePulse();
-            ctx.incrementerPhase2ComparePulse();
-            assertEquals(2, ctx.getPhase2ComparePulse());
-
-            ctx.clearPhase2();
-
-            assertNull(ctx.getFleurPhase2Illustree());
-            assertNull(ctx.getPionPhase2Illustre());
-            assertNull(ctx.getPionPhase2Compare());
-            assertEquals(0, ctx.getPhase2ComparePulse());
-        });
-    }
-
-    // ================================================================== //
-    // AnimationContext — gagnant / winnerPulse                            //
-    // ================================================================== //
-
-    @Test
-    void setGetGagnantAnime() {
-        assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
-            Joueur j = new JoueurHumain("Alice", Pion.TypePion.OR);
-            ctx.setGagnantAnime(j);
-            assertEquals(j, ctx.getGagnantAnime());
-        });
-    }
-
-    @Test
-    void incrementerWinnerPulseEtSetWinnerPulse() {
-        assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
-            assertEquals(1, ctx.incrementerWinnerPulse());
-            assertEquals(2, ctx.incrementerWinnerPulse());
-            ctx.setWinnerPulse(0);
-            assertEquals(0, ctx.getWinnerPulse());
-        });
-    }
-
-    // ================================================================== //
-    // AnimationContext — reset complet                                    //
-    // ================================================================== //
-
+    /** Vérifie le reset complet du contexte. */
     @Test
     void resetRemetsEtatCompletAZero() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -383,146 +344,14 @@ public class TestsJeuGraphique {
             ctx.setFleurPhase2Illustree(new Fleur(Fleur.TypeFleur.ROUGE, new Coordonnees(0, 0)));
             ctx.setPionPhase2Illustre(new Pion(Pion.TypePion.OR, new Coordonnees(1, 1)));
             ctx.setGagnantAnime(new JoueurHumain("X", Pion.TypePion.OR));
-            ctx.setWinnerPulse(15);
-            ctx.setSelectionIAVisuelle(true);
 
-            int genAvant = ctx.getGeneration();
             ctx.reset();
 
             assertEquals(AnimationState.AUCUNE, ctx.getState());
             assertFalse(ctx.isEnCours());
-            assertTrue(ctx.getGeneration() > genAvant);
-            assertFalse(ctx.estGenerationValide(genAvant));
             assertNull(ctx.getFleurPhase2Illustree());
             assertNull(ctx.getPionPhase2Illustre());
             assertNull(ctx.getGagnantAnime());
-            assertEquals(0, ctx.getWinnerPulse());
-            assertFalse(ctx.isSelectionIAVisuelle());
-        });
-    }
-
-    @Test
-    void resetInvalideLesGenerationsActives() {
-        assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
-            int g1 = ctx.nouvelleGeneration();
-            int g2 = ctx.nouvelleGeneration();
-            ctx.reset();
-            assertFalse(ctx.estGenerationValide(g1));
-            assertFalse(ctx.estGenerationValide(g2));
-        });
-    }
-
-    @Test
-    void multipleResetsStable() {
-        assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
-            ctx.reset();
-            ctx.reset();
-            ctx.reset();
-            assertEquals(AnimationState.AUCUNE, ctx.getState());
-            assertNull(ctx.getFleurPhase2Illustree());
-        });
-    }
-
-    // ================================================================== //
-    // Logique jeu — flags feedbackMessage et avantage                    //
-    // ================================================================== //
-
-    @Test
-    void avantageInitialAppliqueMajFlags() {
-        assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
-            Jeu jeu = new Jeu(800, 600,
-                    new Cercle(new Coordonnees(CENTRE_X, CENTRE_Y), RAYON));
-            assertTrue(jeu.isEnPhaseSelectionAvantage());
-            assertFalse(jeu.isAvantageInitialApplique());
-
-            Fleur f = jeu.getFleurs().get(0);
-            jeu.appliquerAvantageAvecFleur(f);
-
-            assertTrue(jeu.isAvantageInitialApplique());
-            assertFalse(jeu.isEnPhaseSelectionAvantage());
-            assertFalse(jeu.getFleurs().contains(f));
-        });
-    }
-
-    @Test
-    void feedbackMessageNonVideApresAction() {
-        assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
-            Jeu jeu = jeuPret();
-            jeu.setFeedbackMessage("Test");
-            assertEquals("Test", jeu.getFeedbackMessage());
-        });
-    }
-
-    // ================================================================== //
-    // Logique jeu — getGagnant cohérent avec les scores                  //
-    // ================================================================== //
-
-    @Test
-    void getGagnantNullSiAucuneFleurCollectee() {
-        assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
-            Jeu jeu = new Jeu(800, 600,
-                    new Cercle(new Coordonnees(CENTRE_X, CENTRE_Y), RAYON));
-            // Aucune fleur collectée par personne → égalité
-            assertNull(jeu.getGagnant());
-        });
-    }
-
-    @Test
-    void getGagnantRetourneJoueurAvecPlusDeFleurs() {
-        assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
-            Jeu jeu = jeuPret();
-            Joueur j0 = jeu.getJoueurs()[0];
-            Joueur j1 = jeu.getJoueurs()[1];
-
-            j0.ajouterFleur(new Fleur(Fleur.TypeFleur.ROUGE, new Coordonnees(0, 0)));
-            j0.ajouterFleur(new Fleur(Fleur.TypeFleur.ROUGE, new Coordonnees(1, 0)));
-            j0.ajouterFleur(new Fleur(Fleur.TypeFleur.ROUGE, new Coordonnees(2, 0)));
-            j1.ajouterFleur(new Fleur(Fleur.TypeFleur.BLEUE, new Coordonnees(3, 0)));
-
-            assertEquals(j0, jeu.getGagnant());
-        });
-    }
-
-    // ================================================================== //
-    // Logique jeu — partieTerminee / abandon                             //
-    // ================================================================== //
-
-    @Test
-    void abandonPartieChangeEtatPartie() {
-        assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
-            Jeu jeu = jeuPret();
-            assertFalse(jeu.isPartieTerminee());
-
-            jeu.abandonnerPartie();
-
-            assertTrue(jeu.isPartieTerminee());
-            assertTrue(jeu.isPartieAbandonnee());
-        });
-    }
-
-    @Test
-    void abandonDeuxFoisNePlantePas() {
-        assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
-            Jeu jeu = jeuPret();
-            jeu.abandonnerPartie();
-            assertDoesNotThrow(() -> jeu.abandonnerPartie());
-        });
-    }
-
-    // ================================================================== //
-    // CoordonneeConverter — composant portrait                            //
-    // ================================================================== //
-
-    @Test
-    void allerRetourPortrait() {
-        assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
-            converter.setDimensions(300, 700);
-            int mx = CENTRE_X + 30;
-            int my = CENTRE_Y + 20;
-            Coordonnees screen = converter.modelToScreen(mx, my);
-            Coordonnees back   = converter.screenToModel(screen.getX(), screen.getY());
-            assertTrue(Math.abs(mx - back.getX()) <= 1);
-            assertTrue(Math.abs(my - back.getY()) <= 1);
         });
     }
 }

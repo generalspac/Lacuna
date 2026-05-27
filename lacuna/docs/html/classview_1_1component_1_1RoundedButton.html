@@ -106,7 +106,15 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:a3f9a6aac696def771dc2dec89774e600" id="r_a3f9a6aac696def771dc2dec89774e600"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3f9a6aac696def771dc2dec89774e600">paintComponent</a> (Graphics g)</td></tr>
 <tr class="memitem:a68bacfb2d7408a3e6f7122c6a0904e8b" id="r_a68bacfb2d7408a3e6f7122c6a0904e8b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a68bacfb2d7408a3e6f7122c6a0904e8b">paintBorder</a> (Graphics g)</td></tr>
 </table>
-<a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Bouton personnalisé avec coins arrondis.</p>
+<p>Ce composant gère :</p><ul>
+<li>l'affichage arrondi,</li>
+<li>les effets de survol,</li>
+<li>les effets de clic,</li>
+<li>le rendu personnalisé du texte et des bordures. </li>
+</ul>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="ac9c8ddfcd554196e49278fdba5895b97" name="ac9c8ddfcd554196e49278fdba5895b97"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac9c8ddfcd554196e49278fdba5895b97">&#9670;&#160;</a></span>RoundedButton()</h2>
 
@@ -121,6 +129,41 @@ Protected Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Crée un bouton arrondi personnalisé.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">text</td><td>Texte affiché sur le bouton </td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Active l'effet de survol.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">e</td><td>Événement souris</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Désactive l'effet de survol.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">e</td><td>Événement souris</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Active l'effet de pression.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">e</td><td>Événement souris</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Désactive l'effet de pression.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">e</td><td>Événement souris</td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -147,6 +190,14 @@ Protected Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Dessine la bordure du bouton.</p>
+<p>La bordure change de couleur lors du survol.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">g</td><td>Contexte graphique </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -172,6 +223,18 @@ Protected Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Dessine le contenu du bouton.</p>
+<p>Cette méthode gère :</p><ul>
+<li>le fond arrondi,</li>
+<li>les changements de couleur,</li>
+<li>le texte centré.</li>
+</ul>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">g</td><td>Contexte graphique </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

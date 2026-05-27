@@ -20,9 +20,19 @@ import model.Jeu;
 import model.Joueur;
 import model.Pion;
 
+/**
+ * Classe de tests unitaires pour la logique principale du jeu {@link Jeu}.
+ * Vérifie le bon fonctionnement des règles, du placement, des fleurs,
+ * des pions, du système de score et des conditions de victoire.
+ */
 public class TestsJeu {
 
     // -------------------- SETUP ------------------------------ //
+
+    /**
+     * Crée une instance standard de jeu utilisée pour les tests.
+     * @return une instance de {@link Jeu} initialisée avec des dimensions par défaut
+     */
     private Jeu jeuStandard() {
         return new Jeu(800, 600, new Cercle(new Coordonnees(400, 300), 250));
     }
@@ -41,6 +51,9 @@ public class TestsJeu {
 
     // ------------------- CONSTRUCTEUR ------------------------ //
 
+    /**
+     * Vérifie que le constructeur initialise correctement le jeu.
+     */
     @Test
     public void testJeuConstructor() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -56,9 +69,11 @@ public class TestsJeu {
         });
     }
 
+    /**
+     * Vérifie que la phase d'avantage initial est active au démarrage.
+     */
     @Test
     public void testConstructeurPhaseAvantageActif() {
-        // Au démarrage, la phase de sélection d'avantage doit être active
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
             Jeu jeu = jeuStandard();
             assertTrue(jeu.isEnPhaseSelectionAvantage());
@@ -68,6 +83,9 @@ public class TestsJeu {
 
     // ------------------- INITIALISATION ---------------------- //
 
+    /**
+     * Vérifie l'initialisation correcte des fleurs.
+     */
     @Test
     public void testInitFleurs() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -84,6 +102,9 @@ public class TestsJeu {
         });
     }
 
+    /**
+     * Vérifie l'initialisation correcte des pions.
+     */
     @Test
     public void testInitPions() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -100,9 +121,11 @@ public class TestsJeu {
         });
     }
 
+    /**
+     * Vérifie qu'aucun pion n'est placé après initialisation.
+     */
     @Test
     public void testInitPionsTousNonPlaces() {
-        // Après init, aucun pion ne doit avoir de position
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
             Jeu jeu = jeuStandard();
             jeu.initPions();
@@ -112,11 +135,13 @@ public class TestsJeu {
         });
     }
 
+    /**
+     * Vérifie la réinitialisation complète du jeu.
+     */
     @Test
     public void testResetReinitialise() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
             Jeu jeu = jeuStandard();
-            // Simuler un état avancé
             jeu.setAvantageInitialApplique(true);
             jeu.setEnPhaseSelectionAvantage(false);
 
@@ -132,6 +157,9 @@ public class TestsJeu {
 
     // -------------------- JOUEURS ---------------------------- //
 
+    /**
+     * Vérifie le passage au joueur suivant.
+     */
     @Test
     public void testJoueurSuivant() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -144,6 +172,9 @@ public class TestsJeu {
         });
     }
 
+    /**
+     * Vérifie le retour au joueur précédent.
+     */
     @Test
     public void testJoueurPrecedent() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -155,6 +186,9 @@ public class TestsJeu {
         });
     }
 
+    /**
+     * Vérifie la symétrie entre joueur suivant et précédent.
+     */
     @Test
     public void testJoueurSuivantPrecedentSymetrie() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -168,6 +202,9 @@ public class TestsJeu {
 
     // -------------------- PLACEMENT -------------------------- //
 
+    /**
+     * Vérifie le placement valide d'un pion.
+     */
     @Test
     @Timeout(value = 5, unit = TimeUnit.SECONDS)
     void placePionValide() {
@@ -180,6 +217,9 @@ public class TestsJeu {
         });
     }
 
+    /**
+     * Vérifie qu'un pion hors du cercle ne peut pas être placé.
+     */
     @Test
     void placePionHorsDuCercle() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -191,6 +231,9 @@ public class TestsJeu {
         });
     }
 
+    /**
+     * Vérifie que deux pions trop proches ne peuvent pas être placés.
+     */
     @Test
     void placePionTropProcheAutrePion() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -198,13 +241,15 @@ public class TestsJeu {
             Pion p1 = new Pion(Pion.TypePion.OR, null);
             Pion p2 = new Pion(Pion.TypePion.ARGENT, null);
             jeu.placePion(p1, new Coordonnees(150, 150));
-            // Deuxième pion placé quasiment au même endroit
             boolean resultat = jeu.placePion(p2, new Coordonnees(152, 152));
             assertFalse(resultat);
             assertNull(p2.getPosition());
         });
     }
 
+    /**
+     * Vérifie la récupération d'un pion libre.
+     */
     @Test
     void getPionLibreRetournePionNonPlace() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -218,6 +263,9 @@ public class TestsJeu {
 
     // -------------------- FLEURS ----------------------------- //
 
+    /**
+     * Vérifie la capture de fleurs de même type.
+     */
     @Test
     void mangerFleursMemeType() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -237,6 +285,9 @@ public class TestsJeu {
         });
     }
 
+    /**
+     * Vérifie l'échec de capture si couleurs différentes.
+     */
     @Test
     void mangerFleursCouleursDifferentesEchoue() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -250,13 +301,15 @@ public class TestsJeu {
 
             Joueur joueur = jeu.getJoueurs()[0];
             assertFalse(jeu.mangerFleurs(joueur, f1, f2));
-            // Les fleurs restent sur le plateau
             assertTrue(jeu.getFleurs().contains(f1));
             assertTrue(jeu.getFleurs().contains(f2));
             assertEquals(0, joueur.getScoreTotal());
         });
     }
 
+    /**
+     * Vérifie l'échec de capture si fleurs absentes du plateau.
+     */
     @Test
     void mangerFleursAbsentesEchoue() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -265,7 +318,6 @@ public class TestsJeu {
 
             Fleur f1 = new Fleur(Fleur.TypeFleur.ROUGE, new Coordonnees(100, 100));
             Fleur f2 = new Fleur(Fleur.TypeFleur.ROUGE, new Coordonnees(200, 200));
-            // On n'ajoute pas f1 et f2 au plateau
 
             Joueur joueur = jeu.getJoueurs()[0];
             assertFalse(jeu.mangerFleurs(joueur, f1, f2));
@@ -275,6 +327,9 @@ public class TestsJeu {
 
     // ------------------ AVANTAGE INITIAL --------------------- //
 
+    /**
+     * Vérifie l'application de l'avantage initial.
+     */
     @Test
     void appliquerAvantageAvecFleur() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -293,6 +348,9 @@ public class TestsJeu {
         });
     }
 
+    /**
+     * Vérifie qu'un second avantage est ignoré.
+     */
     @Test
     void appliquerAvantageDeuxFoisIgnore() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -303,15 +361,17 @@ public class TestsJeu {
             jeu.appliquerAvantageAvecFleur(f1);
             int taille = jeu.getFleurs().size();
 
-            // Tentative de second avantage : doit être ignorée
             jeu.appliquerAvantageAvecFleur(f2);
 
             assertEquals(taille, jeu.getFleurs().size());
         });
     }
 
-    // --------------- FLEURS CONNECTEES ----------------------- //
+    // ----------------- FLEURS CONNECTEES ----------------------- //
 
+    /**
+     * Vérifie la connexion entre deux fleurs de même type.
+     */
     @Test
     void fleursConnecteesMemeTypeSansObstacle() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -328,6 +388,9 @@ public class TestsJeu {
         });
     }
 
+    /**
+     * Vérifie l'échec de connexion entre fleurs de couleurs différentes.
+     */
     @Test
     void fleursConnecteesCouleursDifferentesEchoue() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -344,6 +407,9 @@ public class TestsJeu {
         });
     }
 
+    /**
+     * Vérifie la gestion des fleurs nulles.
+     */
     @Test
     void fleursConnecteesNullRetourneFaux() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -355,6 +421,9 @@ public class TestsJeu {
 
     // ----------------- COUPS POSSIBLES ----------------------- //
 
+    /**
+     * Vérifie qu'il n'y a aucun coup possible sans paires.
+     */
     @Test
     void coupsPossiblesVideSiAucunePaireMemeType() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -362,7 +431,6 @@ public class TestsJeu {
             jeu.getFleurs().clear();
             jeu.getPions().clear();
 
-            // Une seule fleur de chaque couleur => aucune paire
             for (Fleur.TypeFleur t : Fleur.TypeFleur.values()) {
                 jeu.getFleurs().add(new Fleur(t, new Coordonnees(100 + t.ordinal() * 40, 300)));
             }
@@ -372,6 +440,9 @@ public class TestsJeu {
         });
     }
 
+    /**
+     * Vérifie qu'un coup connecté existe si paire de fleurs.
+     */
     @Test
     void existeCoupConnecteAvecPaireMemeType() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -389,6 +460,10 @@ public class TestsJeu {
     }
 
     // -------------------- SCORE / GAGNANT -------------------- //
+
+    /**
+     * Vérifie le calcul du gagnant par score.
+     */
     @Test
     void getGagnantParScore() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -398,12 +473,10 @@ public class TestsJeu {
             Joueur j0 = jeu.getJoueurs()[0];
             Joueur j1 = jeu.getJoueurs()[1];
 
-            // j0 reçoit 3 fleurs de même couleur → 1 couleur
             j0.ajouterFleur(new Fleur(Fleur.TypeFleur.ROUGE, new Coordonnees(0, 0)));
             j0.ajouterFleur(new Fleur(Fleur.TypeFleur.ROUGE, new Coordonnees(1, 0)));
             j0.ajouterFleur(new Fleur(Fleur.TypeFleur.ROUGE, new Coordonnees(2, 0)));
 
-            // j1 reçoit 1 fleur → score inférieur
             j1.ajouterFleur(new Fleur(Fleur.TypeFleur.BLEUE, new Coordonnees(3, 0)));
 
             Joueur gagnant = jeu.getGagnant();
@@ -411,18 +484,23 @@ public class TestsJeu {
         });
     }
 
+    /**
+     * Vérifie le cas d'égalité.
+     */
     @Test
     void getGagnantNulEnCasEgalite() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
             Jeu jeu = jeuStandard();
-            // Aucune fleur collectée → égalité
             Joueur gagnant = jeu.getGagnant();
             assertNull(gagnant);
         });
     }
 
-    // ------------- ATTRIBUTION FLEURS RESTANTES -------------- //
+    // ----------------- ATTRIBUTION FLEURS RESTANTES ---------------- //
 
+    /**
+     * Vérifie l'attribution des fleurs restantes en fin de partie.
+     */
     @Test
     void attribuerFleursRestantesVideLePlateau() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -430,13 +508,11 @@ public class TestsJeu {
             jeu.getFleurs().clear();
             jeu.getPions().clear();
 
-            // Placer deux pions
             Pion p1 = new Pion(Pion.TypePion.OR, new Coordonnees(280, 300));
             Pion p2 = new Pion(Pion.TypePion.ARGENT, new Coordonnees(320, 300));
             jeu.getPions().add(p1);
             jeu.getPions().add(p2);
 
-            // Une fleur proche de p1
             jeu.getFleurs().add(new Fleur(Fleur.TypeFleur.ROUGE, new Coordonnees(282, 300)));
 
             jeu.attribuerFleursRestantes();

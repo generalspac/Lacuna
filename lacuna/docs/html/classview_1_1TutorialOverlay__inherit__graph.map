@@ -1,5 +1,5 @@
 <map id="view.TutorialOverlay" name="view.TutorialOverlay">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,119,183,284"/>
+<area shape="rect" id="Node000001" title="Interface d’affichage du tutoriel en surimpression." alt="" coords="5,119,183,284"/>
 <area shape="rect" id="Node000002" title=" " alt="" coords="67,5,121,71"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="97,84,97,118,91,118,91,84"/>
 </map>

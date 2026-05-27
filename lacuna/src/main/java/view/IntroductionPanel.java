@@ -8,27 +8,59 @@ import java.awt.geom.RoundRectangle2D;
 import global.Configuration;
 import view.component.RoundedButton;
 
+/**
+ * \class IntroductionPanel
+ * \brief Panneau d’introduction / tutoriel du jeu LACUNA.
+ *
+ * \details Ce panneau affiche :
+ *          - une introduction animée texte par texte
+ *          - un avatar de guide
+ *          - une bulle de dialogue stylisée
+ *          - des boutons de navigation (continuer / quitter)
+ */
 public class IntroductionPanel extends JPanel {
 
+    /**
+     * Texte complet du tutoriel.
+     */
     private String texte = "BIENVENUE DANS LACUNA.\n\n"
             + "Dans ce tutoriel, vous allez apprendre à :\n"
             + "• Sélectionner des fleurs stratégiquement\n"
             + "• Placer des pions pour capturer des zones\n"
             + "• Et remporter un maximum de couleurs !";
 
+    /**
+     * Texte actuellement affiché (animation progressive).
+     */
     private String texteAffiche = "";
 
+    /**
+     * Label contenant le texte animé.
+     */
     private JLabel texteLabel;
+
+    /**
+     * Action appelée lors de la fermeture du tutoriel.
+     */
     private final Runnable onQuit;
 
+    /**
+     * Constructeur du panneau d’introduction.
+     *
+     * @param onFinish action de fin du tutoriel
+     * @param onQuit action de sortie du jeu
+     */
     public IntroductionPanel(Runnable onFinish, Runnable onQuit) {
+
         this.onQuit = onQuit;
+
         setLayout(null);
         setBackground(new Color(15, 15, 15));
 
         // =========================
         // AVATAR
         // =========================
+
         ImageIcon avatarIcon;
 
         try {
@@ -55,6 +87,7 @@ public class IntroductionPanel extends JPanel {
         // =========================
         // BULLE DE DIALOGUE
         // =========================
+
         JPanel bulle = new JPanel() {
 
             @Override
@@ -71,14 +104,26 @@ public class IntroductionPanel extends JPanel {
                 g2.fillRoundRect(10, 10, getWidth() - 10, getHeight() - 10, 50, 50);
 
                 // Fond blanc avec un léger dégradé
-                GradientPaint gp = new GradientPaint(0, 0, Color.WHITE, 0, getHeight(), new Color(245, 245, 250));
+                GradientPaint gp = new GradientPaint(
+                        0, 0, Color.WHITE,
+                        0, getHeight(),
+                        new Color(245, 245, 250));
+
                 g2.setPaint(gp);
-                g2.fill(new RoundRectangle2D.Float(0, 0, getWidth() - 12, getHeight() - 12, 50, 50));
+                g2.fill(new RoundRectangle2D.Float(
+                        0, 0,
+                        getWidth() - 12,
+                        getHeight() - 12,
+                        50, 50));
 
                 // Bordure discrète
                 g2.setColor(new Color(200, 200, 200));
                 g2.setStroke(new BasicStroke(1.5f));
-                g2.draw(new RoundRectangle2D.Float(0, 0, getWidth() - 12, getHeight() - 12, 50, 50));
+                g2.draw(new RoundRectangle2D.Float(
+                        0, 0,
+                        getWidth() - 12,
+                        getHeight() - 12,
+                        50, 50));
 
                 g2.dispose();
             }
@@ -93,12 +138,13 @@ public class IntroductionPanel extends JPanel {
         // =========================
         // TEXTE
         // =========================
+
         texteLabel = new JLabel();
         texteLabel.setForeground(new Color(40, 40, 40));
         texteLabel.setHorizontalAlignment(SwingConstants.CENTER);
         texteLabel.setVerticalAlignment(SwingConstants.CENTER);
-        
-        // Ajustement des marges pour compenser l'ombre et centrer parfaitement
+
+        // Ajustement des marges pour compenser l'ombre
         texteLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 10));
 
         bulle.add(texteLabel, BorderLayout.CENTER);
@@ -107,6 +153,7 @@ public class IntroductionPanel extends JPanel {
         // =========================
         // BOUTON CONTINUER
         // =========================
+
         RoundedButton continuer = new RoundedButton("CONTINUER");
         continuer.setBounds(575, 520, 250, 65);
         continuer.setFont(new Font("SansSerif", Font.BOLD, 22));
@@ -124,6 +171,7 @@ public class IntroductionPanel extends JPanel {
         // =========================
         // BOUTON QUITTER
         // =========================
+
         RoundedButton quitter = new RoundedButton("QUITTER");
         quitter.setBounds(575, 605, 250, 45);
         quitter.setFont(new Font("SansSerif", Font.BOLD, 18));
@@ -141,42 +189,58 @@ public class IntroductionPanel extends JPanel {
         // =========================
         // ANIMATION TEXTE
         // =========================
+
         lancerAnimationTexte();
     }
 
+    /**
+     * Lance l’animation d’apparition progressive du texte.
+     */
     private void lancerAnimationTexte() {
+
         Timer timer = new Timer(20, null);
         final int[] index = { 0 };
 
         timer.addActionListener(e -> {
             if (index[0] < texte.length()) {
+
                 texteAffiche += texte.charAt(index[0]);
-                
+
                 String display = texteAffiche.replace("\n", "<br>");
-                
-                // Formatage dynamique
-                display = display.replace("LACUNA", "<span style='color: #8C00FF; font-weight: bold;'>LACUNA</span>");
-                display = display.replace("fleurs", "<span style='color: #0078FF; font-weight: bold;'>fleurs</span>");
-                display = display.replace("pions", "<span style='color: #FFB400; font-weight: bold;'>pions</span>");
-                display = display.replace("couleurs", "<span style='color: #FF3C3C; font-weight: bold;'>couleurs</span>");
-                
-                // Titre plus grand
+
+                display = display.replace("LACUNA",
+                        "<span style='color: #8C00FF; font-weight: bold;'>LACUNA</span>");
+
+                display = display.replace("fleurs",
+                        "<span style='color: #0078FF; font-weight: bold;'>fleurs</span>");
+
+                display = display.replace("pions",
+                        "<span style='color: #FFB400; font-weight: bold;'>pions</span>");
+
+                display = display.replace("couleurs",
+                        "<span style='color: #FF3C3C; font-weight: bold;'>couleurs</span>");
+
                 if (display.contains("LACUNA.")) {
-                    display = display.replace("BIENVENUE DANS <span style='color: #8C00FF; font-weight: bold;'>LACUNA</span>.", 
-                        "<div style='font-size: 28px; margin-bottom: 15px; color: #000000;'>BIENVENUE DANS <span style='color: #8C00FF;'>LACUNA</span></div>");
+                    display = display.replace(
+                            "BIENVENUE DANS <span style='color: #8C00FF; font-weight: bold;'>LACUNA</span>.",
+                            "<div style='font-size: 28px; margin-bottom: 15px; color: #000000;'>"
+                                    + "BIENVENUE DANS <span style='color: #8C00FF;'>LACUNA</span></div>");
                 }
 
-                // Supprimé width fixe pour laisser Swing gérer le centrage automatique via BorderLayout.CENTER
-                String html = "<html><div style='text-align: center; font-family: \"Segoe UI\", \"SansSerif\"; font-size: 19px; line-height: 1.5;'>"
-                        + display
-                        + "</div></html>";
+                String html =
+                        "<html><div style='text-align: center; font-family: \"Segoe UI\", \"SansSerif\"; "
+                                + "font-size: 19px; line-height: 1.5;'>"
+                                + display
+                                + "</div></html>";
 
                 texteLabel.setText(html);
                 index[0]++;
+
             } else {
                 timer.stop();
             }
         });
+
         timer.start();
     }
 }

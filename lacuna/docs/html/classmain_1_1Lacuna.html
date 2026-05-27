@@ -96,7 +96,15 @@ $(function(){initNavTree('classmain_1_1Lacuna.html','','classmain_1_1Lacuna-memb
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:ab9a23351dfaedca9be5d93fbefe8d7df" id="r_ab9a23351dfaedca9be5d93fbefe8d7df"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab9a23351dfaedca9be5d93fbefe8d7df">main</a> (String[] args)</td></tr>
 </table>
-<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>------------------&mdash; LACUNA -----------------------&mdash; //</p>
+<p>Point d'entrée principal du jeu <a class="el" href="classmain_1_1Lacuna.html">Lacuna</a>.</p>
+<p>Cette classe permet :</p><ul>
+<li>de choisir le mode de jeu (graphique ou textuel)</li>
+<li>d'initialiser l'interface correspondante</li>
+<li>de lancer l'application </li>
+</ul>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
 <a id="ab9a23351dfaedca9be5d93fbefe8d7df" name="ab9a23351dfaedca9be5d93fbefe8d7df"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab9a23351dfaedca9be5d93fbefe8d7df">&#9670;&#160;</a></span>main()</h2>
 
@@ -119,6 +127,22 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>------------------&mdash; POINT D'ENTRÉE -----------------------&mdash; //</p>
+<p>Méthode principale du programme.</p>
+<p>Arguments possibles :</p><ul>
+<li>"graphique" : lance l'interface graphique</li>
+<li>"textuel" : lance l'interface textuelle</li>
+</ul>
+<p>Si aucun argument n'est fourni, le mode défini dans <code><a class="el" href="classglobal_1_1Configuration.html">Configuration</a></code> est utilisé.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">args</td><td>Arguments de lancement </td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Swing s'exécute dans un thread séparé.</p>
+<p>En aucun cas il ne faut accéder directement aux composants graphiques depuis le thread principal.</p>
+<p>Swing fournit la méthode invokeLater() pour exécuter le Runnable dans le thread graphique.</p>
 
 </div>
 </div>

@@ -104,7 +104,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ac87c10806eaf6ff3f79acfd439c3dc93" id="r_ac87c10806eaf6ff3f79acfd439c3dc93"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac87c10806eaf6ff3f79acfd439c3dc93">mouseReleased</a> (MouseEvent e)</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Traduit les clics du plateau graphique en actions de jeu humain. </p>
+<div class="textblock"><p>------------------&mdash; ÉCOUTEUR SOURIS -----------------------&mdash; //</p>
+<p>Gère les interactions souris avec le plateau graphique.</p>
+<p>Cette classe traduit les clics du joueur en actions de jeu. </p>
 </div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a52e2fdeeeda39ef0469cb81f1c5d9d9c" name="a52e2fdeeeda39ef0469cb81f1c5d9d9c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a52e2fdeeeda39ef0469cb81f1c5d9d9c">&#9670;&#160;</a></span>EcouteurDeSouris()</h2>
@@ -120,10 +122,10 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Branche l'écouteur sur la vue de jeu.</p>
+<p>Crée un écouteur souris.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">jeuGraphique</td><td>vue qui reçoit les clics du joueur. </td></tr>
+    <tr><td class="paramname">jeuGraphique</td><td>Vue graphique associée </td></tr>
   </table>
   </dd>
 </dl>
@@ -145,10 +147,10 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Gère le clic principal d'un tour humain.</p>
+<p>Gère le clic souris principal.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">e</td><td>événement souris reçu par Swing. </td></tr>
+    <tr><td class="paramname">e</td><td>Événement souris </td></tr>
   </table>
   </dd>
 </dl>
@@ -169,6 +171,13 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Gère le relâchement du clic souris.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">e</td><td>Événement souris </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

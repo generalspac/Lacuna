@@ -1,3 +1,7 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/UnitTests/JUnit5TestClass.java to edit this template
+ */
 package testsmodel;
 
 import java.io.File;
@@ -17,8 +21,11 @@ import model.Jeu;
 import model.Joueur;
 import model.Pion;
 
+/**
+ * Tests unitaires et d'intégration pour la gestion de l'historique du jeu.
+ * Vérifie les mécanismes d'undo/redo, sauvegarde/chargement et invariants associés.
+ */
 public class TestsHistorique {
-
 
     private Jeu jeu;
     private File fichierTemp;
@@ -45,8 +52,11 @@ public class TestsHistorique {
         }
     }
 
-    // ------------------ ENREGISTREMENT D'ACTIONS ------------------ // 
+    // ------------------ ENREGISTREMENT D'ACTIONS ------------------ //
 
+    /**
+     * Vérifie qu'un enregistrement d'action ajoute bien une entrée dans la pile undo.
+     */
     @Test
     void enregistrerActionAjouteDansUndoStack() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -64,6 +74,9 @@ public class TestsHistorique {
         });
     }
 
+    /**
+     * Vérifie que l'enregistrement d'une action vide la pile redo.
+     */
     @Test
     void enregistrerActionVideRedoStack() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -84,6 +97,9 @@ public class TestsHistorique {
         });
     }
 
+    /**
+     * Vérifie l'enregistrement d'une action d'avantage dans la pile undo.
+     */
     @Test
     void enregistrerActionAvantageAjouteDansUndoStack() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -104,6 +120,9 @@ public class TestsHistorique {
 
     // ------------------------- UNDO ------------------------- //
 
+    /**
+     * Vérifie le message lorsque l'undo est appelé sur une pile vide.
+     */
     @Test
     void undoSurStackVideAfficheMessage() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -113,6 +132,9 @@ public class TestsHistorique {
         });
     }
 
+    /**
+     * Vérifie que l'undo retire correctement un pion du plateau.
+     */
     @Test
     void undoRetirePionDuPlateau() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -138,22 +160,21 @@ public class TestsHistorique {
             Joueur joueur = jeu.getJoueurs()[0];
             jeu.jouerCoup(joueur, pion, new Coordonnees(400, 400), f1, f2);
 
-            // Pion posé et fleurs collectées
             assertNotNull(pion.getPosition());
 
             jeu.undo();
 
-            // Pion retiré
             assertNull(pion.getPosition());
-            // Fleurs remises sur le plateau
             assertTrue(jeu.getFleurs().contains(f1));
             assertTrue(jeu.getFleurs().contains(f2));
-            // Fleurs retirées du joueur
             assertFalse(joueur.getFleursGagnees().contains(f1));
             assertFalse(joueur.getFleursGagnees().contains(f2));
         });
     }
 
+    /**
+     * Vérifie que l'undo transfère correctement une action vers la pile redo.
+     */
     @Test
     void undoDeplaceLActionDansRedoStack() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -179,10 +200,13 @@ public class TestsHistorique {
         });
     }
 
+    /**
+     * Vérifie que l'undo d'un avantage remet le jeu en phase de sélection.
+     */
     @Test
     void undoAvantageRemetEnPhaseSelection() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
-            jeu.reset(); // retour en phase avantage
+            jeu.reset();
             Fleur fleur = jeu.getFleurs().get(0);
             jeu.appliquerAvantageAvecFleur(fleur);
 
@@ -198,6 +222,9 @@ public class TestsHistorique {
 
     // ------------------------- REDO ------------------------ //
 
+    /**
+     * Vérifie le message lorsque le redo est appelé sur une pile vide.
+     */
     @Test
     void redoSurStackVideAfficheMessage() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -207,6 +234,9 @@ public class TestsHistorique {
         });
     }
 
+    /**
+     * Vérifie la restauration correcte d'un pion et des fleurs lors du redo.
+     */
     @Test
     void redoReplacePionEtRedonneFleurs() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -239,6 +269,9 @@ public class TestsHistorique {
         });
     }
 
+    /**
+     * Vérifie la cohérence des stacks après undo/redo.
+     */
     @Test
     void redoDeplaceLActionDansUndoStack() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -269,6 +302,9 @@ public class TestsHistorique {
 
     // ----------------------- CLEAR ---------------------------
 
+    /**
+     * Vérifie que clear vide bien les deux piles.
+     */
     @Test
     void clearVideLesDeuxtacks() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
@@ -278,6 +314,7 @@ public class TestsHistorique {
             Fleur f = new Fleur(Fleur.TypeFleur.ROUGE, new Coordonnees(100, 100));
 
             h.enregistrerAction(p, f, null, joueur);
+
             assertFalse(h.getUndoStack().isEmpty());
 
             h.clear();
@@ -289,12 +326,13 @@ public class TestsHistorique {
 
     // -------------- SAUVEGARDE et CHARGEMENT ------------------- //
 
+    /**
+     * Vérifie la cohérence du nombre de pions après sauvegarde/chargement.
+     */
     @Test
     void sauvegardeEtChargementConserventNombrePions() {
         assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
             String chemin = fichierTemp.getAbsolutePath();
-
-            // Jouer quelques coups pour avoir un état non trivial
             preparerEtatPourSauvegarde(jeu);
 
             int nbPionsAvant = jeu.getPions().size();
@@ -307,6 +345,9 @@ public class TestsHistorique {
         });
     }
 
+    /**
+     * Vérifie la cohérence du nombre de fleurs après sauvegarde/chargement.
+     */
     @Test
     void sauvegardeEtChargementConserventNombreFleursPlateau() {
         assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
@@ -323,6 +364,9 @@ public class TestsHistorique {
         });
     }
 
+    /**
+     * Vérifie la conservation de l'index du joueur courant.
+     */
     @Test
     void sauvegardeEtChargementConserventIndexJoueurActuel() {
         assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
@@ -339,6 +383,9 @@ public class TestsHistorique {
         });
     }
 
+    /**
+     * Vérifie la conservation des scores des joueurs après chargement.
+     */
     @Test
     void sauvegardeEtChargementConserventScoresJoueurs() {
         assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
@@ -347,6 +394,7 @@ public class TestsHistorique {
 
             int score0Avant = jeu.getJoueurs()[0].getScoreTotal();
             int score1Avant = jeu.getJoueurs()[1].getScoreTotal();
+
             jeu.sauvegarderPartie(chemin);
 
             Jeu jeu2 = jeuLarge();
@@ -357,6 +405,9 @@ public class TestsHistorique {
         });
     }
 
+    /**
+     * Vérifie la conservation de la taille de la pile undo après sauvegarde/chargement.
+     */
     @Test
     void sauvegardeEtChargementConserventUndoStack() {
         assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
@@ -373,16 +424,21 @@ public class TestsHistorique {
         });
     }
 
+    /**
+     * Vérifie qu'un fichier inexistant ne provoque pas de crash.
+     */
     @Test
     void chargementFichierInexistantNePlantePas() {
         assertTimeoutPreemptively(Duration.ofSeconds(2), () -> {
-            // Doit terminer sans exception (erreur loggée en interne)
             assertDoesNotThrow(() -> jeu.chargerPartie("/fichier/qui/nexiste/pas.txt"));
         });
     }
 
     // ------------- UNDO APRES CHARGEMENT --------------------- //
 
+    /**
+     * Vérifie que l'undo fonctionne après chargement.
+     */
     @Test
     void undoFonctionneApresChargement() {
         assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
@@ -397,25 +453,19 @@ public class TestsHistorique {
 
             if (!jeu2.getHistorique().getUndoStack().isEmpty()) {
                 jeu2.undo();
-                // Après undo, le score ne peut qu'être ≤ à avant
                 assertTrue(jeu2.getJoueurs()[0].getScoreTotal() <= scoreAvantUndo);
             }
         });
     }
 
-
     /**
-     * Joue un coup valide sur le jeu fourni pour préparer un état de partie avancé,
-     * avec des éléments sur le plateau et dans les mains des joueurs,
-     * ainsi qu'un historique d'actions
-     * (au moins un pion placé et deux fleurs collectées).
+     * Prépare un état de jeu avancé pour les tests de sauvegarde/chargement.
      */
     private void preparerEtatPourSauvegarde(Jeu jeu) {
         jeu.getFleurs().clear();
         jeu.getPions().clear();
         jeu.getHistorique().clear();
 
-        // Créer deux paires de fleurs
         Fleur fa1 = new Fleur(Fleur.TypeFleur.ROUGE, new Coordonnees(360, 400));
         Fleur fa2 = new Fleur(Fleur.TypeFleur.ROUGE, new Coordonnees(440, 400));
         Fleur fb1 = new Fleur(Fleur.TypeFleur.BLEUE, new Coordonnees(360, 350));
@@ -425,11 +475,9 @@ public class TestsHistorique {
         jeu.getFleurs().add(fb1);
         jeu.getFleurs().add(fb2);
 
-        // Créer les pions
         for (int i = 0; i < 6; i++) jeu.getPions().add(new Pion(Pion.TypePion.OR, null));
         for (int i = 0; i < 6; i++) jeu.getPions().add(new Pion(Pion.TypePion.ARGENT, null));
 
-        // Jouer un coup avec le joueur 0
         Joueur joueur = jeu.getJoueurs()[0];
         Pion pion = jeu.getPionLibre(Pion.TypePion.OR);
         jeu.jouerCoup(joueur, pion, new Coordonnees(400, 400), fa1, fa2);

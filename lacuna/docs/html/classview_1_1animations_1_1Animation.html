@@ -104,7 +104,14 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:adf32a0637c5dab202aec0016ce0ce576" id="r_adf32a0637c5dab202aec0016ce0ce576"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adf32a0637c5dab202aec0016ce0ce576">animerFleursVersScore</a> (<a class="el" href="classmodel_1_1Fleur.html">Fleur</a>[] fleursAnimees, <a class="el" href="classmodel_1_1Joueur.html">Joueur</a> joueur, Runnable fin)</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Orchestre toutes les animations visuelles du jeu. </p>
+<div class="textblock"><p>------------------&mdash; GESTIONNAIRE D'ANIMATIONS -----------------------&mdash; //</p>
+<p>Orchestre toutes les animations visuelles du jeu.</p>
+<p>Cette classe centralise :</p><ul>
+<li>les animations IA</li>
+<li>les animations de victoire</li>
+<li>les animations de transition de phase</li>
+<li>les animations des fleurs vers le score </li>
+</ul>
 </div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="ae76e8c69b4dfd3be8ab0d970afb8d4db" name="ae76e8c69b4dfd3be8ab0d970afb8d4db"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae76e8c69b4dfd3be8ab0d970afb8d4db">&#9670;&#160;</a></span>Animation()</h2>
@@ -124,6 +131,14 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Initialise le gestionnaire d’animations.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">view</td><td>Vue principale du jeu </td></tr>
+    <tr><td class="paramname">ctx</td><td>Contexte partagé des animations </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -142,6 +157,7 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Anime le placement automatique d’un avantage IA. </p>
 
 </div>
 </div>
@@ -168,6 +184,15 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Anime des fleurs vers la zone de score d’un joueur.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">fleursAnimees</td><td>Fleurs à animer </td></tr>
+    <tr><td class="paramname">joueur</td><td><a class="el" href="classmodel_1_1Joueur.html">Joueur</a> recevant les points </td></tr>
+    <tr><td class="paramname">fin</td><td>Callback exécuté à la fin de toutes les animations </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -185,6 +210,13 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Lance l’animation de victoire.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">generation</td><td>Génération actuelle de l’animation </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -202,10 +234,11 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Anime le coup choisi par l'IA, puis laisse la vue décider si un autre tour IA doit suivre.</p>
+<p>Anime le coup choisi par l’IA.</p>
+<p>Une fois l’animation terminée, la vue peut décider si un autre tour IA doit être joué.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">coup</td><td>coup calculé par l'IA, ou <code class="JavaDocCode">null</code> si elle doit jouer le coup de secours. </td></tr>
+    <tr><td class="paramname">coup</td><td>Coup calculé par l’IA ou null pour un coup de secours </td></tr>
   </table>
   </dd>
 </dl>
@@ -226,6 +259,8 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Retourne l’état actuel des animations.</p>
+<dl class="section return"><dt>Returns</dt><dd>État courant </dd></dl>
 
 </div>
 </div>
@@ -243,6 +278,8 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Lance l’animation de transition vers la seconde phase.</p>
+<dl class="section return"><dt>Returns</dt><dd>true si l’animation démarre </dd></dl>
 
 </div>
 </div>
@@ -260,6 +297,13 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Modifie l’état actuel des animations.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">s</td><td>Nouvel état </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

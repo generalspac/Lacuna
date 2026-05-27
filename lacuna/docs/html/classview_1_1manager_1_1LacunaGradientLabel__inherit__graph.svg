@@ -11,7 +11,7 @@
 <!-- Node1 -->
 <g id="Node000001" class="node">
 <title>Node1</title>
-<g id="a_Node000001"><a xlink:title=" ">
+<g id="a_Node000001"><a xlink:title="JLabel personnalisé avec rendu de texte en dégradé et effet lumineux.">
 <polygon fill="#999999" stroke="transparent" points="158,-75 0,-75 0,0 158,0 158,-75"/>
 <text text-anchor="start" x="5" y="-62.5" font-family="Helvetica,sans-Serif" font-size="10.00">view.manager.LacunaGradient</text>
 <text text-anchor="start" x="65.5" y="-51.5" font-family="Helvetica,sans-Serif" font-size="10.00">Label</text>

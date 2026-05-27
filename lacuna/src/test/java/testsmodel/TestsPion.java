@@ -1,7 +1,8 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/UnitTests/JUnit5TestClass.java to edit this template
+/**
+ * @file TestsPion.java
+ * @brief Tests unitaires pour la classe Pion.
  */
+
 package testsmodel;
 
 import model.Coordonnees;
@@ -14,11 +15,14 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- *
- * @author thsba
+ * @class TestsPion
+ * @brief Ensemble de tests unitaires pour vérifier le comportement des pions.
  */
 public class TestsPion {
     
+    /**
+     * @brief Constructeur de la classe de test.
+     */
     public TestsPion() {
     }
     
@@ -38,15 +42,13 @@ public class TestsPion {
     public void tearDown() {
     }
 
-    // TODO add test methods here.
-    // The methods must be annotated with annotation @Test. For example:
-    //
-    // @Test
-    // public void hello() {}
-    
-    
+    // --------------------------------------------------------------------- //
+    // Tests Pion
+    // --------------------------------------------------------------------- //
 
-    // Tests pour Pion
+    /**
+     * @brief Vérifie que le constructeur initialise correctement le type et la position.
+     */
     @Test
     public void testPionConstructor() {
         Coordonnees pos = new Coordonnees(2, 3);
@@ -55,6 +57,9 @@ public class TestsPion {
         assertEquals(pos, p.getPosition());
     }
 
+    /**
+     * @brief Vérifie les setters de type et de position du pion.
+     */
     @Test
     public void testPionSetters() {
         Coordonnees pos1 = new Coordonnees(0, 0);
@@ -66,6 +71,9 @@ public class TestsPion {
         assertEquals(pos2, p.getPosition());
     }
 
+    /**
+     * @brief Vérifie la conversion du type de pion en caractère.
+     */
     @Test
     public void testPionTypePionToChar() {
         Coordonnees pos = new Coordonnees(0, 0);

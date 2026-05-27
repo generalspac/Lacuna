@@ -1,4 +1,3 @@
-
 package view.manager;
 
 import javax.swing.*;
@@ -7,9 +6,25 @@ import java.awt.font.TextAttribute;
 import java.awt.geom.Point2D;
 import java.text.AttributedString;
 
+/**
+ * \class LacunaGradientLabel
+ * \brief JLabel personnalisé avec rendu de texte en dégradé et effet lumineux.
+ *
+ * \details Ce composant Swing permet d’afficher un texte centré
+ *          avec un dégradé multicolore et un effet de glow.
+ */
 public class LacunaGradientLabel extends JLabel {
+
+    /**
+     * Texte enrichi avec attributs (police, espacement, etc.).
+     */
     private AttributedString attributedText;
 
+    /**
+     * Constructeur du label graphique avec dégradé.
+     *
+     * @param text texte à afficher
+     */
     public LacunaGradientLabel(String text) {
         super(text);
 
@@ -30,6 +45,11 @@ public class LacunaGradientLabel extends JLabel {
         setPreferredSize(new Dimension(800, 150));
     }
 
+    /**
+     * Dessine le label avec dégradé et effet lumineux.
+     *
+     * @param g contexte graphique Swing
+     */
     @Override
     protected void paintComponent(Graphics g) {
 
@@ -53,7 +73,6 @@ public class LacunaGradientLabel extends JLabel {
         int x = (getWidth() - textWidth) / 2;
         int y = getHeight() / 2 + fm.getAscent() / 3;
 
-        // Gradient
         float[] fractions = {
             0.0f,
             0.25f,
@@ -81,9 +100,9 @@ public class LacunaGradientLabel extends JLabel {
         );
 
         // Glow léger
-        g2d.setColor(new Color(255,255,255,30));
+        g2d.setColor(new Color(255, 255, 255, 30));
 
-        for(int i = 8; i >= 1; i--) {
+        for (int i = 8; i >= 1; i--) {
             g2d.setStroke(new BasicStroke(i));
             g2d.drawString(text, x, y);
         }

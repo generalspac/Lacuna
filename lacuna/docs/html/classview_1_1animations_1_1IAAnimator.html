@@ -98,7 +98,15 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ac2ecbb3fcc8e3e3d0ee6ba2e7cee064b" id="r_ac2ecbb3fcc8e3e3d0ee6ba2e7cee064b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac2ecbb3fcc8e3e3d0ee6ba2e7cee064b">animerAvantageIA</a> ()</td></tr>
 <tr class="memitem:a71282aa6a3d34c08baddd885314eaecd" id="r_a71282aa6a3d34c08baddd885314eaecd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a71282aa6a3d34c08baddd885314eaecd">animerPuisJouerCoupIA</a> (<a class="el" href="classmodel_1_1IA_1_1CoupIA.html">CoupIA</a> coup)</td></tr>
 </table>
-<a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>------------------&mdash; ANIMATEUR IA -----------------------&mdash; //</p>
+<p>Gère toutes les animations liées aux actions de l’intelligence artificielle.</p>
+<p>Cette classe orchestre :</p><ul>
+<li>les animations de coups IA</li>
+<li>les animations d’avantage initial</li>
+<li>les transitions visuelles associées </li>
+</ul>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="aee10638f202bb6b2c5dcdfd14f62ee9c" name="aee10638f202bb6b2c5dcdfd14f62ee9c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aee10638f202bb6b2c5dcdfd14f62ee9c">&#9670;&#160;</a></span>IAAnimator()</h2>
 
@@ -127,6 +135,16 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Initialise l’animateur IA.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">view</td><td>Vue principale du jeu </td></tr>
+    <tr><td class="paramname">ctx</td><td>Contexte des animations </td></tr>
+    <tr><td class="paramname">animation</td><td>Gestionnaire principal </td></tr>
+    <tr><td class="paramname">phase2Animator</td><td>Animateur de phase 2 </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -145,6 +163,7 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Anime le choix d’avantage initial effectué par l’IA. </p>
 
 </div>
 </div>
@@ -162,6 +181,13 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Anime un coup joué par l’IA.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">coup</td><td>Coup calculé par l’IA </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

@@ -91,6 +91,9 @@ $(function(){initNavTree('classview_1_1JeuTutoriel.html','','classview_1_1JeuTut
   <div class="headertitle"><div class="title">view.JeuTutoriel Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Version tutorielle du jeu avec progression guidée.  
+ <a href="#details">More...</a></p>
 <div class="dynheader">
 Inheritance diagram for view.JeuTutoriel:</div>
 <div class="dyncontent">
@@ -164,7 +167,15 @@ Additional Inherited Members</h2></td></tr>
 <tr class="inherit_header pub_attribs_classview_1_1JeuGraphique"><td colspan="2" onclick="javascript:dynsection.toggleInherit('pub_attribs_classview_1_1JeuGraphique')"><span class="dynarrow"><span class="arrowhead closed"></span></span>Public Attributes inherited from <a class="el" href="classview_1_1JeuGraphique.html">view.JeuGraphique</a></td></tr>
 <tr class="memitem:a36e565244de6e67d7e3d5c23ef4b3e0a inherit pub_attribs_classview_1_1JeuGraphique" id="r_a36e565244de6e67d7e3d5c23ef4b3e0a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classmodel_1_1Jeu.html">Jeu</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classview_1_1JeuGraphique.html#a36e565244de6e67d7e3d5c23ef4b3e0a">jeu</a></td></tr>
 </table>
-<a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Version tutorielle du jeu avec progression guidée. </p>
+<p>Cette classe hérite de <a class="el" href="classview_1_1JeuGraphique.html">JeuGraphique</a> et impose un déroulement pas-à-pas pour apprendre les mécaniques du jeu :</p><ul>
+<li>sélection de fleurs</li>
+<li>validation de paires</li>
+<li>placement de pion</li>
+<li>gestion des erreurs </li>
+</ul>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a704d773687036ba2bc97059da6a75cf8" name="a704d773687036ba2bc97059da6a75cf8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a704d773687036ba2bc97059da6a75cf8">&#9670;&#160;</a></span>JeuTutoriel()</h2>
 
@@ -188,6 +199,15 @@ Additional Inherited Members</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Constructeur du tutoriel.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">frame</td><td>fenêtre principale </td></tr>
+    <tr><td class="paramname">overlay</td><td>overlay d’instructions </td></tr>
+    <tr><td class="paramname">quitterAction</td><td>action de sortie </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -214,6 +234,8 @@ Additional Inherited Members</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Retourne la fleur à mettre en évidence selon l’étape.</p>
+<dl class="section return"><dt>Returns</dt><dd>fleur highlightée </dd></dl>
 
 <p>Reimplemented from <a class="el" href="classview_1_1JeuGraphique.html#a9008a2ba54a09b8d332dfb880f303f40">view.JeuGraphique</a>.</p>
 
@@ -290,6 +312,7 @@ Additional Inherited Members</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Lance le tutoriel. </p>
 
 </div>
 </div>

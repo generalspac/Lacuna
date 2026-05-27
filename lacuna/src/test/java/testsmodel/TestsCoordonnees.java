@@ -37,13 +37,10 @@ public class TestsCoordonnees {
     public void tearDown() {
     }
 
-    // TODO add test methods here.
-    // The methods must be annotated with annotation @Test. For example:
-    //
-    // @Test
-    // public void hello() {}
-    
-    // Tests pour Coordonnees
+    /**
+     * Test du constructeur de la classe Coordonnees.
+     * Vérifie que les valeurs x et y sont correctement initialisées.
+     */
     @Test
     public void testCoordonneesConstructor() {
         Coordonnees c = new Coordonnees(5, 10);
@@ -51,6 +48,10 @@ public class TestsCoordonnees {
         assertEquals(10, c.getY());
     }
 
+    /**
+     * Test des setters de la classe Coordonnees.
+     * Vérifie que les valeurs x et y sont correctement modifiées.
+     */
     @Test
     public void testCoordonneesSetters() {
         Coordonnees c = new Coordonnees(0, 0);
@@ -60,6 +61,10 @@ public class TestsCoordonnees {
         assertEquals(7, c.getY());
     }
 
+    /**
+     * Test de la méthode equals de Coordonnees.
+     * Vérifie l'égalité entre objets et les cas négatifs.
+     */
     @Test
     public void testCoordonneesEquals() {
         Coordonnees c1 = new Coordonnees(1, 2);
@@ -71,6 +76,10 @@ public class TestsCoordonnees {
         assertFalse(c1.equals("string"));
     }
 
+    /**
+     * Test de la méthode hashCode de Coordonnees.
+     * Vérifie la cohérence entre objets égaux.
+     */
     @Test
     public void testCoordonneesHashCode() {
         Coordonnees c1 = new Coordonnees(1, 2);
@@ -78,6 +87,10 @@ public class TestsCoordonnees {
         assertEquals(c1.hashCode(), c2.hashCode());
     }
 
+    /**
+     * Test de la méthode compareTo de Coordonnees.
+     * Vérifie l'ordre naturel des coordonnées.
+     */
     @Test
     public void testCoordonneesCompareTo() {
         Coordonnees c1 = new Coordonnees(1, 2);

@@ -113,7 +113,11 @@ Public Attributes</h2></td></tr>
 <tr class="memitem:a8b6d74a2b3c1edafc31997338107d2bb" id="r_a8b6d74a2b3c1edafc31997338107d2bb"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8b6d74a2b3c1edafc31997338107d2bb">fleur2Y</a></td></tr>
 <tr class="memitem:afc840f7904e3d747309c6b6bb7802df2" id="r_afc840f7904e3d747309c6b6bb7802df2"><td class="memItemLeft" align="right" valign="top">boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afc840f7904e3d747309c6b6bb7802df2">fleur2Null</a></td></tr>
 </table>
-<a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>------------------&mdash; COUP RÉSEAU -----------------------&mdash; //</p>
+<p>Représente un message échangé entre l'hôte et l'invité lors d'une partie réseau.</p>
+<p>Cette classe est sérialisable afin de pouvoir être transmise via les sockets Java. </p>
+</div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
 <a id="a9ff094d03da788fa8bba900f86574657" name="a9ff094d03da788fa8bba900f86574657"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9ff094d03da788fa8bba900f86574657">&#9670;&#160;</a></span>fleur1X</h2>
 
@@ -125,6 +129,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Position X de la première fleur. </p>
 
 </div>
 </div>
@@ -139,6 +144,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Position Y de la première fleur. </p>
 
 </div>
 </div>
@@ -153,6 +159,8 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Indique si la seconde fleur est absente.</p>
+<p>Utilisé notamment lors d'un avantage initial. </p>
 
 </div>
 </div>
@@ -167,6 +175,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Position X de la seconde fleur. </p>
 
 </div>
 </div>
@@ -181,6 +190,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Position Y de la seconde fleur. </p>
 
 </div>
 </div>
@@ -195,6 +205,8 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Indique si l'hôte commence la partie.</p>
+<p>true = OR commence false = ARGENT commence </p>
 
 </div>
 </div>
@@ -209,6 +221,8 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Indique si aucun pion n'est joué.</p>
+<p>Utilisé pour les avantages. </p>
 
 </div>
 </div>
@@ -223,6 +237,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Position X du pion. </p>
 
 </div>
 </div>
@@ -237,6 +252,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Position Y du pion. </p>
 
 </div>
 </div>
@@ -251,6 +267,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Type de la première fleur. </p>
 
 </div>
 </div>
@@ -265,6 +282,7 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Type de la seconde fleur. </p>
 
 </div>
 </div>
@@ -279,6 +297,13 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Type du message réseau.</p>
+<p>Valeurs possibles :</p><ul>
+<li>INIT</li>
+<li>AVANTAGE</li>
+<li>COUP</li>
+<li>ABANDON </li>
+</ul>
 
 </div>
 </div>
@@ -293,6 +318,12 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Type du pion joué.</p>
+<p>Valeurs possibles :</p><ul>
+<li>OR</li>
+<li>ARGENT</li>
+</ul>
+<p>Peut être null pour un avantage. </p>
 
 </div>
 </div>

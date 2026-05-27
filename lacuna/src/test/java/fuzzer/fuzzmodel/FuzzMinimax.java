@@ -10,8 +10,17 @@ import model.IA.EtatJeu;
 import model.IA.EvaluateurJeu;
 import model.IA.Minimax;
 
+/**
+ * Fuzzer destiné à tester la robustesse de l'algorithme Minimax
+ * ainsi que la génération de coups IA dans des états de jeu aléatoires.
+ */
 public class FuzzMinimax {
 
+    /**
+     * Point d'entrée du fuzzing.
+     * Génère un état de jeu aléatoire puis exécute Minimax
+     * afin de détecter des erreurs potentielles (NaN, null, incohérences).
+     */
     public static void fuzzerTestOneInput(FuzzedDataProvider data) {
 
         // Mise en place d'un jeu dans un cercle aléatoire

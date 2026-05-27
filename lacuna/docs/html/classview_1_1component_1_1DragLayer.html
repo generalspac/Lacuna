@@ -111,7 +111,15 @@ Public Member Functions</h2></td></tr>
 Protected Member Functions</h2></td></tr>
 <tr class="memitem:a2b52e0bffb5ac0f5750c378e57b4c34a" id="r_a2b52e0bffb5ac0f5750c378e57b4c34a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2b52e0bffb5ac0f5750c378e57b4c34a">paintComponent</a> (Graphics g)</td></tr>
 </table>
-<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>-------------------&mdash; DRAG LAYER ---------------------&mdash; //</p>
+<p>Couche graphique utilisée pour :</p><ul>
+<li>le drag &amp; drop visuel</li>
+<li>les animations de déplacement d’images</li>
+<li>les effets visuels temporaires</li>
+</ul>
+<p>Cette couche est généralement utilisée comme GlassPane au-dessus de l’interface. </p>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
 <a id="a6977f8e7d73cc5908b12e98d1fc15390" name="a6977f8e7d73cc5908b12e98d1fc15390"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6977f8e7d73cc5908b12e98d1fc15390">&#9670;&#160;</a></span>animateImage()</h2>
 
@@ -150,6 +158,18 @@ Protected Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Lance une animation de déplacement d’image.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">img</td><td>Image animée </td></tr>
+    <tr><td class="paramname">start</td><td>Point de départ </td></tr>
+    <tr><td class="paramname">end</td><td>Point d’arrivée </td></tr>
+    <tr><td class="paramname">durationMs</td><td>Durée de l’animation </td></tr>
+    <tr><td class="paramname">size</td><td>Taille d’affichage </td></tr>
+    <tr><td class="paramname">onDone</td><td>Action exécutée à la fin </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -167,6 +187,7 @@ Protected Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Annule toutes les animations actives. </p>
 
 </div>
 </div>
@@ -184,6 +205,7 @@ Protected Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Réinitialise complètement le drag visuel. </p>
 
 </div>
 </div>
@@ -201,6 +223,8 @@ Protected Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Retourne l’objet transporté.</p>
+<dl class="section return"><dt>Returns</dt><dd>Objet du drag </dd></dl>
 
 </div>
 </div>
@@ -218,6 +242,8 @@ Protected Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Indique si des animations sont actuellement actives.</p>
+<dl class="section return"><dt>Returns</dt><dd>true si au moins une animation existe </dd></dl>
 
 </div>
 </div>
@@ -243,6 +269,13 @@ Protected Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Dessine toutes les animations ainsi que le drag visuel.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">g</td><td>Contexte graphique </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -269,6 +302,15 @@ Protected Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Démarre un drag visuel.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">img</td><td>Image déplacée </td></tr>
+    <tr><td class="paramname">payload</td><td>Objet associé </td></tr>
+    <tr><td class="paramname">p</td><td>Position initiale </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -286,6 +328,13 @@ Protected Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Met à jour la position de la souris.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">p</td><td>Nouvelle position </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

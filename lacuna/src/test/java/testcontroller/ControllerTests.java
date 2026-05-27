@@ -1,5 +1,5 @@
 package testcontroller;
-// import controller.EcouteurDeClavier;
+
 import controller.EcouteurDeSouris;
 import model.Jeu;
 import org.junit.jupiter.api.Test;
@@ -12,16 +12,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ControllerTests {
 
-    /*
-    @Test
-    void testEcouteurDeClavierNeLancePasException() {
-        EcouteurDeClavier listener = new EcouteurDeClavier();
-        KeyEvent event = new KeyEvent(new Button(), KeyEvent.KEY_PRESSED,
-                System.currentTimeMillis(), 0, KeyEvent.VK_ENTER, '\n');
-
-        assertDoesNotThrow(() -> listener.keyPressed(event));
-    }*/
-
+    /**
+     * Test de non-régression sur le comportement de l'écouteur de souris.
+     * Vérifie qu'un clic hors du cercle de jeu ne modifie pas l'état du modèle.
+     */
     @Test
     void testEcouteurDeSourisClicHorsCercleNeModifiePasLeJeu() {
 
@@ -51,11 +45,10 @@ public class ControllerTests {
         assertEquals(
                 initialPionCount,
                 game.getPions().size(),
-                "Un clic hors du cercle ne doit pas ajouter de pion"
+                "Un clic hors du cercle ne doit pas ajouter un pion"
         );
 
         assertNull(game.getFleurSelectionnee1());
-
         assertNull(game.getFleurSelectionnee2());
     }
 }

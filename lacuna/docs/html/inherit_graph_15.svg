@@ -20,7 +20,7 @@
 <!-- Node1 -->
 <g id="Node000001" class="node">
 <title>Node1</title>
-<g id="a_Node000001"><a xlink:href="classview_1_1IntroductionPanel.html" target="_top" xlink:title=" ">
+<g id="a_Node000001"><a xlink:href="classview_1_1IntroductionPanel.html" target="_top" xlink:title="Panneau d’introduction / tutoriel du jeu LACUNA.">
 <polygon fill="white" stroke="#666666" points="219,-204 92,-204 92,-185 219,-185 219,-204"/>
 <text text-anchor="middle" x="155.5" y="-192" font-family="Helvetica,sans-Serif" font-size="10.00">view.IntroductionPanel</text>
 </a>
@@ -38,7 +38,7 @@
 <!-- Node3 -->
 <g id="Node000003" class="node">
 <title>Node3</title>
-<g id="a_Node000003"><a xlink:href="classview_1_1TutorialOverlay.html" target="_top" xlink:title=" ">
+<g id="a_Node000003"><a xlink:href="classview_1_1TutorialOverlay.html" target="_top" xlink:title="Interface d’affichage du tutoriel en surimpression.">
 <polygon fill="white" stroke="#666666" points="213.5,-130 97.5,-130 97.5,-111 213.5,-111 213.5,-130"/>
 <text text-anchor="middle" x="155.5" y="-118" font-family="Helvetica,sans-Serif" font-size="10.00">view.TutorialOverlay</text>
 </a>

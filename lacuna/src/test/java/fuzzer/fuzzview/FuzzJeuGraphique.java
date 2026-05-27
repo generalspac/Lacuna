@@ -10,8 +10,17 @@ import view.CoordonneeConverter;
 import view.animations.AnimationContext;
 import view.animations.AnimationState;
 
+/**
+ * Fuzzer destiné à tester la robustesse des conversions graphiques,
+ * des animations et des interactions visuelles du jeu.
+ */
 public class FuzzJeuGraphique {
 
+    /**
+     * Point d'entrée du fuzzing.
+     * Vérifie la cohérence des conversions model ↔ screen,
+     * des états d'animation et des interactions jeu/vue.
+     */
     public static void fuzzerTestOneInput(FuzzedDataProvider data) {
 
         // Construction du converter avec dimensions aléatoires
@@ -88,6 +97,7 @@ public class FuzzJeuGraphique {
         for (int i = 0; i < nbTransitions; i++) {
             AnimationState s = etats[data.consumeInt(0, etats.length - 1)];
             ctx.setState(s);
+
             // isEnCours() doit être cohérent avec l'état
             boolean attendu = (s != AnimationState.AUCUNE);
             if (ctx.isEnCours() != attendu) {
@@ -101,24 +111,29 @@ public class FuzzJeuGraphique {
         for (int i = 0; i < nbGen; i++) {
             derniereGen = ctx.nouvelleGeneration();
         }
+
         if (derniereGen != ctx.getGeneration()) {
             throw new RuntimeException("getGeneration() ne correspond pas à nouvelleGeneration()");
         }
+
         if (derniereGen > 0 && !ctx.estGenerationValide(derniereGen)) {
             throw new RuntimeException("estGenerationValide() faux pour la génération courante");
         }
 
         int genAvantReset = ctx.getGeneration();
         ctx.reset();
+
         if (ctx.estGenerationValide(genAvantReset) && genAvantReset > 0) {
             throw new RuntimeException("reset() n'a pas invalidé la génération précédente");
         }
+
         if (ctx.getState() != AnimationState.AUCUNE) {
             throw new RuntimeException("reset() n'a pas remis l'état à AUCUNE");
         }
 
         // ToucherFleur + jouerCoup
         Jeu jeu = new Jeu(800, 600, new Cercle(new Coordonnees(400, 300), 280));
+
         if (!jeu.getFleurs().isEmpty()) {
             jeu.appliquerAvantageAvecFleur(jeu.getFleurs().get(0));
         }
@@ -127,7 +142,6 @@ public class FuzzJeuGraphique {
         for (int i = 0; i < nbClics; i++) {
             int cx = data.consumeInt(100, 700);
             int cy = data.consumeInt(50, 550);
-            // toucherFleur ne doit jamais lever d'exception
             jeu.toucherFleur(new Coordonnees(cx, cy));
         }
 
@@ -152,7 +166,6 @@ public class FuzzJeuGraphique {
             }
         }
 
-        
         // Crash sentinelle
         if (rayon == 66666) {
             throw new RuntimeException("Crash sentinelle FuzzJeuGraphique");

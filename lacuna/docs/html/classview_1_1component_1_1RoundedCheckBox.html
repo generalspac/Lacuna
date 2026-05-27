@@ -106,7 +106,14 @@ Public Member Functions</h2></td></tr>
 Protected Member Functions</h2></td></tr>
 <tr class="memitem:a54b82c6ffd2db19b2137409eb44730bd" id="r_a54b82c6ffd2db19b2137409eb44730bd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a54b82c6ffd2db19b2137409eb44730bd">paintComponent</a> (Graphics g)</td></tr>
 </table>
-<a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Case à cocher personnalisée avec apparence de switch.</p>
+<p>Ce composant affiche :</p><ul>
+<li>un interrupteur arrondi,</li>
+<li>un effet de survol,</li>
+<li>un curseur mobile indiquant l'état activé/désactivé. </li>
+</ul>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a23845ca9949a8a12d5723714e082cd79" name="a23845ca9949a8a12d5723714e082cd79"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a23845ca9949a8a12d5723714e082cd79">&#9670;&#160;</a></span>RoundedCheckBox()</h2>
 
@@ -121,6 +128,27 @@ Protected Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Crée une case à cocher personnalisée.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">text</td><td>Texte affiché à droite du switch </td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Active l'effet de survol.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">e</td><td>Événement souris</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Désactive l'effet de survol.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">e</td><td>Événement souris</td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -139,6 +167,9 @@ Protected Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Retourne la taille préférée du composant.</p>
+<p>Un espace supplémentaire est ajouté afin de laisser la place au switch.</p>
+<dl class="section return"><dt>Returns</dt><dd>Taille préférée </dd></dl>
 
 </div>
 </div>
@@ -164,6 +195,18 @@ Protected Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Dessine le composant personnalisé.</p>
+<p>Cette méthode gère :</p><ul>
+<li>le fond du switch,</li>
+<li>le curseur mobile,</li>
+<li>le texte associé.</li>
+</ul>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">g</td><td>Contexte graphique </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

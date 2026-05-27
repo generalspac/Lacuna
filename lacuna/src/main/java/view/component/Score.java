@@ -8,7 +8,9 @@ import model.Pion;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+
 import java.util.*;
+
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -17,16 +19,49 @@ import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Polygon;
 
+/**
+ * Composant graphique affichant le score d'un joueur.
+ *
+ * Cette vue affiche :
+ * - le pion du joueur,
+ * - les fleurs collectées,
+ * - les majorités obtenues via une étoile.
+ */
 public class Score extends JComponent {
+
+    /**
+     * Image du pion du joueur.
+     */
     private Image pawnImage;
+
+    /**
+     * Images associées aux différents types de fleurs.
+     */
     private Map<Fleur.TypeFleur, Image> flowerImages;
+
+    /**
+     * Nombre de fleurs possédées par type.
+     */
     private Map<Fleur.TypeFleur, Integer> flowerCounts;
+
+    /**
+     * Type du joueur associé au score.
+     */
     private Pion.TypePion playerType;
 
+    /**
+     * Crée un composant de score pour un joueur.
+     *
+     * @param type Type du joueur
+     */
     public Score(Pion.TypePion type) {
+
         this.playerType = type;
+
         this.flowerImages = new HashMap<>();
+
         this.flowerCounts = new HashMap<>();
+
         setOpaque(false);
 
         loadImages();
@@ -36,40 +71,116 @@ public class Score extends JComponent {
         }
     }
 
+    /**
+     * Charge les images nécessaires à l'affichage.
+     */
     private void loadImages() {
+
         try {
-            String pawnFile = (playerType == Pion.TypePion.OR) ? "pion_or.png" : "pion_argent.png";
-            pawnImage = ImageIO.read(Configuration.ouvre(pawnFile));
 
-            flowerImages.put(Fleur.TypeFleur.ROUGE, ImageIO.read(Configuration.ouvre("fleur_rouge.png")));
-            flowerImages.put(Fleur.TypeFleur.BLEUE, ImageIO.read(Configuration.ouvre("fleur_bleue.png")));
-            flowerImages.put(Fleur.TypeFleur.JAUNE, ImageIO.read(Configuration.ouvre("fleur_jaune.png")));
-            flowerImages.put(Fleur.TypeFleur.VERTE, ImageIO.read(Configuration.ouvre("fleur_verte.png")));
-            flowerImages.put(Fleur.TypeFleur.ORANGE, ImageIO.read(Configuration.ouvre("fleur_orange.png")));
-            flowerImages.put(Fleur.TypeFleur.VIOLETTE, ImageIO.read(Configuration.ouvre("fleur_violette.png")));
-            flowerImages.put(Fleur.TypeFleur.ROSE, ImageIO.read(Configuration.ouvre("fleur_rose.png")));
+            String pawnFile =
+                    (playerType == Pion.TypePion.OR)
+                            ? "pion_or.png"
+                            : "pion_argent.png";
+
+            pawnImage = ImageIO.read(
+                    Configuration.ouvre(pawnFile)
+            );
+
+            flowerImages.put(
+                    Fleur.TypeFleur.ROUGE,
+                    ImageIO.read(Configuration.ouvre("fleur_rouge.png"))
+            );
+
+            flowerImages.put(
+                    Fleur.TypeFleur.BLEUE,
+                    ImageIO.read(Configuration.ouvre("fleur_bleue.png"))
+            );
+
+            flowerImages.put(
+                    Fleur.TypeFleur.JAUNE,
+                    ImageIO.read(Configuration.ouvre("fleur_jaune.png"))
+            );
+
+            flowerImages.put(
+                    Fleur.TypeFleur.VERTE,
+                    ImageIO.read(Configuration.ouvre("fleur_verte.png"))
+            );
+
+            flowerImages.put(
+                    Fleur.TypeFleur.ORANGE,
+                    ImageIO.read(Configuration.ouvre("fleur_orange.png"))
+            );
+
+            flowerImages.put(
+                    Fleur.TypeFleur.VIOLETTE,
+                    ImageIO.read(Configuration.ouvre("fleur_violette.png"))
+            );
+
+            flowerImages.put(
+                    Fleur.TypeFleur.ROSE,
+                    ImageIO.read(Configuration.ouvre("fleur_rose.png"))
+            );
+
         } catch (Exception e) {
-            Configuration.debugeurErreur("Erreur chargement images Score : " + e.getMessage());
+
+            Configuration.debugeurErreur(
+                    "Erreur chargement images Score : "
+                            + e.getMessage()
+            );
         }
     }
 
-    public void setFlowerCount(Fleur.TypeFleur type, int count) {
+    /**
+     * Définit le nombre de fleurs pour un type donné.
+     *
+     * @param type  Type de fleur
+     * @param count Nombre de fleurs
+     */
+    public void setFlowerCount(
+            Fleur.TypeFleur type,
+            int count
+    ) {
+
         flowerCounts.put(type, count);
+
         repaint();
     }
 
-    public void updateScore(Map<Fleur.TypeFleur, Integer> newCounts) {
+    /**
+     * Met à jour tous les scores affichés.
+     *
+     * @param newCounts Nouvelle répartition des fleurs
+     */
+    public void updateScore(
+            Map<Fleur.TypeFleur, Integer> newCounts
+    ) {
+
         for (Fleur.TypeFleur t : Fleur.TypeFleur.values()) {
-            flowerCounts.put(t, newCounts.getOrDefault(t, 0));
+
+            flowerCounts.put(
+                    t,
+                    newCounts.getOrDefault(t, 0)
+            );
         }
+
         repaint();
     }
 
+    /**
+     * Dessine une étoile indiquant une majorité.
+     *
+     * @param g2      Contexte graphique
+     * @param centerX Position X du centre
+     * @param centerY Position Y du centre
+     * @param radius  Rayon de l'étoile
+     */
     private void dessinerEtoile(
             Graphics2D g2,
             int centerX,
             int centerY,
-            int radius) {
+            int radius
+    ) {
 
         int branches = 5;
 
@@ -79,13 +190,20 @@ public class Score extends JComponent {
 
             double angle = Math.PI / branches * i;
 
-            int r = (i % 2 == 0)
-                    ? radius
-                    : radius / 2;
+            int r =
+                    (i % 2 == 0)
+                            ? radius
+                            : radius / 2;
 
-            int x = (int) (centerX + Math.cos(angle - Math.PI / 2) * r);
+            int x = (int) (
+                    centerX
+                            + Math.cos(angle - Math.PI / 2) * r
+            );
 
-            int y = (int) (centerY + Math.sin(angle - Math.PI / 2) * r);
+            int y = (int) (
+                    centerY
+                            + Math.sin(angle - Math.PI / 2) * r
+            );
 
             star.addPoint(x, y);
         }
@@ -99,6 +217,11 @@ public class Score extends JComponent {
         g2.drawPolygon(star);
     }
 
+    /**
+     * Met à jour le score à partir des données d'un joueur.
+     *
+     * @param joueur Joueur à analyser
+     */
     public void updateFromGame(Joueur joueur) {
 
         Map<Fleur.TypeFleur, Integer> data = new HashMap<>();
@@ -108,145 +231,250 @@ public class Score extends JComponent {
         }
 
         List<Fleur> fleurs = joueur.getFleursGagnees();
-        if (fleurs == null)
+
+        if (fleurs == null) {
             return;
+        }
 
         for (Fleur f : fleurs) {
-            data.put(f.getType(), data.get(f.getType()) + 1);
+
+            data.put(
+                    f.getType(),
+                    data.get(f.getType()) + 1
+            );
         }
 
         flowerCounts.clear();
+
         flowerCounts.putAll(data);
 
         repaint();
     }
 
+    /**
+     * Dessine le composant graphique du score.
+     *
+     * Cette méthode affiche :
+     * - le pion du joueur,
+     * - les fleurs collectées,
+     * - les majorités via une étoile.
+     *
+     * @param g Contexte graphique
+     */
     @Override
     protected void paintComponent(Graphics g) {
+
         super.paintComponent(g);
+
         Graphics2D g2 = (Graphics2D) g;
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        g2.setRenderingHint(
+                RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON
+        );
 
         int w = getWidth();
 
         java.awt.Rectangle vis = getVisibleRect();
-        int visH = (vis.height > 0) ? vis.height : getHeight();
-        int visY = (vis.height > 0) ? vis.y : 0;
 
-        // Pion en haut de la zone visible
+        int visH =
+                (vis.height > 0)
+                        ? vis.height
+                        : getHeight();
+
+        int visY =
+                (vis.height > 0)
+                        ? vis.y
+                        : 0;
+
+        // -------------------------- PION ------------------------------------- //
+
         int pawnSize = Math.min(w, visH / 6);
+
         int startY = visY + 5;
+
         if (pawnImage != null) {
-            g2.drawImage(pawnImage, (w - pawnSize) / 2, startY, pawnSize, pawnSize, null);
+
+            g2.drawImage(
+                    pawnImage,
+                    (w - pawnSize) / 2,
+                    startY,
+                    pawnSize,
+                    pawnSize,
+                    null
+            );
         }
 
-        // Grille de fleurs (7 types x 7 fleurs)
-        int currentY = startY + pawnSize + 15;
-        int availableHeight = (visY + visH) - currentY - 10;
+        // -------------------------- GRILLE ----------------------------------- //
 
-        // On réserve de la place pour l'étoile sur le côté
+        int currentY = startY + pawnSize + 15;
+
+        int availableHeight =
+                (visY + visH)
+                        - currentY
+                        - 10;
+
         int starSpace = 30;
-        int availableWidth = w - 10 - starSpace;
+
+        int availableWidth =
+                w - 10 - starSpace;
 
         int gap = 2;
 
-        int nbFleursParCouleur = ConstantesJeu.NB_FLEURS_PAR_COULEUR;
-        int nbGaps = nbFleursParCouleur - 1;
-        int boxSizeH = (availableHeight - nbGaps * gap) / nbFleursParCouleur;
-        int boxSizeW = (availableWidth - nbGaps * gap) / nbFleursParCouleur;
-        int boxSize = Math.min(boxSizeH, boxSizeW);
-        if (boxSize < 1)
-            boxSize = 1; // éviter une taille nulle
-        int totalGridW = nbFleursParCouleur * boxSize + nbGaps * gap;
+        int nbFleursParCouleur =
+                ConstantesJeu.NB_FLEURS_PAR_COULEUR;
 
-        // On décale la grille pour laisser de la place à l'étoile selon le joueur
-        int startX;
-        if (playerType == Pion.TypePion.ARGENT) {
-            startX = 5; // Place pour l'étoile à droite
-        } else {
-            startX = w - totalGridW - 5; // Place pour l'étoile à gauche
+        int nbGaps = nbFleursParCouleur - 1;
+
+        int boxSizeH =
+                (availableHeight - nbGaps * gap)
+                        / nbFleursParCouleur;
+
+        int boxSizeW =
+                (availableWidth - nbGaps * gap)
+                        / nbFleursParCouleur;
+
+        int boxSize =
+                Math.min(boxSizeH, boxSizeW);
+
+        if (boxSize < 1) {
+            boxSize = 1;
         }
 
-        Fleur.TypeFleur[] types = Fleur.TypeFleur.values();
+        int totalGridW =
+                nbFleursParCouleur * boxSize
+                        + nbGaps * gap;
+
+        int startX;
+
+        if (playerType == Pion.TypePion.ARGENT) {
+
+            startX = 5;
+
+        } else {
+
+            startX = w - totalGridW - 5;
+        }
+
+        Fleur.TypeFleur[] types =
+                Fleur.TypeFleur.values();
 
         for (int i = 0; i < types.length; i++) {
 
             Fleur.TypeFleur type = types[i];
 
-            int y = currentY + i * (boxSize + gap);
+            int y =
+                    currentY
+                            + i * (boxSize + gap);
 
-            int count = flowerCounts.get(type);
+            int count =
+                    flowerCounts.get(type);
 
-            Image img = flowerImages.get(type);
+            Image img =
+                    flowerImages.get(type);
 
-            if (img == null)
+            if (img == null) {
                 continue;
+            }
 
             for (int j = 0; j < nbFleursParCouleur; j++) {
 
-                // =========================
-                // POSITION SYMÉTRIQUE
-                // =========================
+                // ---------------------- POSITION SYMÉTRIQUE ------------------- //
+
                 int displayIndex;
 
                 if (playerType == Pion.TypePion.ARGENT) {
+
                     displayIndex = j;
+
                 } else {
+
                     displayIndex = nbGaps - j;
                 }
 
-                int x = startX + displayIndex * (boxSize + gap);
+                int x =
+                        startX
+                                + displayIndex * (boxSize + gap);
 
-                // =========================
-                // FLEURS GAGNÉES
-                // =========================
+                // ---------------------- FLEURS ACTIVES ----------------------- //
+
                 boolean active = j < count;
 
                 if (active) {
+
                     g2.setComposite(
                             AlphaComposite.getInstance(
                                     AlphaComposite.SRC_OVER,
-                                    1.0f));
+                                    1.0f
+                            )
+                    );
+
                 } else {
+
                     g2.setComposite(
                             AlphaComposite.getInstance(
                                     AlphaComposite.SRC_OVER,
-                                    0.12f));
+                                    0.12f
+                            )
+                    );
                 }
 
-                g2.drawImage(img, x, y, boxSize, boxSize, null);
+                g2.drawImage(
+                        img,
+                        x,
+                        y,
+                        boxSize,
+                        boxSize,
+                        null
+                );
 
-                // Dessiner l'étoile seulement une fois par ligne, à la fin de la grille
+                // ---------------------- ÉTOILE MAJORITÉ ---------------------- //
+
                 if (count >= 4 && j == 6) {
 
                     int starX;
 
                     if (playerType == Pion.TypePion.ARGENT) {
-                        // étoile à droite de la dernière fleur (qui est à l'index 6)
-                        starX = x + boxSize + gap + (starSpace / 2);
+
+                        starX =
+                                x
+                                        + boxSize
+                                        + gap
+                                        + (starSpace / 2);
+
                     } else {
-                        // étoile à gauche de la première fleur (qui est à l'index 0, donc j=6 pour OR)
-                        // Pour OR, j=6 est l'index d'affichage 0
+
                         int x0 = startX;
-                        starX = x0 - (starSpace / 2);
+
+                        starX =
+                                x0
+                                        - (starSpace / 2);
                     }
 
-                    int starY = y + boxSize / 2;
+                    int starY =
+                            y + boxSize / 2;
+
                     g2.setComposite(
                             AlphaComposite.getInstance(
                                     AlphaComposite.SRC_OVER,
-                                    1.0f));
+                                    1.0f
+                            )
+                    );
 
                     dessinerEtoile(
                             g2,
                             starX,
                             starY,
-                            boxSize / 2);
+                            boxSize / 2
+                    );
                 }
+
                 g2.setComposite(
                         AlphaComposite.getInstance(
                                 AlphaComposite.SRC_OVER,
-                                1.0f));
+                                1.0f
+                        )
+                );
             }
         }
     }

@@ -91,6 +91,9 @@ $(function(){initNavTree('classview_1_1manager_1_1GameEndManager.html','','class
   <div class="headertitle"><div class="title">view.manager.GameEndManager Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Gère toute la logique liée à la fin de partie.  
+ <a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -98,7 +101,15 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:acfefc027673b1cc6625163cc53131c52" id="r_acfefc027673b1cc6625163cc53131c52"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acfefc027673b1cc6625163cc53131c52">verifierFinDePartie</a> (boolean animationEnCours)</td></tr>
 <tr class="memitem:af03661b4c45b77fef9918dab99761f5b" id="r_af03661b4c45b77fef9918dab99761f5b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af03661b4c45b77fef9918dab99761f5b">reset</a> ()</td></tr>
 </table>
-<a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Gère toute la logique liée à la fin de partie. </p>
+<p>Cette classe s’occupe de :</p><ul>
+<li>l’affichage de la fenêtre de victoire</li>
+<li>la gestion de la relance de partie</li>
+<li>le retour au menu principal</li>
+<li>la coordination avec le mode réseau </li>
+</ul>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="ac129e5cc7a44e46e6343866d0e0f7635" name="ac129e5cc7a44e46e6343866d0e0f7635"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac129e5cc7a44e46e6343866d0e0f7635">&#9670;&#160;</a></span>GameEndManager()</h2>
 
@@ -142,6 +153,7 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Constructeur principal du <a class="el" href="classview_1_1manager_1_1GameEndManager.html" title="Gère toute la logique liée à la fin de partie.">GameEndManager</a>. </p>
 
 </div>
 </div>
@@ -160,7 +172,7 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Réinitialise l'état de fin de partie. </p>
+<p>Réinitialise l’état du gestionnaire. Utilisé lors d’un redémarrage de partie. </p>
 
 </div>
 </div>
@@ -178,10 +190,10 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Vérifie la fin de partie.</p>
+<p>Vérifie si la partie est terminée et affiche la popup de fin si nécessaire.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">animationEnCours</td><td>animation en cours. </td></tr>
+    <tr><td class="paramname">animationEnCours</td><td>true si une animation est encore active </td></tr>
   </table>
   </dd>
 </dl>

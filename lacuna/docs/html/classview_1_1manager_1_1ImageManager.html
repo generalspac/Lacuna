@@ -91,6 +91,9 @@ $(function(){initNavTree('classview_1_1manager_1_1ImageManager.html','','classvi
   <div class="headertitle"><div class="title">view.manager.ImageManager Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Gestionnaire centralisé du chargement des images du jeu.  
+ <a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-methods" class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -107,7 +110,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a9e4a905a8829d1708c2e386d4032eef9" id="r_a9e4a905a8829d1708c2e386d4032eef9"><td class="memItemLeft" align="right" valign="top">Image&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9e4a905a8829d1708c2e386d4032eef9">getPlateauImg</a> ()</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Gestionnaire de chargement des images du jeu. </p>
+<div class="textblock"><p>Gestionnaire centralisé du chargement des images du jeu. </p>
+<p>Cette classe évite de recharger plusieurs fois les mêmes ressources et fournit un accès simple aux différentes images utilisées dans l’interface graphique. </p>
 </div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
 <a id="a64ff8a6f96061eb95c05faf13e05dd35" name="a64ff8a6f96061eb95c05faf13e05dd35"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a64ff8a6f96061eb95c05faf13e05dd35">&#9670;&#160;</a></span>getBleueImg()</h2>
@@ -123,8 +127,7 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Retourne l'image bleue.</p>
-<dl class="section return"><dt>Returns</dt><dd>image bleue. </dd></dl>
+<p>Retourne l’image de la fleur bleue. </p>
 
 </div>
 </div>
@@ -142,8 +145,7 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Retourne l'image jaune.</p>
-<dl class="section return"><dt>Returns</dt><dd>image jaune. </dd></dl>
+<p>Retourne l’image de la fleur jaune. </p>
 
 </div>
 </div>
@@ -161,8 +163,7 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Retourne l'image orange.</p>
-<dl class="section return"><dt>Returns</dt><dd>image orange. </dd></dl>
+<p>Retourne l’image de la fleur orange. </p>
 
 </div>
 </div>
@@ -180,8 +181,7 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Retourne l'image argent.</p>
-<dl class="section return"><dt>Returns</dt><dd>image argent. </dd></dl>
+<p>Retourne l’image du pion ARGENT. </p>
 
 </div>
 </div>
@@ -199,8 +199,7 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Retourne l'image or.</p>
-<dl class="section return"><dt>Returns</dt><dd>image or. </dd></dl>
+<p>Retourne l’image du pion OR. </p>
 
 </div>
 </div>
@@ -218,8 +217,7 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Retourne l'image du plateau.</p>
-<dl class="section return"><dt>Returns</dt><dd>image du plateau. </dd></dl>
+<p>Retourne l’image du plateau principal. </p>
 
 </div>
 </div>
@@ -237,8 +235,7 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Retourne l'image rose.</p>
-<dl class="section return"><dt>Returns</dt><dd>image rose. </dd></dl>
+<p>Retourne l’image de la fleur rose. </p>
 
 </div>
 </div>
@@ -256,8 +253,7 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Retourne l'image rouge.</p>
-<dl class="section return"><dt>Returns</dt><dd>image rouge. </dd></dl>
+<p>Retourne l’image de la fleur rouge. </p>
 
 </div>
 </div>
@@ -275,8 +271,7 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Retourne l'image verte.</p>
-<dl class="section return"><dt>Returns</dt><dd>image verte. </dd></dl>
+<p>Retourne l’image de la fleur verte. </p>
 
 </div>
 </div>
@@ -294,8 +289,7 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Retourne l'image violette.</p>
-<dl class="section return"><dt>Returns</dt><dd>image violette. </dd></dl>
+<p>Retourne l’image de la fleur violette. </p>
 
 </div>
 </div>
@@ -313,7 +307,8 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Charge toutes les images du jeu. </p>
+<p>Charge toutes les images du jeu.</p>
+<p>Cette méthode doit être appelée une seule fois au démarrage de l’application. </p>
 
 </div>
 </div>

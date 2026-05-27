@@ -105,7 +105,16 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ad211bcd7d906ea3965acfda91a86e0c6" id="r_ad211bcd7d906ea3965acfda91a86e0c6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad211bcd7d906ea3965acfda91a86e0c6">toggleCoupsPossibles</a> (<a class="el" href="enummodel_1_1Fleur_1_1TypeFleur.html">Fleur.TypeFleur</a> couleur, boolean masquer)</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Centralise les actions des boutons de la partie graphique. </p>
+<div class="textblock"><p>------------------&mdash; CONTRÔLEUR BOUTONS -----------------------&mdash; //</p>
+<p>Centralise les actions des boutons de l'interface graphique.</p>
+<p>Cette classe permet de :</p><ul>
+<li>annuler un coup</li>
+<li>refaire un coup</li>
+<li>recommencer une partie</li>
+<li>abandonner une partie</li>
+<li>afficher l'aide visuelle</li>
+<li>gérer le feedforward </li>
+</ul>
 </div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="ab5f836ba778b36bef0aa1c28c1b5aa8e" name="ab5f836ba778b36bef0aa1c28c1b5aa8e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab5f836ba778b36bef0aa1c28c1b5aa8e">&#9670;&#160;</a></span>ControleurBoutons()</h2>
@@ -121,10 +130,10 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Crée un contrôleur pour une vue de jeu.</p>
+<p>Crée un contrôleur de boutons.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">vue,ici,on</td><td>a un constructeur. </td></tr>
+    <tr><td class="paramname">vue</td><td>Vue graphique associée </td></tr>
   </table>
   </dd>
 </dl>
@@ -146,7 +155,7 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Termine la partie en donnant la victoire à l'autre joueur. </p>
+<p>Fait abandonner la partie au joueur courant. </p>
 
 </div>
 </div>
@@ -164,7 +173,7 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Affiche un feedforward pour la partie en cours. </p>
+<p>Active ou désactive le feedforward visuel. </p>
 
 </div>
 </div>
@@ -182,8 +191,8 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Renvoie la vue pilotée par ce contrôleur.</p>
-<dl class="section return"><dt>Returns</dt><dd>vue de jeu graphique. </dd></dl>
+<p>Retourne la vue graphique.</p>
+<dl class="section return"><dt>Returns</dt><dd>Vue graphique du jeu </dd></dl>
 
 </div>
 </div>
@@ -201,7 +210,7 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Affiche les coups possibles via le raccourci clavier. </p>
+<p>Affiche les coups possibles. </p>
 
 </div>
 </div>
@@ -219,7 +228,7 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Rejoue le dernier coup annulé puis rafraîchit l'affichage. </p>
+<p>Rejoue le dernier coup annulé. </p>
 
 </div>
 </div>
@@ -237,7 +246,7 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Recommence la partie courante depuis son état initial. </p>
+<p>Réinitialise la partie. </p>
 
 </div>
 </div>
@@ -262,8 +271,8 @@ Public Member Functions</h2></td></tr>
 <p>Affiche ou masque l'aide visuelle des coups possibles.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">couleur</td><td>couleur à mettre en évidence, ou <code class="JavaDocCode">null</code> pour toutes. </td></tr>
-    <tr><td class="paramname">masquer</td><td><code class="JavaDocCode">true</code> pour cacher l'aide. </td></tr>
+    <tr><td class="paramname">couleur</td><td>Couleur à mettre en évidence </td></tr>
+    <tr><td class="paramname">masquer</td><td>true pour masquer l'aide </td></tr>
   </table>
   </dd>
 </dl>
@@ -284,7 +293,7 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Annule le dernier coup local puis rafraîchit l'affichage. </p>
+<p>Annule le dernier coup joué. </p>
 
 </div>
 </div>

@@ -8,8 +8,18 @@ import model.Fleur;
 import model.Historique;
 import model.Jeu;
 
+/**
+ * Fuzz test de la classe Historique.
+ * Vérifie la robustesse des opérations undo/redo, ainsi que la cohérence
+ * de la sauvegarde et du chargement de partie dans un contexte de jeu.
+ */
 public class FuzzHistorique {
 
+    /**
+     * Point d’entrée du fuzzing Jazzer.
+     * Génère des scénarios aléatoires d’actions de jeu, puis teste les
+     * opérations d’historique (undo, redo, sauvegarde, chargement).
+     */
     public static void fuzzerTestOneInput(FuzzedDataProvider data) {
 
         
@@ -78,7 +88,7 @@ public class FuzzHistorique {
             h.chargerPartie(jeu, chemin);
 
         } catch (java.io.IOException e) {
-            // IOException normale (espace disque, droits) : on ne crash pas
+            // IOException normale (espace disque, droits)
         }
 
         

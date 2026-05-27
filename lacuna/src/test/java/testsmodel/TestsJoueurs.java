@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/UnitTests/JUnit5TestClass.java to edit this template
- */
 package testsmodel;
 
 import model.Coordonnees;
@@ -17,37 +13,34 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- *
- * @author thsba
+ * Classe de tests unitaires pour les classes de joueurs.
+ * Vérifie le bon fonctionnement des joueurs humains et IA,
+ * notamment la gestion des fleurs, du score et des statistiques.
  */
 public class TestsJoueurs {
-    
+
     public TestsJoueurs() {
     }
-    
+
     @BeforeAll
     public static void setUpClass() {
     }
-    
+
     @AfterAll
     public static void tearDownClass() {
     }
-    
+
     @BeforeEach
     public void setUp() {
     }
-    
+
     @AfterEach
     public void tearDown() {
     }
 
-    // TODO add test methods here.
-    // The methods must be annotated with annotation @Test. For example:
-    //
-    // @Test
-    // public void hello() {}
-    
-    // Tests pour Joueur
+    /**
+     * Vérifie l'initialisation correcte d'un joueur humain.
+     */
     @Test
     public void testJoueurConstructor() {
         JoueurHumain j = new JoueurHumain("Alice", Pion.TypePion.OR);
@@ -57,6 +50,9 @@ public class TestsJoueurs {
         assertEquals(0, j.getFleursGagnees().size());
     }
 
+    /**
+     * Vérifie l'ajout de fleurs dans la liste du joueur.
+     */
     @Test
     public void testJoueurAjouterFleur() {
         JoueurHumain j = new JoueurHumain("Bob", Pion.TypePion.ARGENT);
@@ -69,6 +65,9 @@ public class TestsJoueurs {
         assertEquals(f2, j.getFleursGagnees().get(1));
     }
 
+    /**
+     * Vérifie le calcul du score total d'un joueur IA.
+     */
     @Test
     public void testJoueurGetScoreTotal() {
         JoueurIa j = new JoueurIa("IA", Pion.TypePion.OR);
@@ -77,6 +76,9 @@ public class TestsJoueurs {
         assertEquals(1, j.getScoreTotal());
     }
 
+    /**
+     * Vérifie le comptage des fleurs par couleur.
+     */
     @Test
     public void testJoueurNbFleursDeCouleur() {
         JoueurHumain j = new JoueurHumain("Charlie", Pion.TypePion.ARGENT);

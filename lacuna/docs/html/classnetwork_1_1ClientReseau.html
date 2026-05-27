@@ -99,7 +99,16 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a6c7897b8f7996446541c2392116861a2" id="r_a6c7897b8f7996446541c2392116861a2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6c7897b8f7996446541c2392116861a2">setEcouteur</a> (Consumer&lt; <a class="el" href="classnetwork_1_1CoupReseau.html">CoupReseau</a> &gt; ecouteur)</td></tr>
 <tr class="memitem:ab41a175c0ca4550b5cccddd91a3fc5c9" id="r_ab41a175c0ca4550b5cccddd91a3fc5c9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab41a175c0ca4550b5cccddd91a3fc5c9">fermer</a> ()</td></tr>
 </table>
-<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>------------------&mdash; CLIENT RÉSEAU -----------------------&mdash; //</p>
+<p>Gère la connexion côté invité dans une partie réseau.</p>
+<p>Cette classe permet :</p><ul>
+<li>de se connecter à un hôte distant,</li>
+<li>d'envoyer des coups,</li>
+<li>de recevoir des messages réseau,</li>
+<li>de notifier un écouteur lors de la réception. </li>
+</ul>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
 <a id="a0189cfa5bb0112b91d7fe50aacc02a0c" name="a0189cfa5bb0112b91d7fe50aacc02a0c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0189cfa5bb0112b91d7fe50aacc02a0c">&#9670;&#160;</a></span>connecter()</h2>
 
@@ -118,6 +127,21 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Se connecte à l'hôte distant.</p>
+<p>Initialise les flux réseau puis démarre l'écoute des messages entrants.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ip</td><td>Adresse IP de l'hôte </td></tr>
+    <tr><td class="paramname">port</td><td>Port réseau utilisé</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">IOException</td><td>Erreur réseau lors de la connexion </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -135,6 +159,19 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Envoie un coup à l'hôte distant.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">coup</td><td>Coup réseau à envoyer</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">IOException</td><td>Erreur lors de l'envoi </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -152,6 +189,7 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Ferme proprement la connexion réseau ainsi que tous les flux associés. </p>
 
 </div>
 </div>
@@ -169,6 +207,13 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Définit le callback appelé lors de la réception d'un message réseau.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">ecouteur</td><td>Fonction appelée à la réception </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

@@ -96,7 +96,14 @@ $(function(){initNavTree('classfuzzer_1_1fuzzmodel_1_1FuzzJeu.html','','classfuz
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a36b8aecf187904fcb81fd01b3b53bf48" id="r_a36b8aecf187904fcb81fd01b3b53bf48"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a36b8aecf187904fcb81fd01b3b53bf48">fuzzerTestOneInput</a> (FuzzedDataProvider data)</td></tr>
 </table>
-<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Fuzz test de la classe <code><a class="el" href="classmodel_1_1Jeu.html">Jeu</a></code>.</p>
+<p>Objectif :</p><ul>
+<li>Tester la robustesse du moteur de jeu face à des séquences d’actions aléatoires</li>
+<li>Vérifier la cohérence des règles (coups, sélection, placement, undo/redo)</li>
+<li>Détecter les états incohérents dans les entités du jeu </li>
+</ul>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Member Function Documentation</h2>
 <a id="a36b8aecf187904fcb81fd01b3b53bf48" name="a36b8aecf187904fcb81fd01b3b53bf48"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a36b8aecf187904fcb81fd01b3b53bf48">&#9670;&#160;</a></span>fuzzerTestOneInput()</h2>
 
@@ -119,6 +126,13 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p>Point d’entrée du fuzzing Jazzer.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">data</td><td>Fournisseur de données fuzzées utilisées pour générer des scénarios de jeu aléatoires </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

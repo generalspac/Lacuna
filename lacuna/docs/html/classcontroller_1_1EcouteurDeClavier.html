@@ -104,7 +104,8 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a9cb4d7bb99ebe53fd8f96259729e098e" id="r_a9cb4d7bb99ebe53fd8f96259729e098e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9cb4d7bb99ebe53fd8f96259729e098e">keyPressed</a> (KeyEvent e)</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Gère les raccourcis clavier de l'écran de partie. </p>
+<div class="textblock"><p>------------------&mdash; ÉCOUTEUR CLAVIER -----------------------&mdash; //</p>
+<p>Gère les raccourcis clavier de l'interface graphique. </p>
 </div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a3ba65b82b7a292ffd66563ca01e755ab" name="a3ba65b82b7a292ffd66563ca01e755ab"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3ba65b82b7a292ffd66563ca01e755ab">&#9670;&#160;</a></span>EcouteurDeClavier()</h2>
@@ -120,6 +121,13 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Crée un écouteur clavier.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">controleur</td><td>Contrôleur associé </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -138,6 +146,14 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Installe l'écouteur clavier sur un composant graphique.</p>
+<p>L'installation est récursive : tous les composants enfants reçoivent également l'écouteur.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">composant</td><td>Composant cible </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -155,6 +171,21 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Gère les touches du clavier.</p>
+<p>Raccourcis :</p><ul>
+<li>Flèche gauche : undo</li>
+<li>Flèche droite : redo</li>
+<li>R : reset</li>
+<li>G : guide</li>
+<li>A : abandon</li>
+<li>F : feedforward</li>
+</ul>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">e</td><td>Événement clavier </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

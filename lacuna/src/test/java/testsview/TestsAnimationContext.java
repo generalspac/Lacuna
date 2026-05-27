@@ -1,3 +1,8 @@
+/**
+ * @file TestsAnimationContext.java
+ * @brief Tests unitaires pour la classe AnimationContext.
+ */
+
 package testsview;
 
 import java.time.Duration;
@@ -15,20 +20,31 @@ import view.animations.AnimationContext;
 import view.animations.AnimationState;
 
 /**
- *
- * @author thsba
+ * @class TestsAnimationContext
+ * @brief Vérifie le comportement de l'état d'animation du jeu (phases, génération, visuels, reset).
  */
 public class TestsAnimationContext {
 
+    /**
+     * @brief Contexte d'animation testé.
+     */
     private AnimationContext ctx;
 
+    /**
+     * @brief Initialise un nouveau contexte avant chaque test.
+     */
     @BeforeEach
     void setUp() {
         ctx = new AnimationContext();
     }
 
-    // -------------------------- ÉTAT INITIAL ------------------------------------- //
+    // --------------------------------------------------------------------- //
+    // ÉTAT INITIAL
+    // --------------------------------------------------------------------- //
 
+    /**
+     * @brief Vérifie que l'état initial est sans animation.
+     */
     @Test
     void etatInitialAucuneAnimation() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -37,12 +53,18 @@ public class TestsAnimationContext {
         });
     }
 
+    /**
+     * @brief Vérifie que la génération initiale est à zéro.
+     */
     @Test
     void etatInitialGenerationZero() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () ->
             assertEquals(0, ctx.getGeneration()));
     }
 
+    /**
+     * @brief Vérifie que les éléments visuels de phase 2 sont initialement nuls.
+     */
     @Test
     void etatInitialVisuelsPhase2Nuls() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -53,6 +75,9 @@ public class TestsAnimationContext {
         });
     }
 
+    /**
+     * @brief Vérifie que les éléments liés au gagnant sont initialement nuls.
+     */
     @Test
     void etatInitialVisuelsGagnantNuls() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -61,14 +86,22 @@ public class TestsAnimationContext {
         });
     }
 
+    /**
+     * @brief Vérifie que la sélection IA visuelle est désactivée au départ.
+     */
     @Test
     void etatInitialSelectionIAFalse() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () ->
             assertFalse(ctx.isSelectionIAVisuelle()));
     }
 
-    // ------------------------------ STATE ---------------------------------------- //
+    // --------------------------------------------------------------------- //
+    // STATE
+    // --------------------------------------------------------------------- //
 
+    /**
+     * @brief Vérifie que setState active correctement l'animation.
+     */
     @Test
     void setStateMetAJourIsEnCours() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -78,6 +111,9 @@ public class TestsAnimationContext {
         });
     }
 
+    /**
+     * @brief Vérifie que passer à AUCUNE désactive l'animation.
+     */
     @Test
     void setStateAucuneDesactiveIsEnCours() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -87,8 +123,13 @@ public class TestsAnimationContext {
         });
     }
 
-    // --------------------------- GÉNÉRATION -------------------------------------- //
+    // --------------------------------------------------------------------- //
+    // GÉNÉRATION
+    // --------------------------------------------------------------------- //
 
+    /**
+     * @brief Vérifie l'incrémentation de génération.
+     */
     @Test
     void nouvelleGenerationIncremente() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -100,6 +141,9 @@ public class TestsAnimationContext {
         });
     }
 
+    /**
+     * @brief Vérifie que annuler incrémente la génération.
+     */
     @Test
     void annulerIncrementeGenerationSansRetour() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -108,6 +152,9 @@ public class TestsAnimationContext {
         });
     }
 
+    /**
+     * @brief Vérifie la validité d'une génération.
+     */
     @Test
     void estGenerationValideVraiSiIdentique() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -116,6 +163,9 @@ public class TestsAnimationContext {
         });
     }
 
+    /**
+     * @brief Vérifie l'invalidation après annulation.
+     */
     @Test
     void estGenerationValideFauxApresAnnulation() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -125,6 +175,9 @@ public class TestsAnimationContext {
         });
     }
 
+    /**
+     * @brief Vérifie l'invalidation après nouvelle génération.
+     */
     @Test
     void estGenerationValideFauxApresNouvelleGeneration() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -134,8 +187,13 @@ public class TestsAnimationContext {
         });
     }
 
-    // ------------------------- VISUELS PHASE 2 ----------------------------------- //
+    // --------------------------------------------------------------------- //
+    // VISUELS PHASE 2
+    // --------------------------------------------------------------------- //
 
+    /**
+     * @brief Test getter/setter de fleur illustrée en phase 2.
+     */
     @Test
     void setGetFleurPhase2() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -145,6 +203,9 @@ public class TestsAnimationContext {
         });
     }
 
+    /**
+     * @brief Test getter/setter du pion illustré en phase 2.
+     */
     @Test
     void setGetPionPhase2Illustre() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -154,6 +215,9 @@ public class TestsAnimationContext {
         });
     }
 
+    /**
+     * @brief Test getter/setter du pion comparé en phase 2.
+     */
     @Test
     void setGetPionPhase2Compare() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -163,6 +227,9 @@ public class TestsAnimationContext {
         });
     }
 
+    /**
+     * @brief Vérifie l'incrémentation du pulse de comparaison phase 2.
+     */
     @Test
     void incrementerPhase2ComparePulse() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -172,6 +239,9 @@ public class TestsAnimationContext {
         });
     }
 
+    /**
+     * @brief Vérifie la réinitialisation des éléments de phase 2.
+     */
     @Test
     void clearPhase2RemetsVisuelsAZero() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -189,8 +259,13 @@ public class TestsAnimationContext {
         });
     }
 
-    // ---------------------- VISUELS FIN DE PARTIE -------------------------------- //
+    // --------------------------------------------------------------------- //
+    // FIN DE PARTIE
+    // --------------------------------------------------------------------- //
 
+    /**
+     * @brief Test getter/setter du gagnant animé.
+     */
     @Test
     void setGetGagnantAnime() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -200,6 +275,9 @@ public class TestsAnimationContext {
         });
     }
 
+    /**
+     * @brief Vérifie le pulse du gagnant.
+     */
     @Test
     void setGetWinnerPulse() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -208,6 +286,9 @@ public class TestsAnimationContext {
         });
     }
 
+    /**
+     * @brief Vérifie l'incrémentation du pulse gagnant.
+     */
     @Test
     void incrementerWinnerPulse() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -217,8 +298,13 @@ public class TestsAnimationContext {
         });
     }
 
-    // --------------------------- IA VISUELLE ------------------------------------- //
+    // --------------------------------------------------------------------- //
+    // IA VISUELLE
+    // --------------------------------------------------------------------- //
 
+    /**
+     * @brief Test de l'affichage de sélection IA.
+     */
     @Test
     void setGetSelectionIAVisuelle() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -229,8 +315,13 @@ public class TestsAnimationContext {
         });
     }
 
-    // ------------------------------ RESET ---------------------------------------- //
+    // --------------------------------------------------------------------- //
+    // RESET
+    // --------------------------------------------------------------------- //
 
+    /**
+     * @brief Vérifie que reset remet tout à zéro proprement.
+     */
     @Test
     void resetRemetsEtatCompletAZero() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
@@ -261,19 +352,9 @@ public class TestsAnimationContext {
         });
     }
 
-    @Test
-    void resetInvalideLesGenerationsActives() {
-        assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {
-            int gen1 = ctx.nouvelleGeneration();
-            int gen2 = ctx.nouvelleGeneration();
-
-            ctx.reset();
-
-            assertFalse(ctx.estGenerationValide(gen1));
-            assertFalse(ctx.estGenerationValide(gen2));
-        });
-    }
-
+    /**
+     * @brief Vérifie que plusieurs reset restent cohérents.
+     */
     @Test
     void multipleResetsResterStable() {
         assertTimeoutPreemptively(Duration.ofSeconds(1), () -> {

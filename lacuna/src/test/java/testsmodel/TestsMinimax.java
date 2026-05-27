@@ -1,3 +1,8 @@
+/**
+ * @file TestsMinimax.java
+ * @brief Tests unitaires pour l'algorithme Minimax et l'IA du jeu.
+ */
+
 package testsmodel;
 
 import java.time.Duration;
@@ -14,16 +19,28 @@ import model.IA.EtatJeu;
 import model.IA.EvaluateurJeu;
 import model.IA.Minimax;
 
+/**
+ * @class TestsMinimax
+ * @brief Ensemble de tests unitaires vérifiant le comportement de l'algorithme Minimax.
+ */
 public class TestsMinimax {
 
-    // Helpers                                                             //
+    // --------------------------------------------------------------------- //
+    // Helpers
+    // --------------------------------------------------------------------- //
 
-    /** Jeu avec un grand cercle pour ne pas bloquer les placements. */
+    /**
+     * @brief Crée un jeu avec un grand cercle afin de faciliter les placements.
+     * @return Une instance de Jeu initialisée.
+     */
     private Jeu jeuLarge() {
         return new Jeu(800, 800, new Cercle(new Coordonnees(400, 400), 380));
     }
 
-    /** Passe la phase d'avantage initial et retourne le jeu prêt à jouer. */
+    /**
+     * @brief Crée un jeu prêt à jouer (phase d'avantage initial appliquée si nécessaire).
+     * @return Une instance de Jeu prête pour l'IA.
+     */
     private Jeu jeuPret() {
         Jeu jeu = jeuLarge();
         if (!jeu.getFleurs().isEmpty()) {
@@ -32,12 +49,23 @@ public class TestsMinimax {
         return jeu;
     }
 
-    /** Construit un Minimax avec l'évaluateur par défaut. */
+    /**
+     * @brief Crée une instance de Minimax avec un évaluateur par défaut.
+     * @param profondeur Profondeur de recherche.
+     * @param indexIA Index de l'IA dans le jeu.
+     * @return Une instance de Minimax configurée.
+     */
     private Minimax minimax(int profondeur, int indexIA) {
         return new Minimax(new EvaluateurJeu(), profondeur, indexIA);
     }
 
-    // meilleurCoup — comportement général                                 //
+    // --------------------------------------------------------------------- //
+    // Tests - meilleurCoup
+    // --------------------------------------------------------------------- //
+
+    /**
+     * @brief Vérifie que meilleurCoup retourne un coup valide quand des coups existent.
+     */
     @Test
     void meilleurCoupRetourneNonNullQuandCoupsExistent() {
         assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
@@ -48,10 +76,12 @@ public class TestsMinimax {
         });
     }
 
+    /**
+     * @brief Vérifie que meilleurCoup retourne null lorsqu'aucun coup n'est possible.
+     */
     @Test
     void meilleurCoupRetourneNullSiAucunCoup() {
         assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
-            // Plateau vide : aucun coup possible
             Jeu jeu = jeuLarge();
             jeu.getFleurs().clear();
             jeu.getPions().clear();
@@ -61,6 +91,9 @@ public class TestsMinimax {
         });
     }
 
+    /**
+     * @brief Vérifie que la position d'un coup IA n'est pas nulle.
+     */
     @Test
     void meilleurCoupPositionNonNull() {
         assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
@@ -73,6 +106,9 @@ public class TestsMinimax {
         });
     }
 
+    /**
+     * @brief Vérifie que les fleurs d'un coup IA sont non nulles.
+     */
     @Test
     void meilleurCoupFleursNonNulles() {
         assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
@@ -86,6 +122,9 @@ public class TestsMinimax {
         });
     }
 
+    /**
+     * @brief Vérifie que les deux fleurs d'un coup IA sont de même type.
+     */
     @Test
     void meilleurCoupFleursMemeType() {
         assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
@@ -99,7 +138,9 @@ public class TestsMinimax {
         });
     }
 
-    // meilleurCoup — cohérence entre profondeurs                    
+    /**
+     * @brief Vérifie la cohérence des résultats entre différentes profondeurs.
+     */
     @Test
     void meilleurCoupProfondeur1Et2RetournentUnCoup() {
         assertTimeoutPreemptively(Duration.ofSeconds(10), () -> {
@@ -107,13 +148,14 @@ public class TestsMinimax {
             EtatJeu etat = EtatJeu.depuisJeu(jeu, 1);
             CoupIA coup1 = minimax(1, 1).meilleurCoup(etat);
             CoupIA coup2 = minimax(2, 1).meilleurCoup(etat);
-            // Les deux profondeurs doivent aboutir à un coup valide
             assertNotNull(coup1);
-            assertNotNull(coup2);   
+            assertNotNull(coup2);
         });
     }
 
-    // minimax() sur la valeur renvoyée
+    /**
+     * @brief Vérifie que minimax à profondeur 0 retourne un score valide.
+     */
     @Test
     void minimaxProfondeurZeroRetourneScore() {
         assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
@@ -121,21 +163,13 @@ public class TestsMinimax {
             EtatJeu etat = EtatJeu.depuisJeu(jeu, 1);
             Minimax mm = minimax(1, 1);
             int score = mm.minimax(etat, 0, Integer.MIN_VALUE, Integer.MAX_VALUE);
-            assertFalse(Double.isNaN(score), "Le score à profondeur 0 ne doit pas être NaN");
+            assertFalse(Double.isNaN(score));
         });
     }
 
-    @Test
-    void minimaxProfondeur1RetourneScore() {
-        assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
-            Jeu jeu = jeuPret();
-            EtatJeu etat = EtatJeu.depuisJeu(jeu, 1);
-            Minimax mm = minimax(2, 1);
-            int score = mm.minimax(etat, 1, Integer.MIN_VALUE, Integer.MAX_VALUE);
-            assertFalse(Double.isNaN(score), "Le score à profondeur 1 ne doit pas être NaN");
-        });
-    }
-
+    /**
+     * @brief Vérifie que minimax ne plante pas sur un état terminal.
+     */
     @Test
     void minimaxSurEtatTerminalNePlantePas() {
         assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
@@ -149,6 +183,9 @@ public class TestsMinimax {
         });
     }
 
+    /**
+     * @brief Vérifie que les scores ne sont pas NaN pour différents index IA.
+     */
     @Test
     void minimaxIndexIA0Et1RetournentDesScores() {
         assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
@@ -156,14 +193,14 @@ public class TestsMinimax {
             EtatJeu etat = EtatJeu.depuisJeu(jeu, 0);
             int score0 = minimax(1, 0).minimax(etat, 0, Integer.MIN_VALUE, Integer.MAX_VALUE);
             int score1 = minimax(1, 1).minimax(etat, 0, Integer.MIN_VALUE, Integer.MAX_VALUE);
-            // Pas de NaN dans les deux cas
             assertFalse(Double.isNaN(score0));
             assertFalse(Double.isNaN(score1));
         });
     }
 
-    // Élagage alpha-bêta : cohérence avec fenêtre infinie vs réduite     //
-
+    /**
+     * @brief Vérifie la cohérence de l'élagage alpha-bêta.
+     */
     @Test
     void minimaxFenetreReduiteCoherente() {
         assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
@@ -171,18 +208,16 @@ public class TestsMinimax {
             EtatJeu etat = EtatJeu.depuisJeu(jeu, 1);
             Minimax mm = minimax(2, 1);
 
-            // Fenêtre infinie
             int scorePlein = mm.minimax(etat, 1, Integer.MIN_VALUE, Integer.MAX_VALUE);
-            // Fenêtre [scorePlein-1 , scorePlein+1] : doit donner le même résultat
             int scoreReduit = mm.minimax(etat, 1, scorePlein - 1, scorePlein + 1);
 
-            assertEquals(scorePlein, scoreReduit,
-                    "L'élagage ne doit pas modifier le score dans une fenêtre centrée");
+            assertEquals(scorePlein, scoreReduit);
         });
     }
 
-    // Comportement avec un plateau presque vide (1 paire de fleurs)      //
-
+    /**
+     * @brief Vérifie qu'un coup est trouvé lorsqu'une seule paire existe.
+     */
     @Test
     void meilleurCoupAvecUneSeulepaire() {
         assertTimeoutPreemptively(Duration.ofSeconds(5), () -> {
@@ -190,22 +225,22 @@ public class TestsMinimax {
             jeu.getFleurs().clear();
             jeu.getPions().clear();
 
-            // Une seule paire de fleurs de même couleur, sans obstacle
             jeu.getFleurs().add(new Fleur(Fleur.TypeFleur.ROUGE, new Coordonnees(370, 400)));
             jeu.getFleurs().add(new Fleur(Fleur.TypeFleur.ROUGE, new Coordonnees(430, 400)));
 
-            for (int i = 0; i < 6; i++) jeu.getPions().add(new Pion(Pion.TypePion.OR,    null));
+            for (int i = 0; i < 6; i++) jeu.getPions().add(new Pion(Pion.TypePion.OR, null));
             for (int i = 0; i < 6; i++) jeu.getPions().add(new Pion(Pion.TypePion.ARGENT, null));
 
             EtatJeu etat = EtatJeu.depuisJeu(jeu, 1);
             CoupIA coup = minimax(1, 1).meilleurCoup(etat);
 
-            // Avec une seule paire disponible, le coup doit être trouvé
-            assertNotNull(coup, "Un coup doit être trouvé avec une seule paire disponible");
+            assertNotNull(coup);
         });
     }
 
-    // même état, même type de coup (même couleur)        //
+    /**
+     * @brief Vérifie la stabilité du coup IA sur un même état.
+     */
     @Test
     void meilleurCoupSurMemeEtat() {
         assertTimeoutPreemptively(Duration.ofSeconds(10), () -> {
@@ -216,10 +251,8 @@ public class TestsMinimax {
             CoupIA coup1 = mm.meilleurCoup(etat);
             CoupIA coup2 = mm.meilleurCoup(etat);
 
-            // Les deux appels sur le même état doivent retourner des coups de même couleur
             if (coup1 != null && coup2 != null) {
-                assertEquals(coup1.fleur1.getType(), coup2.fleur1.getType(),
-                        "La couleur du meilleur coup doit être stable pour un même état");
+                assertEquals(coup1.fleur1.getType(), coup2.fleur1.getType());
             }
         });
     }

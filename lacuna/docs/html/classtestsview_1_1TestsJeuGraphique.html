@@ -91,13 +91,22 @@ $(function(){initNavTree('classtestsview_1_1TestsJeuGraphique.html','','classtes
   <div class="headertitle"><div class="title">testsview.TestsJeuGraphique Class Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Tests unitaires de la couche graphique (logique non-Swing).  
+ <a href="#details">More...</a></p>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Tests unitaires pour la logique pure de JeuGraphique.</p>
-<p>On ne teste PAS le rendu Swing (paintComponent, drawXxx) car cela nécessiterait un environnement graphique. On teste :</p><ul>
-<li><a class="el" href="classview_1_1CoordonneeConverter.html">CoordonneeConverter</a> (modelToScreen / screenToModel / valeurs dérivées)</li>
-<li><a class="el" href="classview_1_1animations_1_1AnimationContext.html">AnimationContext</a> (state, génération, phase2, gagnant, reset)</li>
-<li>Cohérence des flags (isAnimationEnCours, enAttenteAdversaire, etc.)</li>
-<li>Délégation vers le modèle (refreshScores ne plante pas, feedbackMessage) </li>
+<div class="textblock"><p>Tests unitaires de la couche graphique (logique non-Swing). </p>
+<p>Cette classe teste la logique de présentation et de conversion sans exécuter de rendu graphique réel (pas de Swing / paintComponent).</p>
+<p>Les composants testés sont :</p><ul>
+<li><a class="el" href="classview_1_1CoordonneeConverter.html">CoordonneeConverter</a> (conversion modèle ↔ écran)</li>
+<li><a class="el" href="classview_1_1animations_1_1AnimationContext.html">AnimationContext</a> (gestion des états d’animation)</li>
+<li>Intégration légère avec le modèle (<a class="el" href="classmodel_1_1Jeu.html">Jeu</a>)</li>
+</ul>
+<p>Objectifs :</p><ul>
+<li>Vérifier la cohérence des transformations géométriques</li>
+<li>Vérifier la stabilité des états d’animation</li>
+<li>Vérifier les comportements de reset et de génération</li>
+<li>Valider les flags d’état du jeu et de l’UI </li>
 </ul>
 </div><hr/>The documentation for this class was generated from the following file:<ul>
 <li>src/test/java/testsview/<a class="el" href="TestsJeuGraphique_8java.html">TestsJeuGraphique.java</a></li>

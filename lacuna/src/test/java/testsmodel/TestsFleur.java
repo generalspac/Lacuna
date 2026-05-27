@@ -38,15 +38,10 @@ public class TestsFleur {
     public void tearDown() {
     }
 
-    // TODO add test methods here.
-    // The methods must be annotated with annotation @Test. For example:
-    //
-    // @Test
-    // public void hello() {}
-    
-    
-
-    // Tests pour Fleur
+    /**
+     * Test du constructeur de la classe Fleur.
+     * Vérifie que le type et la position sont correctement initialisés.
+     */
     @Test
     public void testFleurConstructor() {
         Coordonnees pos = new Coordonnees(1, 1);
@@ -55,6 +50,10 @@ public class TestsFleur {
         assertEquals(pos, f.getPosition());
     }
 
+    /**
+     * Test de la conversion du type de fleur en caractère.
+     * Vérifie le mapping entre enum TypeFleur et représentation char.
+     */
     @Test
     public void testFleurTypeFleurToChar() {
         Coordonnees pos = new Coordonnees(0, 0);

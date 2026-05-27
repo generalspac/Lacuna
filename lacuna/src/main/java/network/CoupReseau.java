@@ -2,27 +2,108 @@ package network;
 
 import java.io.Serializable;
 
+/**
+ * --------------------- COUP RÉSEAU -------------------------- //
+ *
+ * Représente un message échangé entre l'hôte
+ * et l'invité lors d'une partie réseau.
+ *
+ * Cette classe est sérialisable afin de pouvoir
+ * être transmise via les sockets Java.
+ */
 public class CoupReseau implements Serializable {
 
-    public String typeMessage; // INIT, AVANTAGE, COUP, ABANDON 
+    // --------------------- TYPE DE MESSAGE -------------------------- //
 
-    // INIT Uniquement 
-    public boolean hoteCommence; // true = OR commence, false = Argent commence
+    /**
+     * Type du message réseau.
+     *
+     * Valeurs possibles :
+     * - INIT
+     * - AVANTAGE
+     * - COUP
+     * - ABANDON
+     */
+    public String typeMessage;
 
-    // AVANTAGE ou COUP 
+    // --------------------- INITIALISATION -------------------------- //
 
-    public String typePion;   // "OR" ou "ARGENT" (null si avantage)
-    public int pionX, pionY;  // position du pion (0,0 si null)
-    public boolean pionNull;  // true si coup avantage (pas de pion)
+    /**
+     * Indique si l'hôte commence la partie.
+     *
+     * true  = OR commence
+     * false = ARGENT commence
+     */
+    public boolean hoteCommence;
 
-    // fleur 1
+    // --------------------- INFORMATIONS DU PION -------------------------- //
+
+    /**
+     * Type du pion joué.
+     *
+     * Valeurs possibles :
+     * - OR
+     * - ARGENT
+     *
+     * Peut être null pour un avantage.
+     */
+    public String typePion;
+
+    /**
+     * Position X du pion.
+     */
+    public int pionX;
+
+    /**
+     * Position Y du pion.
+     */
+    public int pionY;
+
+    /**
+     * Indique si aucun pion n'est joué.
+     *
+     * Utilisé pour les avantages.
+     */
+    public boolean pionNull;
+
+    // --------------------- FLEUR 1 -------------------------- //
+
+    /**
+     * Type de la première fleur.
+     */
     public String typeFleur1;
-    public int fleur1X, fleur1Y;
 
-    // fleur 2 (null si avantage initial)
+    /**
+     * Position X de la première fleur.
+     */
+    public int fleur1X;
+
+    /**
+     * Position Y de la première fleur.
+     */
+    public int fleur1Y;
+
+    // --------------------- FLEUR 2 -------------------------- //
+
+    /**
+     * Type de la seconde fleur.
+     */
     public String typeFleur2;
-    public int fleur2X, fleur2Y;
+
+    /**
+     * Position X de la seconde fleur.
+     */
+    public int fleur2X;
+
+    /**
+     * Position Y de la seconde fleur.
+     */
+    public int fleur2Y;
+
+    /**
+     * Indique si la seconde fleur est absente.
+     *
+     * Utilisé notamment lors d'un avantage initial.
+     */
     public boolean fleur2Null;
-
-
 }

@@ -98,7 +98,15 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a3c5a877bd85081d7195b5340245cfbbe" id="r_a3c5a877bd85081d7195b5340245cfbbe"><td class="memItemLeft" align="right" valign="top">boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3c5a877bd85081d7195b5340245cfbbe">lancerAnimationSecondePhase</a> ()</td></tr>
 <tr class="memitem:a96f348cb1be97cb6ec6c9dd7a82dd60a" id="r_a96f348cb1be97cb6ec6c9dd7a82dd60a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a96f348cb1be97cb6ec6c9dd7a82dd60a">animerAttributionPhase2</a> (ArrayList&lt; Phase2.AttributionFleur &gt; attributions, int index, int generation)</td></tr>
 </table>
-<a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>------------------&mdash; ANIMATEUR PHASE 2 -----------------------&mdash; //</p>
+<p>Gère les animations liées à la seconde phase du jeu.</p>
+<p>Cette classe orchestre :</p><ul>
+<li>l’attribution des fleurs restantes</li>
+<li>les animations de comparaison de distance</li>
+<li>les transitions vers l’écran de victoire </li>
+</ul>
+</div><a name="doc-constructors" id="doc-constructors"></a><h2 id="header-doc-constructors" class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a0cf5245c1850ba0d3152cf3b9ffd3f1c" name="a0cf5245c1850ba0d3152cf3b9ffd3f1c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0cf5245c1850ba0d3152cf3b9ffd3f1c">&#9670;&#160;</a></span>Phase2Animator()</h2>
 
@@ -127,6 +135,16 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Initialise l’animateur de phase 2.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">view</td><td>Vue principale </td></tr>
+    <tr><td class="paramname">ctx</td><td>Contexte des animations </td></tr>
+    <tr><td class="paramname">animation</td><td>Gestionnaire principal </td></tr>
+    <tr><td class="paramname">winnerAnimator</td><td>Animateur de victoire </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -154,6 +172,15 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Anime l’attribution progressive des fleurs restantes.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">attributions</td><td>Liste des attributions </td></tr>
+    <tr><td class="paramname">index</td><td>Index courant </td></tr>
+    <tr><td class="paramname">generation</td><td>Génération d’animation </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -171,7 +198,8 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Lance l'animation de la phase 2 si les conditions sont réunies. </p><dl class="section return"><dt>Returns</dt><dd>true si l'animation a été démarrée. </dd></dl>
+<p>Lance l’animation de la seconde phase si les conditions sont réunies.</p>
+<dl class="section return"><dt>Returns</dt><dd>true si l’animation démarre </dd></dl>
 
 </div>
 </div>

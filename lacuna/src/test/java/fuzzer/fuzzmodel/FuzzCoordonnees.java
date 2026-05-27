@@ -3,8 +3,16 @@ package fuzzer.fuzzmodel;
 import com.code_intelligence.jazzer.api.FuzzedDataProvider;
 import model.Coordonnees;
 
+/**
+ * Fuzz test de la classe {@link Coordonnees}.
+ */
 public class FuzzCoordonnees {
 
+    /**
+     * Point d’entrée du fuzzing Jazzer.
+     *
+     * @param data Fournisseur de données fuzzées
+     */
     public static void fuzzerTestOneInput(
             FuzzedDataProvider data
     ) {
