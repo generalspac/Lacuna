@@ -1,224 +1,60 @@
-# Lacuna
+# Lacuna — Jeu de stratégie et intelligence artificielle
 
-Lacuna est une adaptation du jeu de société **Lacuna** réalisée en Java avec une interface graphique Swing.
+Adaptation en **Java 17 / Swing** du jeu de société Lacuna, réalisée en équipe dans le cadre d'un projet universitaire à l'Université Grenoble Alpes. Cette publication reprend la version finale du dépôt universitaire du **27 mai 2026** (`1ac68b5`), avec une préparation pour GitHub : lancement corrigé, JAR autonome et corrections de données de tests.
 
-Le projet propose plusieurs modes de jeu :
+**[Télécharger le jeu](https://github.com/generalspac/Lacuna/releases/latest)** · **[Portfolio](https://ouryportfolio.vercel.app)**
 
-- Humain vs Humain
-- Joueur vs IA
-- IA vs IA
-- Mode Réseau
+## Intelligence artificielle
 
-Le jeu inclut également :
+- Recherche **Minimax avec élagage alpha-bêta** et tri des coups pour limiter l'exploration.
+- Trois difficultés : profondeurs 1, 3 et 5 ; heuristiques avancées pour les niveaux moyen et difficile.
+- Évaluation des majorités de couleurs, des menaces adverses, de la mobilité et de l'attribution des fleurs restantes en phase 2.
+- Simulation sur une copie de l'état du jeu ; calcul en dehors du thread graphique Swing.
+- Modes joueur contre IA et IA contre IA pour observer et comparer les stratégies.
 
-- un système de sauvegarde SQLite,
-- des animations graphiques,
-- des tests unitaires Maven,
-- du fuzzing avec Jazzer,
-- une documentation automatique avec Doxygen.
+L'IA repose sur des algorithmes de recherche et des heuristiques, sans entraînement d'un modèle de machine learning. La profondeur et le nombre de coups explorés sont limités pour conserver un temps de réponse adapté au jeu.
 
----
+Le code se trouve dans [`lacuna/src/main/java/model/IA`](lacuna/src/main/java/model/IA). Les scénarios de comparaison sont dans [`TestsIAVsIA.java`](lacuna/src/test/java/testsmodel/TestsIAVsIA.java).
 
-# Technologies utilisées
+## Jouer
 
-- Java
-- Swing
-- Maven
-- SQLite
-- Doxygen
-- Graphviz
-- Jazzer
-
----
-
-# Structure du projet
-
-```text
-src/
- ├── main/java/
- │    ├── controller/
- │    ├── global/
- │    ├── model/
- │    ├── network/
- │    ├── view/
- │    └── main/
- │
- └── main/resources/
-```
-
----
-
-# Compilation et exécution
-
-## Avec NetBeans
-
-Le projet peut être ouvert directement avec NetBeans.
-
-Il suffit ensuite de :
-
-1. Ouvrir le projet
-2. Compiler
-3. Exécuter `main.Lacuna`
-
----
-
-## Sans NetBeans
-
-Si vous utilisez uniquement le terminal, vous devez installer :
-
-- Java
-- Maven
-
-### Installation Maven (Linux)
+Java **17 ou plus récent** est nécessaire. Télécharger `lacuna-1.0-standalone.jar` depuis les [releases](https://github.com/generalspac/Lacuna/releases/latest), puis lancer :
 
 ```bash
-sudo apt install maven
+java -jar lacuna-1.0-standalone.jar
 ```
 
-### Vérification
+Le jeu propose aussi un mode humain contre humain, un mode réseau, des sauvegardes SQLite, un tutoriel et des animations.
+
+## Compiler et tester
+
+Depuis la racine du dépôt, avec Java 17+ et Maven :
 
 ```bash
-mvn -version
+cd lacuna
+mvn verify
+java -jar target/lacuna-1.0-standalone.jar
 ```
 
----
-
-# Script principal
-
-Le projet utilise le script :
+Sans écran graphique :
 
 ```bash
-./run.sh
+mvn verify -Djava.awt.headless=true
 ```
 
-Pensez à rendre le script exécutable :
+Le test de contrôleur créant une fenêtre Swing est alors ignoré ; les tests de modèle, de géométrie, d'IA et de rendu sans fenêtre restent exécutés. Deux anciennes données de tests ont été corrigées : les points du cercle et l'utilisation d'un pion appartenant réellement au plateau pour vérifier les collisions.
 
-```bash
-chmod +x run.sh
-```
+Sur macOS/Linux, `./run.sh` permet aussi de compiler et lancer avec `javac` et le pilote SQLite fourni. La documentation Doxygen est disponible dans [`lacuna/docs/html`](lacuna/docs/html), et le [README universitaire original](lacuna/docs/README-original.md) décrit les outils de fuzzing.
 
----
+## Équipe et provenance
 
-# Lancer le jeu
+Projet collectif du semestre S6 :
 
-## Compilation classique
+- ADAM Fayçal
+- AUAUVRE Niels
+- BAH Thierno Souleymane
+- BARRY Mamadou Oury
+- CHALLAK Layan
+- JOUINI Iyed
 
-```bash
-./run.sh
-```
-
----
-
-## Compilation avec Maven
-
-```bash
-./run.sh mvn
-```
-
----
-
-# Tests
-
-## Tous les tests
-
-```bash
-./run.sh test
-```
-
-## Un test spécifique
-
-```bash
-./run.sh test=NomDuTest
-```
-
-Exemple :
-
-```bash
-./run.sh test=JeuTest
-```
-
----
-
-# Fuzzing
-
-## Lancer le fuzzer par défaut
-
-```bash
-./run.sh fuzz
-```
-
-## Lancer un fuzzer spécifique
-
-```bash
-./run.sh fuzz=NomFuzzer
-```
-
-Exemple :
-
-```bash
-./run.sh fuzz=FuzzJeu
-```
-
-## Utiliser un dictionnaire
-
-```bash
-./run.sh fuzz dict=jeu.dict
-```
-
----
-
-# Génération de la documentation
-
-La documentation est générée avec Doxygen.
-
-## Installation de Doxygen
-
-```bash
-sudo apt install doxygen
-```
-
-## Installation de Graphviz (optionnel)
-
-Graphviz permet de générer les graphes UML et les dépendances entre classes.
-
-```bash
-sudo apt install graphviz
-```
-
----
-
-## Générer la documentation
-
-```bash
-./run.sh doc
-```
-
-La documentation sera générée dans :
-
-```text
-docs/html/index.html
-```
-
-Ouvrir ensuite :
-
-```bash
-xdg-open docs/html/index.html
-```
-
----
-
-# Auteurs
-
-Projet universitaire réalisé dans le cadre du semestre S6 par
-
-ADAM Fayçal
-
-AUAUVRE Niels
-
-BAH Thierno Souleymane
-
-BARRY Mamadou Oury
-
-CHALLAK Layan
-
-JOUINI Iyed.
+Le README de travail local attribue les travaux et tests d'IA à Niels et Oury. Ce dépôt présente le projet de l'équipe ; il conserve les crédits des auteurs. Les ressources graphiques et les règles sont celles fournies avec le projet universitaire. Aucune licence supplémentaire n'est ajoutée à ces éléments.

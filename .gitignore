@@ -31,3 +31,9 @@ out
 .DS_Store
 !lib/sqlite-jdbc.jar
 target/
+
+*.db
+*.db-shm
+*.db-wal
+.lacuna/
+dependency-reduced-pom.xml

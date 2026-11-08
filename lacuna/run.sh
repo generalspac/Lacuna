@@ -14,18 +14,8 @@ run_game() {
     rm -rf target/classes
     mkdir -p target/classes
 
-    javac -cp "lib/sqlite-jdbc.jar" -d target/classes \
-        src/main/java/global/*.java \
-        src/main/java/model/*.java \
-        src/main/java/model/IA/*.java \
-        src/main/java/network/*.java \
-        src/main/java/view/*.java \
-        src/main/java/controller/*.java \
-        src/main/java/view/animations/*.java \
-        src/main/java/view/render/*.java \
-        src/main/java/view/manager/*.java \
-        src/main/java/view/component/*.java \
-        src/main/java/main/*.java
+    find src/main/java -name '*.java' > target/sources.list
+    javac --release 17 -cp "lib/sqlite-jdbc.jar" -d target/classes @target/sources.list || exit 1
 
     cp -r src/main/resources/* target/classes/
 
@@ -42,7 +32,7 @@ run_game_maven() {
 
     echo "[INFO] Lancement de Lacuna"
 
-    java -cp target/classes main.Lacuna
+    mvn exec:java -Dexec.mainClass=main.Lacuna
 }
 
 run_all_tests() {
