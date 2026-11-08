@@ -1,0 +1,6 @@
+<map id="view.JeuGraphique" name="view.JeuGraphique">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,119,239,624"/>
+<area shape="rect" id="Node000003" href="$classview_1_1JeuTutoriel.html" title="Version tutorielle du jeu avec progression guidée." alt="" coords="31,672,213,837"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="75,5,169,71"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="125,85,125,119,119,119,119,85"/>
+</map>

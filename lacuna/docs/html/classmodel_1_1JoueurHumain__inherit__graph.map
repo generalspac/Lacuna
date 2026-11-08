@@ -1,0 +1,5 @@
+<map id="model.JoueurHumain" name="model.JoueurHumain">
+<area shape="rect" id="Node000001" title=" " alt="" coords="15,359,165,424"/>
+<area shape="rect" id="Node000002" href="$classmodel_1_1Joueur.html" title=" " alt="" coords="5,5,175,311"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="93,325,93,359,87,359,87,325"/>
+</map>

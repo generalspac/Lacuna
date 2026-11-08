@@ -1,0 +1,25 @@
+var classglobal_1_1ParametresPartie =
+[
+    [ "ParametresPartie", "classglobal_1_1ParametresPartie.html#a67fb861e1f741ffaf446ffa70844e965", null ],
+    [ "getJoueurQuiCommence", "classglobal_1_1ParametresPartie.html#adcfd6aa308dcb1175d4a3af56c0a3d41", null ],
+    [ "getMode", "classglobal_1_1ParametresPartie.html#a9835c439c275f61b6d33be6aab2c74da", null ],
+    [ "getNiveauArgent", "classglobal_1_1ParametresPartie.html#a396d23142eb49e81ade0a5af298a9bd9", null ],
+    [ "getNiveauOr", "classglobal_1_1ParametresPartie.html#aca336e1136e7f1182ee605b29898a419", null ],
+    [ "getNomArgent", "classglobal_1_1ParametresPartie.html#a0871839fb3e81759c856dac37a0f2a83", null ],
+    [ "getNomHumain", "classglobal_1_1ParametresPartie.html#af9b6ba64e4dfee70f4d10d06061ebaa5", null ],
+    [ "getNomOr", "classglobal_1_1ParametresPartie.html#a4529abb29ecac6368477902a3bb9a05f", null ],
+    [ "setJoueurQuiCommence", "classglobal_1_1ParametresPartie.html#a6216891bdae07212a88b1ddf53d642f8", null ],
+    [ "setMode", "classglobal_1_1ParametresPartie.html#a9461ea9109e5e8c47b09ac6159e603de", null ],
+    [ "setNiveauArgent", "classglobal_1_1ParametresPartie.html#a1729dfaff3ff75588e1b059b13190b46", null ],
+    [ "setNiveauOr", "classglobal_1_1ParametresPartie.html#a1001a890791e249138becd148303654b", null ],
+    [ "setNomArgent", "classglobal_1_1ParametresPartie.html#aaebaa59779cb5b69eb544430bcb7822c", null ],
+    [ "setNomHumain", "classglobal_1_1ParametresPartie.html#ac761dd50677fd06025b267d6633673e4", null ],
+    [ "setNomOr", "classglobal_1_1ParametresPartie.html#a9aa2de36a3203eda40dc9f2611535332", null ],
+    [ "joueurQuiCommence", "classglobal_1_1ParametresPartie.html#a3540767f854b61ac9b77034141406cb7", null ],
+    [ "mode", "classglobal_1_1ParametresPartie.html#a097200336f9da9c45274cd726927663e", null ],
+    [ "niveauArgent", "classglobal_1_1ParametresPartie.html#aac59bf2c080546c9ea31ccd91bf15f77", null ],
+    [ "niveauOr", "classglobal_1_1ParametresPartie.html#a7f26fca93ebf2b832d2a4c0b060293b1", null ],
+    [ "nomArgent", "classglobal_1_1ParametresPartie.html#aa4c3a95c499db84d224d09509c550e78", null ],
+    [ "nomHumain", "classglobal_1_1ParametresPartie.html#ac25c398ad3374cd425d0c5e7de56f47c", null ],
+    [ "nomOr", "classglobal_1_1ParametresPartie.html#a22d0a15a6fdc616bbdf6f2fab35000bf", null ]
+];

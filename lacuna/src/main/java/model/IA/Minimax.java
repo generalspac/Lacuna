@@ -1,0 +1,235 @@
+package model.IA;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+import model.Coordonnees;
+import model.ConstantesJeu;
+import model.Fleur;
+
+/**
+ * Recherche le meilleur coup avec minimax et élagage alpha-bêta.
+ */
+public class Minimax {
+
+    private final EvaluateurJeu evaluateur;
+    private final int profondeurMax;
+    private final int indexIA;
+
+    /**
+     * Constructeur minimax pour un niveau IA.
+     *
+     * @param eval évaluateur qui note les états.
+     * @param profondeur profondeur maximale de recherche.
+     * @param indexIA index du joueur contrôlé par cette IA.
+     */
+    public Minimax(EvaluateurJeu eval, int profondeur, int indexIA) {
+        this.evaluateur = eval;
+        this.profondeurMax = profondeur;
+        this.indexIA = indexIA;
+    }
+
+    /**
+     * Cherche le meilleur coup depuis l'état courant.
+     *
+     * @param etat état analysé.
+     * @return meilleur coup trouvé, ou {@code null} si aucun coup n'est jouable.
+     */
+    public CoupIA meilleurCoup(EtatJeu etat) {
+        List<CoupIA> coups = GenerateurCoup.genererCoups(etat);
+
+        if (coups.isEmpty()) {
+            return null;
+        }
+
+        trierCoups(etat, coups, true);
+
+        CoupIA meilleurCoup = null;
+        int meilleurScore = Integer.MIN_VALUE;
+        int meilleurDepartage = Integer.MIN_VALUE;
+        int alpha = Integer.MIN_VALUE;
+        int beta = Integer.MAX_VALUE;
+
+        for (CoupIA coup : coups) {
+            EtatJeu suivant = etat.appliquerCoup(coup);
+            int score = minimax(suivant, profondeurMax - 1, alpha, beta);
+            int departage = scoreDepartageCoup(etat, coup);
+
+            if (score > meilleurScore || (score == meilleurScore && departage > meilleurDepartage)) {
+                meilleurScore = score;
+                meilleurDepartage = departage;
+                meilleurCoup = coup;
+            }
+
+            alpha = Math.max(alpha, meilleurScore);
+        }
+
+        return meilleurCoup;
+    }
+
+    private int scoreDepartageCoup(EtatJeu etat, CoupIA coup) {
+        if (coup == null || coup.fleur1 == null || coup.fleur2 == null) {
+            return Integer.MIN_VALUE;
+        }
+
+        int joueur = etat.joueurCourant;
+        int adversaire = 1 - joueur;
+        Fleur.TypeFleur type = coup.fleur1.getType();
+        int nbJoueur = nombreFleursDeCouleur(etat, joueur, type);
+        int nbAdversaire = nombreFleursDeCouleur(etat, adversaire, type);
+
+        if (nbJoueur >= 4 || nbAdversaire >= 4) {
+            return -1000;
+        }
+
+        int score = 0;
+        if (nbJoueur + 2 >= 4) {
+            score += 12000;
+        }
+        if (nbAdversaire == 3) {
+            score += 11000;
+        } else if (nbAdversaire == 2) {
+            score += 1800;
+        }
+
+        if (nbJoueur == 2) {
+            score += 1500;
+        } else if (nbJoueur == 1) {
+            score += 350;
+        }
+
+        score += (int) Math.max(0, 180 - Coordonnees.distance(coup.fleur1.getPosition(), coup.fleur2.getPosition()));
+        return score;
+    }
+
+    /**
+     * Algorithme Minimax qui permet d'evaluer les etats 
+     * jusqu'à une certaine profondeur.
+     *
+     * @param etat état à évaluer.
+     * @param profondeur profondeur restante.
+     * @param alpha meilleure valeur déjà garantie au maximiseur.
+     * @param beta meilleure valeur déjà garantie au minimiseur.
+     * @return score estimé de l'état.
+     */
+    public int minimax(EtatJeu etat, int profondeur, int alpha, int beta) {
+        if (profondeur == 0 || etat.estTerminal()) {
+            return evaluateur.evaluer(etat, indexIA);
+        }
+
+        List<CoupIA> coups = GenerateurCoup.genererCoups(etat);
+
+        if (coups.isEmpty()) {
+            return evaluateur.evaluer(etat, indexIA);
+        }
+
+        if (profondeur > 2) {
+            trierCoups(etat, coups, etat.joueurCourant == indexIA);
+        }
+        limiterCoups(coups, profondeur);
+
+        if (etat.joueurCourant == indexIA) {
+            int meilleurScore = Integer.MIN_VALUE;
+
+            for (CoupIA coup : coups) {
+                EtatJeu suivant = etat.appliquerCoup(coup);
+                int score = minimax(suivant, profondeur - 1, alpha, beta);
+
+                meilleurScore = Math.max(meilleurScore, score);
+                alpha = Math.max(alpha, meilleurScore);
+
+                if (beta <= alpha) {
+                    break;
+                }
+            }
+
+            return meilleurScore;
+        } 
+        else {
+            int meilleurScore = Integer.MAX_VALUE;
+
+            for (CoupIA coup : coups) {
+                EtatJeu suivant = etat.appliquerCoup(coup);
+                int score = minimax(suivant, profondeur - 1, alpha, beta);
+
+                meilleurScore = Math.min(meilleurScore, score);
+                beta = Math.min(beta, meilleurScore);
+
+                if (beta <= alpha) {
+                    break;
+                }
+            }
+
+            return meilleurScore;
+        }
+    }
+
+    /**
+     * Trie les coups pour rendre l'élagage plus efficace.
+     *
+     * @param etat état de départ.
+     * @param coups coups à trier sur place.
+     * @param maximiser {@code true} si le joueur courant cherche le meilleur score.
+     */
+    private void trierCoups(EtatJeu etat, List<CoupIA> coups, boolean maximiser) {
+        List<CoupNote> coupsNotes = new ArrayList<>(coups.size());
+
+        for (CoupIA coup : coups) {
+            EtatJeu suivant = etat.appliquerCoup(coup);
+            int score = evaluateur.evaluer(suivant, indexIA);
+            coupsNotes.add(new CoupNote(coup, score));
+        }
+
+        Comparator<CoupNote> comparateur = Comparator.comparingInt(coupNote -> coupNote.score);
+        coupsNotes.sort(maximiser ? comparateur.reversed() : comparateur);
+
+        coups.clear();
+        for (CoupNote coupNote : coupsNotes) {
+            coups.add(coupNote.coup);
+        }
+    }
+
+    /**
+     * Limite le nombre de coups explorés selon la profondeur restante.
+     *
+     * @param coups liste de coups modifiée sur place.
+     * @param profondeur profondeur restante.
+     */
+    private void limiterCoups(List<CoupIA> coups, int profondeur) {
+        int limite;
+        if(profondeur > 2){
+            limite = ConstantesJeu.MAX_COUPS_MINIMAX_PROFONDEUR_HAUTE;
+        }
+        else{
+            limite = ConstantesJeu.MAX_COUPS_MINIMAX_PROFONDEUR_BASSE;
+        }
+        
+        if (coups.size() > limite) {
+            coups.subList(limite, coups.size()).clear();
+        }
+    }
+
+    private int nombreFleursDeCouleur(EtatJeu etat, int index, Fleur.TypeFleur type) {
+        int compteur = 0;
+        for (Fleur fleur : etat.fleursParJoueur[index]) {
+            if (fleur.getType() == type) {
+                compteur++;
+            }
+        }
+        return compteur;
+    }
+
+    /**
+     * Associe un coup à sa note pour le tri interne.
+     */
+    private static class CoupNote {
+        private final CoupIA coup;
+        private final int score;
+
+        private CoupNote(CoupIA coup, int score) {
+            this.coup = coup;
+            this.score = score;
+        }
+    }
+}
