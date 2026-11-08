@@ -1,6 +1,6 @@
 # Lacuna — Jeu de stratégie et intelligence artificielle
 
-Adaptation en **Java 17 / Swing** du jeu de société Lacuna, réalisée en équipe dans le cadre d'un projet universitaire à l'Université Grenoble Alpes. Cette publication reprend la version finale du dépôt universitaire du **27 mai 2026** (`1ac68b5`), avec une préparation pour GitHub : lancement corrigé, JAR autonome et corrections de données de tests.
+Adaptation en **Java 17 / Swing** du jeu de société Lacuna, réalisée en équipe dans le cadre d'un projet universitaire à l'Université Grenoble Alpes.
 
 **[Télécharger le jeu](https://github.com/generalspac/Lacuna/releases/latest)** · **[Portfolio](https://ouryportfolio.vercel.app)**
 
