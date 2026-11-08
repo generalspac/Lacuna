@@ -57,4 +57,4 @@ Projet collectif du semestre S6 :
 - CHALLAK Layan
 - JOUINI Iyed
 
-Le README de travail local attribue les travaux et tests d'IA à Niels et Oury. Ce dépôt présente le projet de l'équipe ; il conserve les crédits des auteurs. Les ressources graphiques et les règles sont celles fournies avec le projet universitaire. Aucune licence supplémentaire n'est ajoutée à ces éléments.
+
